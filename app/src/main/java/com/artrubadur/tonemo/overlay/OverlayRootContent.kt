@@ -10,62 +10,61 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clipToBounds
-import androidx.compose.ui.graphics.TransformOrigin
-import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.artrubadur.tonemo.ui.theme.TonemoTheme
 
 @Composable
 fun OverlayRootContent(
     expanded: Boolean,
-    onExpand: () -> Unit,
-    onCollapse: () -> Unit
+    onCollapseEnd: () -> Unit = {},
+    onStop: () -> Unit = {},
 ) {
     val progress by animateFloatAsState(
         targetValue = if (expanded) 1f else 0f,
         animationSpec = tween(
-            durationMillis = 220,
+            durationMillis = 200,
             easing = FastOutSlowInEasing
         ),
-        label = "overlay_progress"
+        label = "overlay_progress",
+        finishedListener = { if (it == 0f) onCollapseEnd() }
+    )
+
+    val shape = TopEndRevealShape(
+        progress = progress
     )
 
     Box(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = 16.dp)
-            .clipToBounds(),
+            .padding(horizontal = 8.dp),
         contentAlignment = Alignment.TopEnd
     ) {
         Box(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(top = 0.dp)
-                .graphicsLayer {
-                    alpha = progress
-                    scaleX = 0.05f + 0.95f * progress
-                    scaleY = 0.05f + 0.95f * progress
-                    transformOrigin = TransformOrigin(1f, 0f)
-                }
+                .clip(shape)
         ) {
             OverlayContent(
-                onCollapse = onCollapse
+                onStop = onStop,
             )
         }
+    }
+}
 
-        Box(
-            modifier = Modifier
-                .padding(top = 0.dp)
-                .graphicsLayer {
-                    alpha = 1f - progress
-                    scaleX = 1f - 0.25f * progress
-                    scaleY = 1f - 0.25f * progress
-                    transformOrigin = TransformOrigin(1f, 0f)
-                }
-        ) {
-            AssistantOverlayContent(
-                onExpand = onExpand
-            )
-        }
+@Preview
+@Composable
+private fun OverlayRootContentCollapsedPreview() {
+    TonemoTheme {
+        OverlayRootContent(false)
+    }
+}
+
+@Preview
+@Composable
+private fun OverlayRootContentExpandedPreview() {
+    TonemoTheme {
+        OverlayRootContent(true)
     }
 }

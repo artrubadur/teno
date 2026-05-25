@@ -6,23 +6,21 @@ import androidx.compose.runtime.State
 import com.artrubadur.tonemo.ui.theme.TonemoTheme
 
 @SuppressLint("ViewConstructor")
-class OverlayView(
+class BubbleView(
     context: Context,
     expandedState: State<Boolean>,
-    onCollapseEnd: () -> Unit,
-    onStop: () -> Unit = {},
+    onCollapseAnimationEnd: () -> Unit,
 ) : LifecycleComposeHostView(
     context = context,
     composeLayoutParams = LayoutParams(
         LayoutParams.MATCH_PARENT,
-        LayoutParams.WRAP_CONTENT
+        LayoutParams.MATCH_PARENT
     ),
     content = {
         TonemoTheme {
-            OverlayRootContent(
+            BubbleContent(
                 expanded = expandedState.value,
-                onCollapseEnd = onCollapseEnd,
-                onStop = onStop
+                onCollapseAnimationEnd = onCollapseAnimationEnd
             )
         }
     }

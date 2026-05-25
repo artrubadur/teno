@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -35,18 +36,19 @@ import com.artrubadur.tonemo.R
 import com.artrubadur.tonemo.ui.theme.TonemoTheme
 
 @Composable
+@Suppress("UNUSED_PARAMETER")
 fun OverlayContent(
     onStop: () -> Unit = {},
-    onCollapse: () -> Unit = {},
     onSend: (String) -> Unit = {}
 ) {
     var text by rememberSaveable { mutableStateOf("") }
+    val canSend = text.isNotBlank()
     val interactionSource = remember { MutableInteractionSource() }
     val isFocused by interactionSource.collectIsFocusedAsState()
 
     Surface(
-        shape = RoundedCornerShape(24.dp),
-        color = MaterialTheme.colorScheme.surface.copy(alpha = 0.75f),
+        shape = RoundedCornerShape(12.dp),
+        color = MaterialTheme.colorScheme.surface.copy(alpha = 0.85f),
         modifier = Modifier
             .fillMaxWidth()
     ) {
@@ -56,6 +58,7 @@ fun OverlayContent(
             verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
             Row(
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
@@ -72,7 +75,7 @@ fun OverlayContent(
                         containerColor = MaterialTheme.colorScheme.errorContainer.copy(alpha = 0.7f),
                         contentColor = MaterialTheme.colorScheme.error
                     ),
-                    shape = RoundedCornerShape(12.dp)
+                    shape = RoundedCornerShape(8.dp)
                 ) {
                     Icon(
                         painter = painterResource(R.drawable.ic_stop),
@@ -80,18 +83,7 @@ fun OverlayContent(
                     )
                 }
 
-                IconButton(
-                    onClick = onCollapse,
-                    colors = IconButtonDefaults.iconButtonColors(
-                        contentColor = MaterialTheme.colorScheme.onSurface
-                    ),
-                    shape = RoundedCornerShape(12.dp)
-                ) {
-                    Icon(
-                        painter = painterResource(R.drawable.ic_collapse),
-                        contentDescription = "Collapse overlay",
-                    )
-                }
+                Spacer(modifier = Modifier.size(40.dp))
             }
 
             BasicTextField(
@@ -111,7 +103,7 @@ fun OverlayContent(
                             MaterialTheme.colorScheme.primary
                         else
                             MaterialTheme.colorScheme.outline,
-                        shape = RoundedCornerShape(12.dp)
+                        shape = RoundedCornerShape(8.dp)
                     )
                     .padding(horizontal = 12.dp, vertical = 10.dp),
                 decorationBox = { innerTextField ->
@@ -134,14 +126,14 @@ fun OverlayContent(
 
                         IconButton(
                             onClick = {
-                                if (text.isNotBlank()) onSend(text)
+                                if (canSend) onSend(text)
                             },
-                            enabled = text.isNotBlank(),
+                            enabled = canSend,
                             modifier = Modifier.size(32.dp)
                         ) {
                             Icon(
                                 painter = painterResource(R.drawable.ic_send),
-                                tint = if (text.isNotBlank())
+                                tint = if (canSend)
                                     MaterialTheme.colorScheme.primary
                                 else
                                     MaterialTheme.colorScheme.onSurfaceVariant,
