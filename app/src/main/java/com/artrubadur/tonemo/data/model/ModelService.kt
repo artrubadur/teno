@@ -6,6 +6,7 @@ import android.provider.OpenableColumns
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.io.File
+import java.io.FileNotFoundException
 
 class ModelService(
     private val modelRepository: ModelRepository,
@@ -46,14 +47,20 @@ class ModelService(
 
     suspend fun getModel(modelFileName: String): StoredModel {
         val modelFile = modelRepository.getModel(modelFileName)
-        val metadata = modelMetadataRepository.getMetadata(modelFileName)
+        val metadata = modelMetadataRepository.getMetadata(modelFile.name)
         return StoredModel(modelFile = modelFile, metadata = metadata)
     }
 
     suspend fun getAllModels(): List<StoredModel> {
-        return modelRepository.getAllModels().map { modelFile ->
-            val metadata = modelMetadataRepository.getMetadata(modelFile.name)
-            StoredModel(modelFile = modelFile, metadata = metadata)
+        return modelRepository.getAllModels().mapNotNull { modelFile ->
+            val metadata = try {
+                modelMetadataRepository.getMetadata(modelFile.name)
+            } catch (_: FileNotFoundException) {
+                modelRepository.deleteModel(modelFile.name)
+                null
+            }
+
+            metadata?.let { StoredModel(modelFile = modelFile, metadata = it) }
         }
     }
 
