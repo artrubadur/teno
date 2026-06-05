@@ -10,6 +10,8 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -28,7 +30,9 @@ import com.artrubadur.tonemo.overlay.OverlayService
 import com.artrubadur.tonemo.ui.theme.TonemoTheme
 
 @Composable
-fun OnboardingScreen(modifier: Modifier = Modifier) {
+fun OnboardingScreen(
+    onOpenModelManager: () -> Unit = {}
+) {
     val context = LocalContext.current
     var overlayEnabled by remember { mutableStateOf(OverlayService.isRunning) }
 
@@ -47,12 +51,25 @@ fun OnboardingScreen(modifier: Modifier = Modifier) {
     }
 
     Column(
-        modifier = modifier
+        modifier = Modifier
             .fillMaxSize()
             .padding(24.dp),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Bottom
+        verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Text(
+                text = "Home",
+                style = MaterialTheme.typography.headlineMedium
+            )
+            OutlinedButton(onClick = onOpenModelManager) {
+                Text(text = "Manager")
+            }
+        }
+
         Row(
             modifier = Modifier.fillMaxWidth(),
             verticalAlignment = Alignment.CenterVertically,
