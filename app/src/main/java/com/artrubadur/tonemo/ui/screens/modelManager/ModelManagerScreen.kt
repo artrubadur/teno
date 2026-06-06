@@ -1,8 +1,9 @@
 package com.artrubadur.tonemo.ui.screens.modelManager
 
+import android.net.Uri
+import android.provider.OpenableColumns
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -12,14 +13,12 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -31,12 +30,16 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import com.artrubadur.tonemo.R
 import com.artrubadur.tonemo.data.model.ModelService
 import com.artrubadur.tonemo.data.model.ModelType
 import com.artrubadur.tonemo.data.model.StoredModel
+import com.artrubadur.tonemo.ui.components.DropdownMenu
+import com.artrubadur.tonemo.ui.components.buttons.OutlinedButton
+import com.artrubadur.tonemo.ui.components.buttons.OutlinedIconButton
+import com.artrubadur.tonemo.ui.components.buttons.PrimaryIconButton
+import com.artrubadur.tonemo.ui.components.buttons.SecondaryIconButton
 import kotlinx.coroutines.launch
 import org.koin.compose.koinInject
 
@@ -52,8 +55,12 @@ fun ModelManagerScreen(
     var isLoading by remember { mutableStateOf(true) }
     var errorMessage by remember { mutableStateOf<String?>(null) }
     var modelAction by remember { mutableStateOf<ModelAction?>(null) }
-
     var selectedModelType by remember { mutableStateOf<ModelType?>(null) }
+
+    var pendingUri by remember { mutableStateOf<Uri?>(null) }
+    var newModelName by remember { mutableStateOf("") }
+    var newModelType by remember { mutableStateOf(ModelType.LLM) }
+
     val filteredModels = models.filter { model ->
         selectedModelType == null || model.metadata.modelType == selectedModelType
     }
@@ -76,22 +83,9 @@ fun ModelManagerScreen(
         if (uri == null) {
             return@rememberLauncherForActivityResult
         }
-
-        scope.launch {
-            isLoading = true
-            errorMessage = null
-            try {
-                modelService.createModelFromUri(
-                    context = context,
-                    uri = uri,
-                    modelType = ModelType.LLM,
-                )
-                reloadModels()
-            } catch (error: Throwable) {
-                errorMessage = error.message ?: "Failed to import model"
-                isLoading = false
-            }
-        }
+        pendingUri = uri
+        newModelName = resolveFileName(context, uri)
+        newModelType = ModelType.LLM
     }
 
     LaunchedEffect(Unit) {
@@ -157,74 +151,66 @@ fun ModelManagerScreen(
             Row(
                 horizontalArrangement = Arrangement.spacedBy(16.dp),
             ) {
-                IconButton(
+                PrimaryIconButton(
+                    iconRes = R.drawable.ic_add,
+                    contentDescription = "Add model",
                     onClick = { importModelLauncher.launch(arrayOf("*/*")) },
-                    modifier = Modifier
-                        .background(
-                            color = MaterialTheme.colorScheme.primary,
-                            shape = CircleShape
-                        ),
+                    modifier = Modifier.size(48.dp),
+                    shape = CircleShape,
                     enabled = !isLoading,
-                ) {
-                    Icon(
-                        painter = painterResource(R.drawable.ic_add),
-                        contentDescription = "Add model",
-                        tint = MaterialTheme.colorScheme.onPrimary
+                )
+
+                if (modelAction == ModelAction.DELETE) {
+                    SecondaryIconButton(
+                        iconRes = R.drawable.ic_delete,
+                        contentDescription = "Delete model",
+                        onClick = { toggleAction(ModelAction.DELETE) },
+                        modifier = Modifier.size(48.dp),
+                        shape = CircleShape,
+                        enabled = !isLoading,
+                    )
+                } else {
+                    OutlinedIconButton(
+                        iconRes = R.drawable.ic_delete,
+                        contentDescription = "Delete model",
+                        onClick = { toggleAction(ModelAction.DELETE) },
+                        modifier = Modifier.size(48.dp),
+                        shape = CircleShape,
+                        enabled = !isLoading,
                     )
                 }
 
-                IconButton(
-                    onClick = { toggleAction(ModelAction.DELETE) },
-                    modifier = Modifier
-                        .background(
-                            color = if (modelAction == ModelAction.DELETE) {
-                                MaterialTheme.colorScheme.secondary
-                            } else {
-                                MaterialTheme.colorScheme.primary
-                            },
-                            shape = CircleShape
-                        ),
-                    enabled = !isLoading,
-                ) {
-                    Icon(
-                        painter = painterResource(R.drawable.ic_delete),
-                        contentDescription = "Delete model",
-                        tint = if (modelAction == ModelAction.DELETE) {
-                            MaterialTheme.colorScheme.onSecondary
-                        } else {
-                            MaterialTheme.colorScheme.onPrimary
-                        }
+                if (modelAction == ModelAction.EDIT) {
+                    SecondaryIconButton(
+                        iconRes = R.drawable.ic_edit,
+                        contentDescription = "Edit model",
+                        onClick = { toggleAction(ModelAction.EDIT) },
+                        modifier = Modifier.size(48.dp),
+                        shape = CircleShape,
+                        enabled = !isLoading,
                     )
-                }
-
-                IconButton(
-                    onClick = { toggleAction(ModelAction.EDIT) },
-                    modifier = Modifier
-                        .background(
-                            color = if (modelAction == ModelAction.EDIT) {
-                                MaterialTheme.colorScheme.secondary
-                            } else {
-                                MaterialTheme.colorScheme.primary
-                            },
-                            shape = CircleShape
-                        ),
-                    enabled = !isLoading,
-                ) {
-                    Icon(
-                        painter = painterResource(R.drawable.ic_edit),
-                        contentDescription = "Delete model",
-                        tint = if (modelAction == ModelAction.EDIT) {
-                            MaterialTheme.colorScheme.onSecondary
-                        } else {
-                            MaterialTheme.colorScheme.onPrimary
-                        }
+                } else {
+                    OutlinedIconButton(
+                        iconRes = R.drawable.ic_edit,
+                        contentDescription = "Edit model",
+                        onClick = { toggleAction(ModelAction.EDIT) },
+                        modifier = Modifier.size(48.dp),
+                        shape = CircleShape,
+                        enabled = !isLoading,
                     )
                 }
             }
 
-            ModelTypeDropdown(
-                selectedModelType = selectedModelType,
-                onModelTypeSelect = { selectedModelType = it }
+            DropdownMenu(
+                options = ModelType.entries.map(ModelType::name),
+                selectedOption = selectedModelType?.name,
+                onSelect = { selectedName ->
+                    selectedModelType = (
+                            ModelType.entries.firstOrNull { it.name == selectedName }
+                            )
+                },
+                buttonModifier = Modifier.size(48.dp),
+                emptyOption = "All",
             )
         }
 
@@ -279,9 +265,68 @@ fun ModelManagerScreen(
 
         Spacer(modifier = Modifier.height(8.dp))
     }
+
+    if (pendingUri != null) {
+        ModelDialog(
+            modelName = newModelName,
+            modelType = newModelType,
+            onNameChange = { newModelName = it },
+            onTypeChange = { newModelType = it },
+            onDismiss = {
+                pendingUri = null
+                newModelName = ""
+                newModelType = ModelType.LLM
+            },
+            onConfirm = {
+                val uri = pendingUri
+                if (uri != null) {
+                    val displayName = newModelName.trim()
+                    val modelType = newModelType
+
+                    pendingUri = null
+                    newModelName = ""
+                    newModelType = ModelType.LLM
+
+                    scope.launch {
+                        isLoading = true
+                        errorMessage = null
+                        try {
+                            modelService.createModelFromUri(
+                                context = context,
+                                uri = uri,
+                                modelType = modelType,
+                                displayName = displayName,
+                            )
+                            reloadModels()
+                        } catch (error: Throwable) {
+                            errorMessage = error.message ?: "Failed to import model"
+                            isLoading = false
+                        }
+                    }
+                }
+            }
+        )
+    }
 }
 
 enum class ModelAction {
     DELETE,
     EDIT,
+}
+
+private fun resolveFileName(
+    context: android.content.Context,
+    uri: Uri,
+): String {
+    val resolver = context.contentResolver
+    return resolver.query(uri, arrayOf(OpenableColumns.DISPLAY_NAME), null, null, null)
+        ?.use { cursor ->
+            val nameIndex = cursor.getColumnIndex(OpenableColumns.DISPLAY_NAME)
+            if (nameIndex >= 0 && cursor.moveToFirst()) {
+                cursor.getString(nameIndex)
+            } else {
+                null
+            }
+        }
+        ?: "Imported model"
 }

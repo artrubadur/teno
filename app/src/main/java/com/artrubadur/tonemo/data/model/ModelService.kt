@@ -16,12 +16,13 @@ class ModelService(
         context: Context,
         uri: Uri,
         modelType: ModelType,
+        displayName: String,
     ): StoredModel {
         val sourceFile = createTempModelFile(context, uri)
         return createModel(
             sourcePath = sourceFile.absolutePath,
             modelType = modelType,
-            displayName = sourceFile.name
+            displayName = displayName
         )
     }
 
