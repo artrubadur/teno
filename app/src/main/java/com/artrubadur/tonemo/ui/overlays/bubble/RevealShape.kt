@@ -1,4 +1,4 @@
-package com.artrubadur.tonemo.overlay
+package com.artrubadur.tonemo.ui.overlays.bubble
 
 import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Rect

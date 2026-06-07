@@ -1,4 +1,4 @@
-package com.artrubadur.tonemo.overlay
+package com.artrubadur.tonemo.ui.overlays.bubble
 
 import androidx.compose.foundation.border
 import androidx.compose.foundation.interaction.MutableInteractionSource

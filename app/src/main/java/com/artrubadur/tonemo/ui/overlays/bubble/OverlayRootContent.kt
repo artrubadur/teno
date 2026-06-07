@@ -1,4 +1,4 @@
-package com.artrubadur.tonemo.overlay
+package com.artrubadur.tonemo.ui.overlays.bubble
 
 import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.animateFloatAsState

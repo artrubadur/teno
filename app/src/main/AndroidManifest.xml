@@ -25,7 +25,7 @@
         </activity>
 
         <service
-            android:name=".overlay.OverlayService"
+            android:name=".ui.overlays.bubble.OverlayService"
             android:exported="false" />
     </application>
 

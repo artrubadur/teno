@@ -25,8 +25,8 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.core.net.toUri
-import com.artrubadur.tonemo.overlay.OverlayService
 import com.artrubadur.tonemo.ui.components.buttons.OutlinedButton
+import com.artrubadur.tonemo.ui.overlays.bubble.OverlayService
 import com.artrubadur.tonemo.ui.theme.TonemoTheme
 
 @Composable

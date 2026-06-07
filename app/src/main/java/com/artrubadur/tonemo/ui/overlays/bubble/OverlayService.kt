@@ -1,4 +1,4 @@
-package com.artrubadur.tonemo.overlay
+package com.artrubadur.tonemo.ui.overlays.bubble
 
 import android.app.Service
 import android.content.Context
