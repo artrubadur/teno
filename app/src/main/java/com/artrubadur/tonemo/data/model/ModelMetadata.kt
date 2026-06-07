@@ -13,3 +13,17 @@ enum class ModelType {
     TTS,
     STT
 }
+
+enum class ActiveModelSlot {
+    GENERATION,
+    TTS,
+    STT
+}
+
+fun ModelType.activeModelSlot(): ActiveModelSlot = when (this) {
+    ModelType.LLM,
+    ModelType.VLM -> ActiveModelSlot.GENERATION
+
+    ModelType.TTS -> ActiveModelSlot.TTS
+    ModelType.STT -> ActiveModelSlot.STT
+}

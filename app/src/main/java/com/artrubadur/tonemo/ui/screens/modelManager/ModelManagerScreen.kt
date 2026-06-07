@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -19,9 +20,13 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -32,9 +37,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import com.artrubadur.tonemo.R
+import com.artrubadur.tonemo.data.model.ActiveModelStore
 import com.artrubadur.tonemo.data.model.ModelService
 import com.artrubadur.tonemo.data.model.ModelType
 import com.artrubadur.tonemo.data.model.StoredModel
+import com.artrubadur.tonemo.data.model.activeModelSlot
 import com.artrubadur.tonemo.ui.components.DropdownMenu
 import com.artrubadur.tonemo.ui.components.buttons.OutlinedButton
 import com.artrubadur.tonemo.ui.components.buttons.OutlinedIconButton
@@ -48,12 +55,14 @@ fun ModelManagerScreen(
     onBack: () -> Unit = {}
 ) {
     val context = LocalContext.current
+    val activeModelStore = koinInject<ActiveModelStore>()
     val modelService = koinInject<ModelService>()
     val scope = rememberCoroutineScope()
+    val snackbarHostState = remember { SnackbarHostState() }
+    val activeModelFileNames by activeModelStore.activeModelFileNames.collectAsState(initial = emptyMap())
 
     var models by remember { mutableStateOf<List<StoredModel>>(emptyList()) }
     var isLoading by remember { mutableStateOf(true) }
-    var errorMessage by remember { mutableStateOf<String?>(null) }
     var modelAction by remember { mutableStateOf<ModelAction?>(null) }
     var selectedModelType by remember { mutableStateOf<ModelType?>(null) }
 
@@ -62,17 +71,31 @@ fun ModelManagerScreen(
     var draftModelName by remember { mutableStateOf("") }
     var draftModelType by remember { mutableStateOf(ModelType.LLM) }
 
-    val filteredModels = models.filter { model ->
-        selectedModelType == null || model.metadata.modelType == selectedModelType
+    val filteredModels = models
+        .filter { model ->
+            selectedModelType == null || model.metadata.modelType == selectedModelType
+        }
+        .sortedByDescending { model ->
+            activeModelFileNames[model.metadata.modelType.activeModelSlot()] == model.modelFile.name
+        }
+
+    fun isModelActive(model: StoredModel): Boolean {
+        val activeFileName = activeModelFileNames[model.metadata.modelType.activeModelSlot()]
+        return activeFileName == model.modelFile.name
+    }
+
+    fun showMessage(message: String) {
+        scope.launch {
+            snackbarHostState.showSnackbar(message)
+        }
     }
 
     suspend fun reloadModels() {
         isLoading = true
-        errorMessage = null
         try {
             models = modelService.getAllModels()
         } catch (error: Throwable) {
-            errorMessage = error.message ?: "Failed to load models"
+            showMessage(error.message ?: "Failed to load models")
         } finally {
             isLoading = false
         }
@@ -95,27 +118,55 @@ fun ModelManagerScreen(
     }
 
     fun deleteModel(model: StoredModel) {
+        if (isModelActive(model)) {
+            showMessage("The active model cannot be deleted")
+            modelAction = null
+            return
+        }
+
         scope.launch {
             modelAction = null
             isLoading = true
-            errorMessage = null
             try {
+                activeModelStore.clearActiveModelReferences(model.modelFile.name)
                 modelService.deleteModel(model.modelFile.name)
                 reloadModels()
             } catch (error: Throwable) {
-                errorMessage =
-                    error.message ?: "Failed to delete model"
+                showMessage(error.message ?: "Failed to delete model")
                 isLoading = false
             }
         }
     }
 
     fun editModel(model: StoredModel) {
+        if (isModelActive(model)) {
+            showMessage("The active model cannot be edited")
+            modelAction = null
+            return
+        }
+
         modelAction = null
         pendingUri = null
         editingModel = model
         draftModelName = model.metadata.displayName
         draftModelType = model.metadata.modelType
+    }
+
+    fun toggleActiveModel(model: StoredModel) {
+        scope.launch {
+            try {
+                if (isModelActive(model)) {
+                    activeModelStore.clearActiveModel(model.metadata.modelType)
+                } else {
+                    activeModelStore.setActiveModel(
+                        modelType = model.metadata.modelType,
+                        modelFileName = model.modelFile.name
+                    )
+                }
+            } catch (error: Throwable) {
+                showMessage(error.message ?: "Failed to update active model")
+            }
+        }
     }
 
     val onModelClick: ((StoredModel) -> Unit)? = when (modelAction) {
@@ -128,12 +179,17 @@ fun ModelManagerScreen(
         modelAction = if (modelAction == action) null else action
     }
 
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(24.dp),
-        verticalArrangement = Arrangement.spacedBy(16.dp)
-    ) {
+    Scaffold(
+        snackbarHost = { SnackbarHost(snackbarHostState) },
+        contentWindowInsets = WindowInsets(0)
+    ) { innerPadding ->
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(innerPadding)
+                .padding(24.dp),
+            verticalArrangement = Arrangement.spacedBy(16.dp)
+        ) {
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceBetween,
@@ -207,25 +263,35 @@ fun ModelManagerScreen(
                 }
             }
 
-            DropdownMenu(
-                options = ModelType.entries.map(ModelType::name),
-                selectedOption = selectedModelType?.name,
-                onSelect = { selectedName ->
-                    selectedModelType = (
-                            ModelType.entries.firstOrNull { it.name == selectedName }
-                            )
-                },
-                buttonModifier = Modifier.size(48.dp),
-                emptyOption = "All",
+            Row(
+                horizontalArrangement = Arrangement.spacedBy(16.dp),
             )
-        }
+            {
+                OutlinedIconButton(
+                    iconRes = R.drawable.ic_refresh,
+                    contentDescription = "Refresh models",
+                    onClick = {
+                        scope.launch {
+                            reloadModels()
+                        }
+                    },
+                    modifier = Modifier.size(48.dp),
+                    shape = CircleShape,
+                    enabled = !isLoading,
+                )
 
-        errorMessage?.let { message ->
-            Text(
-                text = message,
-                color = MaterialTheme.colorScheme.error,
-                style = MaterialTheme.typography.bodyMedium
-            )
+                DropdownMenu(
+                    options = ModelType.entries.map(ModelType::name),
+                    selectedOption = selectedModelType?.name,
+                    onSelect = { selectedName ->
+                        selectedModelType = (
+                                ModelType.entries.firstOrNull { it.name == selectedName }
+                                )
+                    },
+                    buttonModifier = Modifier.size(48.dp),
+                    emptyOption = "All",
+                )
+            }
         }
 
         when {
@@ -262,7 +328,9 @@ fun ModelManagerScreen(
                     ) { model ->
                         ModelCard(
                             model = model,
+                            isActive = activeModelFileNames[model.metadata.modelType.activeModelSlot()] == model.modelFile.name,
                             onClick = onModelClick,
+                            onToggleActive = ::toggleActiveModel
                         )
                     }
                 }
@@ -270,6 +338,7 @@ fun ModelManagerScreen(
         }
 
         Spacer(modifier = Modifier.height(8.dp))
+        }
     }
 
     if (pendingUri != null || editingModel != null) {
@@ -298,17 +367,21 @@ fun ModelManagerScreen(
 
                     scope.launch {
                         isLoading = true
-                        errorMessage = null
                         try {
-                            modelService.updateModel(
+                            val updatedModel = modelService.updateModel(
                                 modelFileName = modelToEdit.modelFile.name,
                                 modelType = modelType,
                                 displayName = displayName,
                                 uploadedAt = modelToEdit.metadata.uploadedAt
                             )
+                            activeModelStore.reconcileModelTypeChange(
+                                modelFileName = updatedModel.modelFile.name,
+                                previousType = modelToEdit.metadata.modelType,
+                                updatedType = updatedModel.metadata.modelType
+                            )
                             reloadModels()
                         } catch (error: Throwable) {
-                            errorMessage = error.message ?: "Failed to update model metadata"
+                            showMessage(error.message ?: "Failed to update model metadata")
                             isLoading = false
                         }
                     }
@@ -319,7 +392,6 @@ fun ModelManagerScreen(
 
                     scope.launch {
                         isLoading = true
-                        errorMessage = null
                         try {
                             modelService.createModelFromUri(
                                 context = context,
@@ -329,7 +401,7 @@ fun ModelManagerScreen(
                             )
                             reloadModels()
                         } catch (error: Throwable) {
-                            errorMessage = error.message ?: "Failed to import model"
+                            showMessage(error.message ?: "Failed to import model")
                             isLoading = false
                         }
                     }
