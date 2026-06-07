@@ -75,7 +75,7 @@ fun ModelDialog(
                     PrimaryIconButton(
                         iconRes = R.drawable.ic_confirm,
                         onClick = onConfirm,
-                        contentDescription = "Add"
+                        contentDescription = "Confirm"
                     )
                 }
             }

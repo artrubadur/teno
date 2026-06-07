@@ -58,8 +58,9 @@ fun ModelManagerScreen(
     var selectedModelType by remember { mutableStateOf<ModelType?>(null) }
 
     var pendingUri by remember { mutableStateOf<Uri?>(null) }
-    var newModelName by remember { mutableStateOf("") }
-    var newModelType by remember { mutableStateOf(ModelType.LLM) }
+    var editingModel by remember { mutableStateOf<StoredModel?>(null) }
+    var draftModelName by remember { mutableStateOf("") }
+    var draftModelType by remember { mutableStateOf(ModelType.LLM) }
 
     val filteredModels = models.filter { model ->
         selectedModelType == null || model.metadata.modelType == selectedModelType
@@ -84,8 +85,9 @@ fun ModelManagerScreen(
             return@rememberLauncherForActivityResult
         }
         pendingUri = uri
-        newModelName = resolveFileName(context, uri)
-        newModelType = ModelType.LLM
+        editingModel = null
+        draftModelName = resolveFileName(context, uri)
+        draftModelType = ModelType.LLM
     }
 
     LaunchedEffect(Unit) {
@@ -110,6 +112,10 @@ fun ModelManagerScreen(
 
     fun editModel(model: StoredModel) {
         modelAction = null
+        pendingUri = null
+        editingModel = model
+        draftModelName = model.metadata.displayName
+        draftModelType = model.metadata.modelType
     }
 
     val onModelClick: ((StoredModel) -> Unit)? = when (modelAction) {
@@ -266,26 +272,50 @@ fun ModelManagerScreen(
         Spacer(modifier = Modifier.height(8.dp))
     }
 
-    if (pendingUri != null) {
+    if (pendingUri != null || editingModel != null) {
         ModelDialog(
-            modelName = newModelName,
-            modelType = newModelType,
-            onNameChange = { newModelName = it },
-            onTypeChange = { newModelType = it },
+            modelName = draftModelName,
+            modelType = draftModelType,
+            onNameChange = { draftModelName = it },
+            onTypeChange = { draftModelType = it },
             onDismiss = {
                 pendingUri = null
-                newModelName = ""
-                newModelType = ModelType.LLM
+                editingModel = null
+                draftModelName = ""
+                draftModelType = ModelType.LLM
             },
             onConfirm = {
+                val displayName = draftModelName.trim()
+                val modelType = draftModelType
+                val modelToEdit = editingModel
                 val uri = pendingUri
-                if (uri != null) {
-                    val displayName = newModelName.trim()
-                    val modelType = newModelType
 
+                if (modelToEdit != null) {
+                    editingModel = null
                     pendingUri = null
-                    newModelName = ""
-                    newModelType = ModelType.LLM
+                    draftModelName = ""
+                    draftModelType = ModelType.LLM
+
+                    scope.launch {
+                        isLoading = true
+                        errorMessage = null
+                        try {
+                            modelService.updateModel(
+                                modelFileName = modelToEdit.modelFile.name,
+                                modelType = modelType,
+                                displayName = displayName,
+                                uploadedAt = modelToEdit.metadata.uploadedAt
+                            )
+                            reloadModels()
+                        } catch (error: Throwable) {
+                            errorMessage = error.message ?: "Failed to update model metadata"
+                            isLoading = false
+                        }
+                    }
+                } else if (uri != null) {
+                    pendingUri = null
+                    draftModelName = ""
+                    draftModelType = ModelType.LLM
 
                     scope.launch {
                         isLoading = true
@@ -304,7 +334,7 @@ fun ModelManagerScreen(
                         }
                     }
                 }
-            }
+            },
         )
     }
 }
