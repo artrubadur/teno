@@ -61,19 +61,12 @@ fun ModelManagerScreen(
     val snackbarHostState = remember { SnackbarHostState() }
     val activeModelFileNames by activeModelStore.activeModelFileNames.collectAsState(initial = emptyMap())
 
-    var models by remember { mutableStateOf<List<StoredModel>>(emptyList()) }
-    var isLoading by remember { mutableStateOf(true) }
-    var modelAction by remember { mutableStateOf<ModelAction?>(null) }
-    var selectedModelType by remember { mutableStateOf<ModelType?>(null) }
+    var screenState by remember { mutableStateOf(ModelManagerScreenState()) }
+    var dialogState by remember { mutableStateOf(ModelDialogState()) }
 
-    var pendingUri by remember { mutableStateOf<Uri?>(null) }
-    var editingModel by remember { mutableStateOf<StoredModel?>(null) }
-    var draftModelName by remember { mutableStateOf("") }
-    var draftModelType by remember { mutableStateOf(ModelType.LLM) }
-
-    val filteredModels = models
+    val filteredModels = screenState.models
         .filter { model ->
-            selectedModelType == null || model.metadata.modelType == selectedModelType
+            screenState.selectedModelType == null || model.metadata.modelType == screenState.selectedModelType
         }
         .sortedByDescending { model ->
             activeModelFileNames[model.metadata.modelType.activeModelSlot()] == model.modelFile.name
@@ -91,13 +84,13 @@ fun ModelManagerScreen(
     }
 
     suspend fun reloadModels() {
-        isLoading = true
+        screenState = screenState.copy(isLoading = true)
         try {
-            models = modelService.getAllModels()
+            screenState = screenState.copy(models = modelService.getAllModels())
         } catch (error: Throwable) {
             showMessage(error.message ?: "Failed to load models")
         } finally {
-            isLoading = false
+            screenState = screenState.copy(isLoading = false)
         }
     }
 
@@ -107,10 +100,13 @@ fun ModelManagerScreen(
         if (uri == null) {
             return@rememberLauncherForActivityResult
         }
-        pendingUri = uri
-        editingModel = null
-        draftModelName = resolveFileName(context, uri)
-        draftModelType = ModelType.LLM
+
+        dialogState = ModelDialogState(
+            pendingUri = uri,
+            editingModel = null,
+            draftModelName = resolveFileName(context, uri),
+            draftModelType = ModelType.LLM
+        )
     }
 
     LaunchedEffect(Unit) {
@@ -120,20 +116,19 @@ fun ModelManagerScreen(
     fun deleteModel(model: StoredModel) {
         if (isModelActive(model)) {
             showMessage("The active model cannot be deleted")
-            modelAction = null
+            screenState = screenState.copy(modelAction = null)
             return
         }
 
         scope.launch {
-            modelAction = null
-            isLoading = true
+            screenState = screenState.copy(modelAction = null, isLoading = true)
             try {
                 activeModelStore.clearActiveModelReferences(model.modelFile.name)
                 modelService.deleteModel(model.modelFile.name)
                 reloadModels()
             } catch (error: Throwable) {
                 showMessage(error.message ?: "Failed to delete model")
-                isLoading = false
+                screenState = screenState.copy(isLoading = false)
             }
         }
     }
@@ -141,15 +136,17 @@ fun ModelManagerScreen(
     fun editModel(model: StoredModel) {
         if (isModelActive(model)) {
             showMessage("The active model cannot be edited")
-            modelAction = null
+            screenState = screenState.copy(modelAction = null)
             return
         }
 
-        modelAction = null
-        pendingUri = null
-        editingModel = model
-        draftModelName = model.metadata.displayName
-        draftModelType = model.metadata.modelType
+        screenState = screenState.copy(modelAction = null)
+        dialogState = ModelDialogState(
+            pendingUri = null,
+            editingModel = model,
+            draftModelName = model.metadata.displayName,
+            draftModelType = model.metadata.modelType
+        )
     }
 
     fun toggleActiveModel(model: StoredModel) {
@@ -169,14 +166,16 @@ fun ModelManagerScreen(
         }
     }
 
-    val onModelClick: ((StoredModel) -> Unit)? = when (modelAction) {
+    val onModelClick: ((StoredModel) -> Unit)? = when (screenState.modelAction) {
         ModelAction.DELETE -> ::deleteModel
         ModelAction.EDIT -> ::editModel
         else -> null
     }
 
     fun toggleAction(action: ModelAction) {
-        modelAction = if (modelAction == action) null else action
+        screenState = screenState.copy(
+            modelAction = if (screenState.modelAction == action) null else action
+        )
     }
 
     Scaffold(
@@ -190,183 +189,179 @@ fun ModelManagerScreen(
                 .padding(24.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Text(
-                text = "Models",
-                style = MaterialTheme.typography.headlineMedium
-            )
-            OutlinedButton(onClick = onBack) {
-                Text(text = "Back")
-            }
-        }
-
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-
             Row(
-                horizontalArrangement = Arrangement.spacedBy(16.dp),
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
             ) {
-                PrimaryIconButton(
-                    iconRes = R.drawable.ic_add,
-                    contentDescription = "Add model",
-                    onClick = { importModelLauncher.launch(arrayOf("*/*")) },
-                    modifier = Modifier.size(48.dp),
-                    shape = CircleShape,
-                    enabled = !isLoading,
+                Text(
+                    text = "Models",
+                    style = MaterialTheme.typography.headlineMedium
                 )
-
-                if (modelAction == ModelAction.DELETE) {
-                    SecondaryIconButton(
-                        iconRes = R.drawable.ic_delete,
-                        contentDescription = "Delete model",
-                        onClick = { toggleAction(ModelAction.DELETE) },
-                        modifier = Modifier.size(48.dp),
-                        shape = CircleShape,
-                        enabled = !isLoading,
-                    )
-                } else {
-                    OutlinedIconButton(
-                        iconRes = R.drawable.ic_delete,
-                        contentDescription = "Delete model",
-                        onClick = { toggleAction(ModelAction.DELETE) },
-                        modifier = Modifier.size(48.dp),
-                        shape = CircleShape,
-                        enabled = !isLoading,
-                    )
-                }
-
-                if (modelAction == ModelAction.EDIT) {
-                    SecondaryIconButton(
-                        iconRes = R.drawable.ic_edit,
-                        contentDescription = "Edit model",
-                        onClick = { toggleAction(ModelAction.EDIT) },
-                        modifier = Modifier.size(48.dp),
-                        shape = CircleShape,
-                        enabled = !isLoading,
-                    )
-                } else {
-                    OutlinedIconButton(
-                        iconRes = R.drawable.ic_edit,
-                        contentDescription = "Edit model",
-                        onClick = { toggleAction(ModelAction.EDIT) },
-                        modifier = Modifier.size(48.dp),
-                        shape = CircleShape,
-                        enabled = !isLoading,
-                    )
+                OutlinedButton(onClick = onBack) {
+                    Text(text = "Back")
                 }
             }
 
             Row(
-                horizontalArrangement = Arrangement.spacedBy(16.dp),
-            )
-            {
-                OutlinedIconButton(
-                    iconRes = R.drawable.ic_refresh,
-                    contentDescription = "Refresh models",
-                    onClick = {
-                        scope.launch {
-                            reloadModels()
-                        }
-                    },
-                    modifier = Modifier.size(48.dp),
-                    shape = CircleShape,
-                    enabled = !isLoading,
-                )
-
-                DropdownMenu(
-                    options = ModelType.entries.map(ModelType::name),
-                    selectedOption = selectedModelType?.name,
-                    onSelect = { selectedName ->
-                        selectedModelType = (
-                                ModelType.entries.firstOrNull { it.name == selectedName }
-                                )
-                    },
-                    buttonModifier = Modifier.size(48.dp),
-                    emptyOption = "All",
-                )
-            }
-        }
-
-        when {
-            isLoading -> {
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .weight(1f),
-                    contentAlignment = Alignment.Center
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Row(
+                    horizontalArrangement = Arrangement.spacedBy(16.dp),
                 ) {
-                    CircularProgressIndicator()
-                }
-            }
+                    PrimaryIconButton(
+                        iconRes = R.drawable.ic_add,
+                        contentDescription = "Add model",
+                        onClick = { importModelLauncher.launch(arrayOf("*/*")) },
+                        modifier = Modifier.size(48.dp),
+                        shape = CircleShape,
+                        enabled = !screenState.isLoading,
+                    )
 
-            filteredModels.isEmpty() -> {
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .weight(1f),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Text(text = "No models")
-                }
-            }
+                    if (screenState.modelAction == ModelAction.DELETE) {
+                        SecondaryIconButton(
+                            iconRes = R.drawable.ic_delete,
+                            contentDescription = "Delete model",
+                            onClick = { toggleAction(ModelAction.DELETE) },
+                            modifier = Modifier.size(48.dp),
+                            shape = CircleShape,
+                            enabled = !screenState.isLoading,
+                        )
+                    } else {
+                        OutlinedIconButton(
+                            iconRes = R.drawable.ic_delete,
+                            contentDescription = "Delete model",
+                            onClick = { toggleAction(ModelAction.DELETE) },
+                            modifier = Modifier.size(48.dp),
+                            shape = CircleShape,
+                            enabled = !screenState.isLoading,
+                        )
+                    }
 
-            else -> {
-                LazyColumn(
-                    modifier = Modifier.weight(1f),
-                    verticalArrangement = Arrangement.spacedBy(12.dp)
-                ) {
-                    items(
-                        items = filteredModels,
-                        key = { it.modelFile.name }
-                    ) { model ->
-                        ModelCard(
-                            model = model,
-                            isActive = activeModelFileNames[model.metadata.modelType.activeModelSlot()] == model.modelFile.name,
-                            onClick = onModelClick,
-                            onToggleActive = ::toggleActiveModel
+                    if (screenState.modelAction == ModelAction.EDIT) {
+                        SecondaryIconButton(
+                            iconRes = R.drawable.ic_edit,
+                            contentDescription = "Edit model",
+                            onClick = { toggleAction(ModelAction.EDIT) },
+                            modifier = Modifier.size(48.dp),
+                            shape = CircleShape,
+                            enabled = !screenState.isLoading,
+                        )
+                    } else {
+                        OutlinedIconButton(
+                            iconRes = R.drawable.ic_edit,
+                            contentDescription = "Edit model",
+                            onClick = { toggleAction(ModelAction.EDIT) },
+                            modifier = Modifier.size(48.dp),
+                            shape = CircleShape,
+                            enabled = !screenState.isLoading,
                         )
                     }
                 }
-            }
-        }
 
-        Spacer(modifier = Modifier.height(8.dp))
+                Row(
+                    horizontalArrangement = Arrangement.spacedBy(16.dp),
+                ) {
+                    OutlinedIconButton(
+                        iconRes = R.drawable.ic_refresh,
+                        contentDescription = "Refresh models",
+                        onClick = {
+                            scope.launch {
+                                reloadModels()
+                            }
+                        },
+                        modifier = Modifier.size(48.dp),
+                        shape = CircleShape,
+                        enabled = !screenState.isLoading,
+                    )
+
+                    DropdownMenu(
+                        options = ModelType.entries.map(ModelType::name),
+                        selectedOption = screenState.selectedModelType?.name,
+                        onSelect = { selectedName ->
+                            screenState = screenState.copy(
+                                selectedModelType = ModelType.entries.firstOrNull { it.name == selectedName }
+                            )
+                        },
+                        buttonModifier = Modifier.size(48.dp),
+                        emptyOption = "All",
+                    )
+                }
+            }
+
+            when {
+                screenState.isLoading -> {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .weight(1f),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        CircularProgressIndicator()
+                    }
+                }
+
+                filteredModels.isEmpty() -> {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .weight(1f),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(text = "No models")
+                    }
+                }
+
+                else -> {
+                    LazyColumn(
+                        modifier = Modifier.weight(1f),
+                        verticalArrangement = Arrangement.spacedBy(12.dp)
+                    ) {
+                        items(
+                            items = filteredModels,
+                            key = { it.modelFile.name }
+                        ) { model ->
+                            ModelCard(
+                                model = model,
+                                isActive = activeModelFileNames[model.metadata.modelType.activeModelSlot()] == model.modelFile.name,
+                                onClick = onModelClick,
+                                onToggleActive = ::toggleActiveModel
+                            )
+                        }
+                    }
+                }
+            }
+
+            Spacer(modifier = Modifier.height(8.dp))
         }
     }
 
-    if (pendingUri != null || editingModel != null) {
+    if (dialogState.isVisible) {
         ModelDialog(
-            modelName = draftModelName,
-            modelType = draftModelType,
-            onNameChange = { draftModelName = it },
-            onTypeChange = { draftModelType = it },
+            modelName = dialogState.draftModelName,
+            modelType = dialogState.draftModelType,
+            onNameChange = { value ->
+                dialogState = dialogState.copy(draftModelName = value)
+            },
+            onTypeChange = { value ->
+                dialogState = dialogState.copy(draftModelType = value)
+            },
             onDismiss = {
-                pendingUri = null
-                editingModel = null
-                draftModelName = ""
-                draftModelType = ModelType.LLM
+                dialogState = ModelDialogState()
             },
             onConfirm = {
-                val displayName = draftModelName.trim()
-                val modelType = draftModelType
-                val modelToEdit = editingModel
-                val uri = pendingUri
+                val displayName = dialogState.draftModelName.trim()
+                val modelType = dialogState.draftModelType
+                val modelToEdit = dialogState.editingModel
+                val uri = dialogState.pendingUri
 
                 if (modelToEdit != null) {
-                    editingModel = null
-                    pendingUri = null
-                    draftModelName = ""
-                    draftModelType = ModelType.LLM
+                    dialogState = ModelDialogState()
 
                     scope.launch {
-                        isLoading = true
+                        screenState = screenState.copy(isLoading = true)
                         try {
                             val updatedModel = modelService.updateModel(
                                 modelFileName = modelToEdit.modelFile.name,
@@ -382,16 +377,14 @@ fun ModelManagerScreen(
                             reloadModels()
                         } catch (error: Throwable) {
                             showMessage(error.message ?: "Failed to update model metadata")
-                            isLoading = false
+                            screenState = screenState.copy(isLoading = false)
                         }
                     }
                 } else if (uri != null) {
-                    pendingUri = null
-                    draftModelName = ""
-                    draftModelType = ModelType.LLM
+                    dialogState = ModelDialogState()
 
                     scope.launch {
-                        isLoading = true
+                        screenState = screenState.copy(isLoading = true)
                         try {
                             modelService.createModelFromUri(
                                 context = context,
@@ -402,7 +395,7 @@ fun ModelManagerScreen(
                             reloadModels()
                         } catch (error: Throwable) {
                             showMessage(error.message ?: "Failed to import model")
-                            isLoading = false
+                            screenState = screenState.copy(isLoading = false)
                         }
                     }
                 }
@@ -414,6 +407,23 @@ fun ModelManagerScreen(
 enum class ModelAction {
     DELETE,
     EDIT,
+}
+
+data class ModelManagerScreenState(
+    val models: List<StoredModel> = emptyList(),
+    val isLoading: Boolean = true,
+    val modelAction: ModelAction? = null,
+    val selectedModelType: ModelType? = null,
+)
+
+data class ModelDialogState(
+    val pendingUri: Uri? = null,
+    val editingModel: StoredModel? = null,
+    val draftModelName: String = "",
+    val draftModelType: ModelType = ModelType.LLM,
+) {
+    val isVisible: Boolean
+        get() = pendingUri != null || editingModel != null
 }
 
 private fun resolveFileName(
