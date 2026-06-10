@@ -9,6 +9,7 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
@@ -36,9 +37,11 @@ fun ModelCard(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(16.dp),
-            horizontalArrangement = Arrangement.SpaceBetween,
+            horizontalArrangement = Arrangement.spacedBy(12.dp),
+            verticalAlignment = Alignment.CenterVertically,
         ) {
             Column(
+                modifier = Modifier.weight(1f),
                 verticalArrangement = Arrangement.SpaceBetween
             ) {
                 Text(
@@ -113,6 +116,27 @@ private fun ModelCardInactivePreview() {
                 )
             ),
             isActive = false,
+            onClick = null,
+            onToggleActive = {}
+        )
+    }
+}
+
+@Preview
+@Composable
+private fun ModelCardLongNamePreview() {
+    TonemoTheme {
+        ModelCard(
+            model = StoredModel(
+                modelFile = java.io.File("1.litertlm"),
+                metadata = ModelMetadata(
+                    modelType = ModelType.LLM,
+                    modelFileName = "1.litertlm",
+                    displayName = "Really really big giant and very giant Llama",
+                    uploadedAt = 0L
+                )
+            ),
+            isActive = true,
             onClick = null,
             onToggleActive = {}
         )

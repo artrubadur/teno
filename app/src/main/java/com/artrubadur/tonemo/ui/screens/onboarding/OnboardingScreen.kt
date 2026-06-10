@@ -31,6 +31,7 @@ import com.artrubadur.tonemo.ui.theme.TonemoTheme
 
 @Composable
 fun OnboardingScreen(
+    onOpenChat: () -> Unit = {},
     onOpenModelManager: () -> Unit = {}
 ) {
     val context = LocalContext.current
@@ -65,8 +66,15 @@ fun OnboardingScreen(
                 text = "Home",
                 style = MaterialTheme.typography.headlineMedium
             )
-            OutlinedButton(onClick = onOpenModelManager) {
-                Text(text = "Manager")
+            Row(
+                horizontalArrangement = Arrangement.spacedBy(16.dp)
+            ) {
+                OutlinedButton(onClick = onOpenChat) {
+                    Text(text = "Chat")
+                }
+                OutlinedButton(onClick = onOpenModelManager) {
+                    Text(text = "Manager")
+                }
             }
         }
 

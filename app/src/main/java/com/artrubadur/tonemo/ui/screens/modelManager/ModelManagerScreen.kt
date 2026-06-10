@@ -17,7 +17,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
@@ -216,7 +215,6 @@ fun ModelManagerScreen(
                         contentDescription = "Add model",
                         onClick = { importModelLauncher.launch(arrayOf("*/*")) },
                         modifier = Modifier.size(48.dp),
-                        shape = CircleShape,
                         enabled = !screenState.isLoading,
                     )
 
@@ -226,7 +224,6 @@ fun ModelManagerScreen(
                             contentDescription = "Delete model",
                             onClick = { toggleAction(ModelAction.DELETE) },
                             modifier = Modifier.size(48.dp),
-                            shape = CircleShape,
                             enabled = !screenState.isLoading,
                         )
                     } else {
@@ -235,7 +232,6 @@ fun ModelManagerScreen(
                             contentDescription = "Delete model",
                             onClick = { toggleAction(ModelAction.DELETE) },
                             modifier = Modifier.size(48.dp),
-                            shape = CircleShape,
                             enabled = !screenState.isLoading,
                         )
                     }
@@ -246,7 +242,6 @@ fun ModelManagerScreen(
                             contentDescription = "Edit model",
                             onClick = { toggleAction(ModelAction.EDIT) },
                             modifier = Modifier.size(48.dp),
-                            shape = CircleShape,
                             enabled = !screenState.isLoading,
                         )
                     } else {
@@ -255,7 +250,6 @@ fun ModelManagerScreen(
                             contentDescription = "Edit model",
                             onClick = { toggleAction(ModelAction.EDIT) },
                             modifier = Modifier.size(48.dp),
-                            shape = CircleShape,
                             enabled = !screenState.isLoading,
                         )
                     }
@@ -273,7 +267,6 @@ fun ModelManagerScreen(
                             }
                         },
                         modifier = Modifier.size(48.dp),
-                        shape = CircleShape,
                         enabled = !screenState.isLoading,
                     )
 

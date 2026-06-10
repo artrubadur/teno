@@ -12,6 +12,7 @@ import androidx.compose.ui.Modifier
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import com.artrubadur.tonemo.ui.screens.chat.ChatScreen
 import com.artrubadur.tonemo.ui.screens.modelManager.ModelManagerScreen
 import com.artrubadur.tonemo.ui.screens.onboarding.OnboardingScreen
 
@@ -49,8 +50,14 @@ fun App() {
                 ) + fadeOut(animationSpec = tween(300))
             }
         ) {
+            composable(Route.Chat) {
+                ChatScreen(
+                    onBack = { navController.popBackStack() }
+                )
+            }
             composable(Route.Onboarding) {
                 OnboardingScreen(
+                    onOpenChat = { navController.navigate(Route.Chat) },
                     onOpenModelManager = { navController.navigate(Route.ModelManager) }
                 )
             }
@@ -66,4 +73,5 @@ fun App() {
 private object Route {
     const val Onboarding = "onboarding"
     const val ModelManager = "model_import"
+    const val Chat = "chat"
 }
