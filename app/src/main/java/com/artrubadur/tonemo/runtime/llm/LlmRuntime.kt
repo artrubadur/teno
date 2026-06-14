@@ -19,8 +19,6 @@ interface LlmRuntime : AutoCloseable {
         options: LlmGenerationOptions = LlmGenerationOptions()
     ): Flow<String>
 
-    suspend fun resetConversation()
-
     fun stopGeneration()
 }
 

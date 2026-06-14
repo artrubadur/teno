@@ -3,6 +3,8 @@ package com.artrubadur.tonemo.ui.components.buttons
 import androidx.annotation.DrawableRes
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.layout.size
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButtonColors
 import androidx.compose.material3.IconButtonDefaults
@@ -27,7 +29,7 @@ fun PrimaryIconButton(
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
     enabled: Boolean = true,
-    iconModifier: Modifier = Modifier,
+    iconModifier: Modifier = Modifier.size(ButtonDefaults.IconSize),
     shape: Shape = IconButtonDefaults.standardShape,
     interactionSource: MutableInteractionSource? = remember { MutableInteractionSource() },
 ) {
@@ -51,7 +53,7 @@ fun SecondaryIconButton(
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
     enabled: Boolean = true,
-    iconModifier: Modifier = Modifier,
+    iconModifier: Modifier = Modifier.size(ButtonDefaults.IconSize),
     shape: Shape = IconButtonDefaults.standardShape,
     interactionSource: MutableInteractionSource? = remember { MutableInteractionSource() },
 ) {
@@ -78,7 +80,7 @@ fun OutlinedIconButton(
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
     enabled: Boolean = true,
-    iconModifier: Modifier = Modifier,
+    iconModifier: Modifier = Modifier.size(ButtonDefaults.IconSize),
     shape: Shape = IconButtonDefaults.standardShape,
     interactionSource: MutableInteractionSource? = remember { MutableInteractionSource() },
 ) {
@@ -117,7 +119,7 @@ fun PlainIconButton(
     modifier: Modifier = Modifier,
     enabled: Boolean = true,
     tint: Color = MaterialTheme.colorScheme.primary,
-    iconModifier: Modifier = Modifier,
+    iconModifier: Modifier = Modifier.size(ButtonDefaults.IconSize),
     shape: Shape = IconButtonDefaults.standardShape,
     interactionSource: MutableInteractionSource? = remember { MutableInteractionSource() },
 ) {
@@ -148,7 +150,7 @@ fun ErrorIconButton(
     enabled: Boolean = true,
     tint: Color = MaterialTheme.colorScheme.error,
     containerColor: Color = MaterialTheme.colorScheme.errorContainer.copy(alpha = 0.7f),
-    iconModifier: Modifier = Modifier,
+    iconModifier: Modifier = Modifier.size(ButtonDefaults.IconSize),
     shape: Shape = IconButtonDefaults.standardShape,
     interactionSource: MutableInteractionSource? = remember { MutableInteractionSource() },
 ) {

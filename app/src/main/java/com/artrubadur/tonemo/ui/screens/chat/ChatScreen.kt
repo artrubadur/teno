@@ -193,7 +193,12 @@ fun ChatScreen(
                             items = dialogState.messages,
                             key = { it.id }
                         ) { message ->
-                            MessageCard(message = message)
+                            MessageCard(
+                                message = message,
+                                onApproveConfirmation = chatController::approveConfirmation,
+                                onRejectConfirmation = chatController::rejectConfirmation,
+                                confirmationActionsEnabled = !dialogState.isGenerating
+                            )
                         }
                     }
                 }
@@ -270,5 +275,4 @@ fun ChatScreen(
         }
     }
 }
-
 

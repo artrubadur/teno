@@ -1,10 +1,10 @@
 package com.artrubadur.tonemo.runtime.llm
 
 import android.content.Context
+import android.util.Log
 import com.artrubadur.tonemo.data.model.ModelService
 import com.google.ai.edge.litertlm.Content
 import com.google.ai.edge.litertlm.Contents
-import com.google.ai.edge.litertlm.Conversation
 import com.google.ai.edge.litertlm.ConversationConfig
 import com.google.ai.edge.litertlm.Engine
 import com.google.ai.edge.litertlm.EngineConfig
@@ -20,10 +20,12 @@ import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.channelFlow
 import kotlinx.coroutines.flow.flowOn
+import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
 import java.util.concurrent.atomic.AtomicBoolean
+import java.util.concurrent.atomic.AtomicReference
 
 class LiteRtLlmRuntime(
     private val appContext: Context,
@@ -36,11 +38,9 @@ class LiteRtLlmRuntime(
     private val lock = Mutex()
 
     private var engine: Engine? = null
-    private var conversation: Conversation? = null
     private var loadedModelPath: String? = null
-    private var lastOptions: LlmGenerationOptions? = null
 
-    private var activeGenerationJob: Job? = null
+    private val activeGenerationJob = AtomicReference<Job?>(null)
     private val loaded = AtomicBoolean(false)
 
     override val isLoaded: Boolean
@@ -55,7 +55,8 @@ class LiteRtLlmRuntime(
                     throw LlmRuntimeException.ModelFileNotFound(modelPath)
                 }
 
-                close()
+                activeGenerationJob.getAndSet(null)?.cancel()
+                closeLocked()
 
                 try {
                     Engine.setNativeMinLogSeverity(logSeverity)
@@ -74,11 +75,9 @@ class LiteRtLlmRuntime(
                     engine = newEngine
                     loadedModelPath = resolvedModelPath
                     loaded.set(true)
-
-                    createConversation(LlmGenerationOptions())
                 } catch (t: Throwable) {
                     loaded.set(false)
-                    close()
+                    closeLocked()
                     throw LlmRuntimeException.LoadFailed(modelPath, t)
                 }
             }
@@ -103,34 +102,29 @@ class LiteRtLlmRuntime(
         options: LlmGenerationOptions
     ): Flow<String> = channelFlow {
         val generationJob = currentCoroutineContext()[Job]
-        activeGenerationJob = generationJob
+        activeGenerationJob.set(generationJob)
 
         try {
             withContext(dispatcher) {
                 lock.withLock {
                     val currentEngine = engine ?: throw LlmRuntimeException.ModelNotLoaded()
+                    val currentConversation = currentEngine.createConversation(
+                        options.toConversationConfig()
+                    )
 
-                    if (conversation == null || lastOptions != options) {
-                        conversation?.close()
-                        conversation = null
-                        createConversation(options)
-                    }
+                    currentConversation.use { currentConversation ->
+                        currentConversation
+                            .sendMessageAsync(prompt)
+                            .collect { message ->
+                                currentCoroutineContext().ensureActive()
 
-                    val currentConversation =
-                        conversation ?: currentEngine.createConversation(
-                            options.toConversationConfig()
-                        ).also { conversation = it }
-
-                    currentConversation
-                        .sendMessageAsync(prompt)
-                        .collect { message ->
-                            currentCoroutineContext().ensureActive()
-
-                            val textChunk = message.toTextChunk()
-                            if (textChunk.isNotBlank()) {
-                                send(textChunk)
+                                val textChunk = message.toTextChunk()
+                                if (textChunk.isNotBlank()) {
+                                    send(textChunk)
+                                    Log.d("LlmRuntime", textChunk)
+                                }
                             }
-                        }
+                    }
                 }
             }
         } catch (t: Throwable) {
@@ -139,52 +133,32 @@ class LiteRtLlmRuntime(
             }
             throw LlmRuntimeException.GenerationFailed(t)
         } finally {
-            if (activeGenerationJob == generationJob) {
-                activeGenerationJob = null
-            }
+            activeGenerationJob.compareAndSet(generationJob, null)
         }
     }.flowOn(dispatcher)
 
-    override suspend fun resetConversation() {
-        withContext(dispatcher) {
-            lock.withLock {
-                conversation?.close()
-                conversation = null
-                lastOptions = null
+    override fun stopGeneration() {
+        activeGenerationJob.getAndSet(null)?.cancel()
+    }
 
-                if (engine != null) {
-                    createConversation(LlmGenerationOptions())
+    override fun close() {
+        activeGenerationJob.getAndSet(null)?.cancel()
+
+        runBlocking {
+            withContext(dispatcher) {
+                lock.withLock {
+                    closeLocked()
                 }
             }
         }
     }
 
-    override fun stopGeneration() {
-        activeGenerationJob?.cancel()
-        activeGenerationJob = null
-    }
-
-    override fun close() {
-        activeGenerationJob?.cancel()
-        activeGenerationJob = null
-
-        conversation?.close()
-        conversation = null
-
+    private fun closeLocked() {
         engine?.close()
         engine = null
 
         loadedModelPath = null
-        lastOptions = null
         loaded.set(false)
-    }
-
-    private fun createConversation(options: LlmGenerationOptions) {
-        val currentEngine = engine ?: throw LlmRuntimeException.ModelNotLoaded()
-
-        conversation?.close()
-        conversation = currentEngine.createConversation(options.toConversationConfig())
-        lastOptions = options
     }
 
     private fun LlmGenerationOptions.toConversationConfig(): ConversationConfig {
