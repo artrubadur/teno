@@ -43,9 +43,9 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.artrubadur.tonemo.R
-import com.artrubadur.tonemo.data.model.ActiveModelSlot
 import com.artrubadur.tonemo.data.model.ActiveModelStore
 import com.artrubadur.tonemo.data.model.ModelService
+import com.artrubadur.tonemo.data.model.ModelType
 import com.artrubadur.tonemo.ui.components.buttons.ErrorIconButton
 import com.artrubadur.tonemo.ui.components.buttons.OutlinedButton
 import com.artrubadur.tonemo.ui.components.buttons.OutlinedIconButton
@@ -66,7 +66,7 @@ fun ChatScreen(
     var input by rememberSaveable { mutableStateOf("") }
 
     val activeModelFileNames by activeModelStore.activeModelFileNames.collectAsState(initial = emptyMap())
-    val activeModelFileName = activeModelFileNames[ActiveModelSlot.GENERATION]
+    val activeModelFileName = activeModelFileNames[ModelType.LLM]
     val activeModelDisplayName by produceState(
         initialValue = activeModelFileName,
         key1 = activeModelFileName

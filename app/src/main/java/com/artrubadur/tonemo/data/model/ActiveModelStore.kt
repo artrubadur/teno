@@ -21,7 +21,7 @@ class ActiveModelStore(
 ) {
     private val dataStore = context.activeModelDataStore
 
-    val activeModelFileNames: Flow<Map<ActiveModelSlot, String>> = dataStore.data
+    val activeModelFileNames: Flow<Map<ModelType, String>> = dataStore.data
         .catch { error ->
             if (error is IOException) {
                 emit(emptyPreferences())
@@ -30,9 +30,9 @@ class ActiveModelStore(
             }
         }
         .map { preferences ->
-            ActiveModelSlot.entries.mapNotNull { slot ->
-                preferences[activeModelKey(slot)]?.let { fileName ->
-                    slot to fileName
+            ModelType.entries.mapNotNull { modelType ->
+                preferences[activeModelKey(modelType)]?.let { fileName ->
+                    modelType to fileName
                 }
             }.toMap()
         }
@@ -42,20 +42,20 @@ class ActiveModelStore(
         modelFileName: String
     ) {
         dataStore.edit { preferences ->
-            preferences[activeModelKey(modelType.activeModelSlot())] = modelFileName
+            preferences[activeModelKey(modelType)] = modelFileName
         }
     }
 
     suspend fun clearActiveModel(modelType: ModelType) {
         dataStore.edit { preferences ->
-            preferences.remove(activeModelKey(modelType.activeModelSlot()))
+            preferences.remove(activeModelKey(modelType))
         }
     }
 
     suspend fun clearActiveModelReferences(modelFileName: String) {
         dataStore.edit { preferences ->
-            ActiveModelSlot.entries.forEach { slot ->
-                val key = activeModelKey(slot)
+            ModelType.entries.forEach { modelType ->
+                val key = activeModelKey(modelType)
                 if (preferences[key] == modelFileName) {
                     preferences.remove(key)
                 }
@@ -68,24 +68,21 @@ class ActiveModelStore(
         previousType: ModelType,
         updatedType: ModelType
     ) {
-        val previousSlot = previousType.activeModelSlot()
-        val updatedSlot = updatedType.activeModelSlot()
-
-        if (previousSlot == updatedSlot) {
+        if (previousType == updatedType) {
             return
         }
 
         dataStore.edit { preferences ->
-            val previousKey = activeModelKey(previousSlot)
-            val updatedKey = activeModelKey(updatedSlot)
+            val previousKey = activeModelKey(previousType)
+            val updatedKey = activeModelKey(updatedType)
             val wasActiveForPreviousType = preferences[previousKey] == modelFileName
 
-            ActiveModelSlot.entries.forEach { slot ->
-                if (slot == updatedSlot) {
+            ModelType.entries.forEach { modelType ->
+                if (modelType == updatedType) {
                     return@forEach
                 }
 
-                val key = activeModelKey(slot)
+                val key = activeModelKey(modelType)
                 if (preferences[key] == modelFileName) {
                     preferences.remove(key)
                 }
@@ -97,7 +94,7 @@ class ActiveModelStore(
         }
     }
 
-    private fun activeModelKey(slot: ActiveModelSlot): Preferences.Key<String> {
-        return stringPreferencesKey("active_model_${slot.name.lowercase()}")
+    private fun activeModelKey(modelType: ModelType): Preferences.Key<String> {
+        return stringPreferencesKey("active_model_${modelType.name.lowercase()}")
     }
 }

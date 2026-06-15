@@ -40,7 +40,6 @@ import com.artrubadur.tonemo.data.model.ActiveModelStore
 import com.artrubadur.tonemo.data.model.ModelService
 import com.artrubadur.tonemo.data.model.ModelType
 import com.artrubadur.tonemo.data.model.StoredModel
-import com.artrubadur.tonemo.data.model.activeModelSlot
 import com.artrubadur.tonemo.ui.components.DropdownMenu
 import com.artrubadur.tonemo.ui.components.buttons.OutlinedButton
 import com.artrubadur.tonemo.ui.components.buttons.OutlinedIconButton
@@ -68,11 +67,11 @@ fun ModelManagerScreen(
             screenState.selectedModelType == null || model.metadata.modelType == screenState.selectedModelType
         }
         .sortedByDescending { model ->
-            activeModelFileNames[model.metadata.modelType.activeModelSlot()] == model.modelFile.name
+            activeModelFileNames[model.metadata.modelType] == model.modelFile.name
         }
 
     fun isModelActive(model: StoredModel): Boolean {
-        val activeFileName = activeModelFileNames[model.metadata.modelType.activeModelSlot()]
+        val activeFileName = activeModelFileNames[model.metadata.modelType]
         return activeFileName == model.modelFile.name
     }
 
@@ -318,7 +317,7 @@ fun ModelManagerScreen(
                         ) { model ->
                             ModelCard(
                                 model = model,
-                                isActive = activeModelFileNames[model.metadata.modelType.activeModelSlot()] == model.modelFile.name,
+                                isActive = activeModelFileNames[model.metadata.modelType] == model.modelFile.name,
                                 onClick = onModelClick,
                                 onToggleActive = ::toggleActiveModel
                             )
