@@ -25,7 +25,7 @@ fun MessageCard(
     message: ChatMessage,
     onApproveConfirmation: (String) -> Unit = {},
     onRejectConfirmation: (String) -> Unit = {},
-    confirmationActionsEnabled: Boolean = true
+    isGenerating: Boolean = false
 ) {
     Box(
         modifier = Modifier.fillMaxWidth(),
@@ -67,14 +67,14 @@ fun MessageCard(
                                 iconRes = R.drawable.ic_confirm,
                                 text = "Approve",
                                 onClick = { onApproveConfirmation(confirmation.id) },
-                                enabled = confirmationActionsEnabled,
+                                enabled = !isGenerating,
                                 modifier = Modifier.weight(1f)
                             )
                             OutlinedLeadingIconButton(
                                 iconRes = R.drawable.ic_close,
                                 text = "Reject",
                                 onClick = { onRejectConfirmation(confirmation.id) },
-                                enabled = confirmationActionsEnabled,
+                                enabled = !isGenerating,
                                 modifier = Modifier.weight(1f)
                             )
                         }

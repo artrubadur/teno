@@ -1,9 +1,5 @@
 package com.artrubadur.tonemo.ui.screens.onboarding
 
-import android.content.Intent
-import android.provider.Settings
-import androidx.activity.compose.rememberLauncherForActivityResult
-import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -11,7 +7,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -21,10 +16,8 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.core.net.toUri
 import com.artrubadur.tonemo.ui.components.buttons.OutlinedButton
 import com.artrubadur.tonemo.ui.overlays.bubble.OverlayService
 import com.artrubadur.tonemo.ui.theme.TonemoTheme
@@ -32,20 +25,20 @@ import com.artrubadur.tonemo.ui.theme.TonemoTheme
 @Composable
 fun OnboardingScreen(
     onOpenChat: () -> Unit = {},
-    onOpenModelManager: () -> Unit = {}
+    onOpenConnections: () -> Unit = {}
 ) {
-    val context = LocalContext.current
+//    val context = LocalContext.current
     var overlayEnabled by remember { mutableStateOf(OverlayService.isRunning) }
 
-    val overlayPermissionLauncher = rememberLauncherForActivityResult(
-        contract = ActivityResultContracts.StartActivityForResult()
-    ) {
-        val granted = Settings.canDrawOverlays(context)
-        overlayEnabled = granted
-        if (granted) {
-            OverlayService.start(context)
-        }
-    }
+//    val overlayPermissionLauncher = rememberLauncherForActivityResult(
+//        contract = ActivityResultContracts.StartActivityForResult()
+//    ) {
+//        val granted = Settings.canDrawOverlays(context)
+//        overlayEnabled = granted
+//        if (granted) {
+//            OverlayService.start(context)
+//        }
+//    }
 
     LaunchedEffect(Unit) {
         overlayEnabled = OverlayService.isRunning
@@ -72,40 +65,40 @@ fun OnboardingScreen(
                 OutlinedButton(onClick = onOpenChat) {
                     Text(text = "Chat")
                 }
-                OutlinedButton(onClick = onOpenModelManager) {
-                    Text(text = "Manager")
+                OutlinedButton(onClick = onOpenConnections) {
+                    Text(text = "Connections")
                 }
             }
         }
 
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.SpaceBetween
-        ) {
-            Text(text = "Enable overlay")
-            Switch(
-                checked = overlayEnabled,
-                onCheckedChange = { enabled ->
-                    if (enabled) {
-                        if (Settings.canDrawOverlays(context)) {
-                            overlayEnabled = true
-                            OverlayService.start(context)
-                        } else {
-                            overlayEnabled = false
-                            val intent = Intent(
-                                Settings.ACTION_MANAGE_OVERLAY_PERMISSION,
-                                "package:${context.packageName}".toUri()
-                            )
-                            overlayPermissionLauncher.launch(intent)
-                        }
-                    } else {
-                        overlayEnabled = false
-                        OverlayService.stop(context)
-                    }
-                }
-            )
-        }
+//        Row(
+//            modifier = Modifier.fillMaxWidth(),
+//            verticalAlignment = Alignment.CenterVertically,
+//            horizontalArrangement = Arrangement.SpaceBetween
+//        ) {
+//            Text(text = "Enable overlay")
+//            Switch(
+//                checked = overlayEnabled,
+//                onCheckedChange = { enabled ->
+//                    if (enabled) {
+//                        if (Settings.canDrawOverlays(context)) {
+//                            overlayEnabled = true
+//                            OverlayService.start(context)
+//                        } else {
+//                            overlayEnabled = false
+//                            val intent = Intent(
+//                                Settings.ACTION_MANAGE_OVERLAY_PERMISSION,
+//                                "package:${context.packageName}".toUri()
+//                            )
+//                            overlayPermissionLauncher.launch(intent)
+//                        }
+//                    } else {
+//                        overlayEnabled = false
+//                        OverlayService.stop(context)
+//                    }
+//                }
+//            )
+//        }
     }
 }
 

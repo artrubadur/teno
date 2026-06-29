@@ -38,10 +38,10 @@ sealed class LlmRuntimeException(
         LlmRuntimeException("LLM model is not loaded")
 
     class ModelFileNotFound(path: String) :
-        LlmRuntimeException("LLM model file not found: $path")
+        LlmRuntimeException("LLM model file not found `$path`")
 
     class LoadFailed(path: String, cause: Throwable) :
-        LlmRuntimeException("Failed to load LLM model: $path", cause)
+        LlmRuntimeException("Failed to load LLM model `$path`", cause)
 
     class GenerationFailed(cause: Throwable) :
         LlmRuntimeException("LLM generation failed", cause)

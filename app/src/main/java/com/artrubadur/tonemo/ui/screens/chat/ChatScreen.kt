@@ -31,11 +31,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.input.ImeAction
@@ -43,50 +39,30 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.artrubadur.tonemo.R
-import com.artrubadur.tonemo.data.model.ActiveModelStore
-import com.artrubadur.tonemo.data.model.ModelService
-import com.artrubadur.tonemo.data.model.ModelType
 import com.artrubadur.tonemo.ui.components.buttons.ErrorIconButton
 import com.artrubadur.tonemo.ui.components.buttons.OutlinedButton
 import com.artrubadur.tonemo.ui.components.buttons.OutlinedIconButton
 import com.artrubadur.tonemo.ui.components.buttons.PrimaryIconButton
-import org.koin.compose.koinInject
+import org.koin.compose.viewmodel.koinActivityViewModel
 
 @Composable
 fun ChatScreen(
-    onBack: () -> Unit = {}
+    onBack: () -> Unit = {},
+    viewModel: ChatViewModel = koinActivityViewModel()
 ) {
-    val activeModelStore = koinInject<ActiveModelStore>()
-    val chatController = koinInject<DialogController>()
-    val modelService = koinInject<ModelService>()
-
+    val state by viewModel.state.collectAsState()
     val snackbarHostState = remember { SnackbarHostState() }
     val listState = rememberLazyListState()
-    val dialogState by chatController.state.collectAsState()
-    var input by rememberSaveable { mutableStateOf("") }
 
-    val activeModelFileNames by activeModelStore.activeModelFileNames.collectAsState(initial = emptyMap())
-    val activeModelFileName = activeModelFileNames[ModelType.LLM]
-    val activeModelDisplayName by produceState(
-        initialValue = activeModelFileName,
-        key1 = activeModelFileName
-    ) {
-        value = activeModelFileName?.let { fileName ->
-            runCatching {
-                modelService.getModel(fileName).metadata.displayName
-            }.getOrDefault(fileName)
-        }
-    }
-
-    LaunchedEffect(chatController) {
-        chatController.events.collect { message ->
+    LaunchedEffect(viewModel) {
+        viewModel.events.collect { message ->
             snackbarHostState.showSnackbar(message)
         }
     }
 
-    LaunchedEffect(dialogState.messages.size) {
-        if (dialogState.messages.isNotEmpty()) {
-            listState.animateScrollToItem(dialogState.messages.lastIndex)
+    LaunchedEffect(state.messages.size) {
+        if (state.messages.isNotEmpty()) {
+            listState.animateScrollToItem(state.messages.lastIndex)
         }
     }
 
@@ -94,9 +70,6 @@ fun ChatScreen(
         snackbarHost = { SnackbarHost(snackbarHostState) },
         contentWindowInsets = WindowInsets(0)
     ) { innerPadding ->
-        val isModelReady = dialogState.loadedModelFileName != null &&
-                dialogState.loadedModelFileName == activeModelFileName
-
         Column(
             modifier = Modifier
                 .fillMaxSize()
@@ -123,11 +96,11 @@ fun ChatScreen(
                 horizontalArrangement = Arrangement.spacedBy(16.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                if (dialogState.loadedModelFileName == null && !dialogState.isGenerating) {
+                if (!state.isLaunched) {
                     PrimaryIconButton(
                         iconRes = R.drawable.ic_launch,
-                        onClick = { chatController.launchModel(activeModelFileName) },
-                        enabled = activeModelFileName != null && !dialogState.isLoadingModel,
+                        onClick = { viewModel.launchActiveModel() },
+                        enabled = state.isActivated && !state.isLoading,
                         contentDescription = "Launch agent",
                         modifier = Modifier.size(48.dp),
                     )
@@ -135,7 +108,7 @@ fun ChatScreen(
                     ErrorIconButton(
                         iconRes = R.drawable.ic_stop,
                         contentDescription = "Terminate agent",
-                        onClick = chatController::terminateModel,
+                        onClick = viewModel::terminateModel,
                         modifier = Modifier.size(48.dp),
                     )
                 }
@@ -143,9 +116,9 @@ fun ChatScreen(
                 ErrorIconButton(
                     iconRes = R.drawable.ic_delete,
                     contentDescription = "Reset chat",
-                    onClick = chatController::resetConversation,
+                    onClick = viewModel::resetConversation,
                     modifier = Modifier.size(48.dp),
-                    enabled = dialogState.messages.isNotEmpty() && !dialogState.isGenerating
+                    enabled = !state.isDialogEmpty && !state.isGenerating
                 )
 
                 Card(
@@ -162,7 +135,7 @@ fun ChatScreen(
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Text(
-                            text = activeModelDisplayName
+                            text = state.activeConnection?.name
                                 ?: "No active generation model",
                             style = MaterialTheme.typography.bodyMedium,
                             color = MaterialTheme.colorScheme.onSurface,
@@ -171,7 +144,7 @@ fun ChatScreen(
                             overflow = TextOverflow.Ellipsis
                         )
 
-                        if (dialogState.isLoadingModel) {
+                        if (state.isLoading) {
                             CircularProgressIndicator(modifier = Modifier.size(24.dp))
                         }
                     }
@@ -183,27 +156,27 @@ fun ChatScreen(
                     .fillMaxWidth()
                     .weight(1f)
             ) {
-                if (dialogState.messages.isNotEmpty()) {
+                if (!state.isDialogEmpty) {
                     LazyColumn(
                         state = listState,
                         modifier = Modifier.fillMaxSize(),
                         verticalArrangement = Arrangement.spacedBy(12.dp)
                     ) {
                         items(
-                            items = dialogState.messages,
+                            items = state.messages,
                             key = { it.id }
                         ) { message ->
                             MessageCard(
                                 message = message,
-                                onApproveConfirmation = chatController::approveConfirmation,
-                                onRejectConfirmation = chatController::rejectConfirmation,
-                                confirmationActionsEnabled = !dialogState.isGenerating
+                                onApproveConfirmation = viewModel::approveConfirmation,
+                                onRejectConfirmation = viewModel::rejectConfirmation,
+                                isGenerating = state.isGenerating
                             )
                         }
                     }
                 }
 
-                if (dialogState.messages.isEmpty() || !isModelReady) {
+                if (state.isDialogEmpty || !state.isLaunched) {
                     Box(
                         modifier = Modifier
                             .fillMaxSize()
@@ -211,12 +184,12 @@ fun ChatScreen(
                         contentAlignment = Alignment.Center,
                     ) {
                         Text(
-                            text = if (activeModelDisplayName == null) {
+                            text = if (!state.isActivated) {
                                 "Select a generation model."
-                            } else if (isModelReady) {
-                                "Start the conversation."
-                            } else {
+                            } else if (!state.isLaunched) {
                                 "Activate a model before sending messages."
+                            } else {
+                                "Start the conversation."
                             },
                             modifier = Modifier.padding(horizontal = 20.dp, vertical = 16.dp),
                             textAlign = TextAlign.Center,
@@ -232,43 +205,38 @@ fun ChatScreen(
                 verticalAlignment = Alignment.Bottom
             ) {
                 OutlinedTextField(
-                    value = input,
-                    onValueChange = { input = it },
+                    value = state.input,
+                    onValueChange = viewModel::onInputChanged,
                     modifier = Modifier
                         .weight(1f)
                         .heightIn(min = 48.dp),
-                    enabled = isModelReady && !dialogState.isLoadingModel,
+                    enabled = state.isLaunched,
                     placeholder = {
                         Text(text = "Type a message", style = MaterialTheme.typography.bodyLarge)
                     },
                     textStyle = MaterialTheme.typography.bodyLarge,
                     keyboardOptions = KeyboardOptions(imeAction = ImeAction.Send),
                     keyboardActions = KeyboardActions(
-                        onSend = {
-                            if (!dialogState.isGenerating) {
-                                chatController.sendMessage(input)
-                                input = ""
-                            }
-                        }
+                        onSend = { viewModel.sendMessage() }
                     ),
                     maxLines = 4,
                     shape = RoundedCornerShape(24.dp)
                 )
 
-                if (dialogState.isGenerating) {
+                if (state.isGenerating) {
                     OutlinedIconButton(
                         iconRes = R.drawable.ic_stop,
                         contentDescription = "Stop generation",
-                        onClick = chatController::stopGeneration,
+                        onClick = viewModel::stopGeneration,
                         modifier = Modifier.size(48.dp)
                     )
                 } else {
                     OutlinedIconButton(
                         iconRes = R.drawable.ic_send,
                         contentDescription = "Send message",
-                        onClick = { chatController.sendMessage(input); input = "" },
+                        onClick = viewModel::sendMessage,
                         modifier = Modifier.size(48.dp),
-                        enabled = isModelReady && input.isNotBlank(),
+                        enabled = state.isLaunched && state.input.isNotBlank(),
                     )
                 }
             }

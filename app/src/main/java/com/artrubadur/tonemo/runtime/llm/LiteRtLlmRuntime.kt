@@ -2,7 +2,7 @@ package com.artrubadur.tonemo.runtime.llm
 
 import android.content.Context
 import android.util.Log
-import com.artrubadur.tonemo.data.model.ModelService
+import com.artrubadur.tonemo.data.model.ModelStore
 import com.google.ai.edge.litertlm.Content
 import com.google.ai.edge.litertlm.Contents
 import com.google.ai.edge.litertlm.ConversationConfig
@@ -29,7 +29,7 @@ import java.util.concurrent.atomic.AtomicReference
 
 class LiteRtLlmRuntime(
     private val appContext: Context,
-    private val modelService: ModelService,
+    private val modelService: ModelStore,
     private val dispatcher: CoroutineDispatcher = Dispatchers.IO,
     private val defaultBackend: LiteRtBackend = LiteRtBackend.Cpu,
     private val logSeverity: LogSeverity = LogSeverity.ERROR
@@ -50,7 +50,7 @@ class LiteRtLlmRuntime(
         withContext(dispatcher) {
             lock.withLock {
                 val resolvedModelPath = try {
-                    modelService.getModel(modelPath).modelFile.absolutePath
+                    modelService.getModel(modelPath).absolutePath
                 } catch (_: Throwable) {
                     throw LlmRuntimeException.ModelFileNotFound(modelPath)
                 }

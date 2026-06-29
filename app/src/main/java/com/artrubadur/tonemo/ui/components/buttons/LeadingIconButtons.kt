@@ -83,6 +83,39 @@ fun OutlinedLeadingIconButton(
 }
 
 @Composable
+fun PlainLeadingIconButton(
+    @DrawableRes iconRes: Int,
+    text: String,
+    contentDescription: String? = text,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+    enabled: Boolean = true,
+    iconModifier: Modifier = Modifier.size(ButtonDefaults.IconSize),
+    textModifier: Modifier = Modifier,
+    shape: Shape = ButtonDefaults.shape,
+    contentPadding: PaddingValues = ButtonDefaults.ContentPadding,
+    interactionSource: MutableInteractionSource? = remember { MutableInteractionSource() },
+) {
+    PlainButton(
+        onClick = onClick,
+        modifier = modifier,
+        enabled = enabled,
+        shape = shape,
+        contentPadding = contentPadding,
+        interactionSource = interactionSource,
+    ) {
+        LeadingIconButtonContent(
+            iconRes = iconRes,
+            text = text,
+            contentDescription = contentDescription,
+            iconModifier = iconModifier,
+            textModifier = textModifier,
+        )
+    }
+}
+
+
+@Composable
 private fun LeadingIconButtonContent(
     @DrawableRes iconRes: Int,
     text: String,
@@ -151,4 +184,30 @@ private fun OutlinedDisabledPreview() {
         )
     }
 }
+
+@Preview(showBackground = true)
+@Composable
+private fun PlainEnabledPreview() {
+    TonemoTheme {
+        PlainLeadingIconButton(
+            iconRes = R.drawable.ic_add,
+            text = "Outlined",
+            onClick = {},
+        )
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+private fun PlainDisabledPreview() {
+    TonemoTheme {
+        PlainLeadingIconButton(
+            iconRes = R.drawable.ic_add,
+            text = "Outlined",
+            onClick = {},
+            enabled = false,
+        )
+    }
+}
+
 

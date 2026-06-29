@@ -1,12 +1,15 @@
 package com.artrubadur.tonemo.ui.screens.chat
 
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import com.artrubadur.tonemo.agent.orchestration.AgentEvent
 import com.artrubadur.tonemo.agent.orchestration.AgentOrchestrator
+import com.artrubadur.tonemo.connection.Connection
+import com.artrubadur.tonemo.connection.ConnectionManager
+import com.artrubadur.tonemo.connection.ConnectionType
+import com.artrubadur.tonemo.connection.LocalConnection
 import kotlinx.coroutines.CancellationException
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
-import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -14,117 +17,144 @@ import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
-class DialogController(
+class ChatViewModel(
+    private val connectionManager: ConnectionManager,
     private val agentOrchestrator: AgentOrchestrator
-) {
+) : ViewModel() {
 
-    private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate)
-    private val _state = MutableStateFlow(DialogState())
+    private val _state = MutableStateFlow(ChatState())
+    val state: StateFlow<ChatState> = _state.asStateFlow()
+
     private val _events = MutableSharedFlow<String>(extraBufferCapacity = 1)
-
-    val state: StateFlow<DialogState> = _state.asStateFlow()
     val events: SharedFlow<String> = _events.asSharedFlow()
 
     private var nextMessageId: Long = 0L
     private var generationJob: Job? = null
 
-    fun launchModel(activeModelFileName: String?) {
-        if (activeModelFileName == null) {
-            _state.update {
-                it.copy(
-                    loadedModelFileName = null,
-                    isLoadingModel = false,
-                    isGenerating = false,
-                    messages = emptyList()
-                )
+    init {
+        connectionManager
+            .observeActiveConnection(ConnectionType.LLM)
+            .onEach { connection ->
+                connection ?: terminateModel()
+                _state.update { state ->
+                    state.copy(activeConnection = connection)
+                }
             }
+            .launchIn(viewModelScope)
+    }
+
+    fun onInputChanged(value: String) {
+        _state.update { state ->
+            state.copy(input = value)
+        }
+    }
+
+    fun launchActiveModel() {
+        if (!_state.value.isActivated) {
             _events.tryEmit("No active generation model. Select one in Models.")
             return
         }
 
-        if (_state.value.loadedModelFileName == activeModelFileName && agentOrchestrator.isModelLoaded) {
+        if (agentOrchestrator.isModelLoaded) {
             return
         }
 
-        scope.launch {
-            stopGeneration()
+        val localConnection = _state.value.activeConnection as? LocalConnection
 
+        // TODO("Add remote connection support")
+        if (localConnection == null) {
+            _events.tryEmit("Remote LLM connections is not supported yet.")
+            return
+        }
+
+        stopGeneration()
+
+        _state.update {
+            it.copy(
+                isLoading = true,
+            )
+        }
+
+        viewModelScope.launch {
             _state.update {
                 it.copy(
-                    loadedModelFileName = null,
-                    isLoadingModel = true,
-                    isGenerating = false,
+                    isLoading = true,
+                    isLaunched = false
                 )
             }
 
             try {
-                agentOrchestrator.loadModel(activeModelFileName)
+                agentOrchestrator.loadModel(localConnection.config.fileName)
+
                 _state.update {
                     it.copy(
-                        loadedModelFileName = activeModelFileName,
-                        isLoadingModel = false
+                        isLaunched = true,
+                        isLoading = false
                     )
                 }
-            } catch (error: Throwable) {
+            } catch (t: Throwable) {
                 _state.update {
                     it.copy(
-                        loadedModelFileName = null,
-                        isLoadingModel = false
+                        isLaunched = false,
+                        isLoading = false
                     )
                 }
-                _events.tryEmit(error.message ?: "Failed to load model")
+                _events.tryEmit(
+                    t.cause?.message
+                        ?: t.message ?: "Failed to launch model"
+                )
             }
         }
     }
 
     fun terminateModel() {
-        stopGeneration()
+        resetConversation()
 
         agentOrchestrator.terminateModel()
+
         _state.update {
             it.copy(
-                loadedModelFileName = null,
-                isLoadingModel = false,
-                isGenerating = false,
-                messages = emptyList()
+                isLaunched = false,
             )
         }
     }
 
     fun resetConversation() {
-        if (_state.value.isGenerating) {
-            _events.tryEmit("Stop generation before clearing the chat")
-            return
-        }
-        scope.launch {
-            val currentGenerationJob = generationJob
+        viewModelScope.launch {
             stopGeneration()
-            try {
-                currentGenerationJob?.join()
-                _state.update {
-                    it.copy(
-                        isGenerating = false,
-                        messages = emptyList()
-                    )
-                }
-            } catch (error: Throwable) {
-                _state.update {
-                    it.copy(
-                        isGenerating = false
-                    )
-                }
-                _events.tryEmit(error.message ?: "Failed to reset conversation")
+
+            _state.update {
+                it.copy(
+                    messages = emptyList()
+                )
             }
         }
     }
 
-    fun sendMessage(input: String) {
+    fun stopGeneration() {
+        generationJob?.cancel()
+        generationJob = null
+        agentOrchestrator.stopGeneration()
+
+        _state.update {
+            it.copy(isGenerating = false)
+        }
+    }
+
+    fun sendMessage() {
         val state = _state.value
-        val prompt = input.trim()
-        if (prompt.isEmpty() || state.loadedModelFileName == null || state.isGenerating) {
+        val prompt = state.input.trim()
+
+        if (
+            prompt.isEmpty() ||
+            state.activeConnection == null ||
+            state.isGenerating
+        ) {
             return
         }
 
@@ -133,6 +163,7 @@ class DialogController(
 
         _state.update {
             it.copy(
+                input = "",
                 isGenerating = true,
                 messages = it.messages + listOf(
                     ChatMessage(
@@ -149,7 +180,7 @@ class DialogController(
             )
         }
 
-        generationJob = scope.launch {
+        generationJob = viewModelScope.launch {
             val currentJob = coroutineContext[Job]
 
             try {
@@ -158,15 +189,26 @@ class DialogController(
                     events = agentOrchestrator.handleUserMessage(prompt)
                 )
             } catch (_: CancellationException) {
-                _state.update { it.removeEmptyMessage(assistantMessageId) }
-            } catch (error: Throwable) {
-                _state.update { it.removeEmptyMessage(assistantMessageId) }
-                _events.tryEmit(error.message ?: "Generation failed")
+                _state.update {
+                    it.removeEmptyMessage(assistantMessageId)
+                }
+            } catch (t: Throwable) {
+                _state.update {
+                    it.removeEmptyMessage(assistantMessageId)
+                }
+
+                _events.tryEmit(
+                    t.cause?.message
+                        ?: t.message ?: "Generation failed"
+                )
             } finally {
                 if (generationJob == currentJob) {
                     generationJob = null
                 }
-                _state.update { it.copy(isGenerating = false) }
+
+                _state.update {
+                    it.copy(isGenerating = false)
+                }
             }
         }
     }
@@ -187,17 +229,13 @@ class DialogController(
         )
     }
 
-    fun stopGeneration() {
-        generationJob?.cancel()
-        agentOrchestrator.stopGeneration()
-    }
-
     private fun respondToConfirmation(
         confirmationId: String,
         status: ConfirmationStatus,
         events: Flow<AgentEvent>
     ) {
         val state = _state.value
+
         if (state.isGenerating) {
             return
         }
@@ -217,7 +255,7 @@ class DialogController(
             ).copy(isGenerating = true)
         }
 
-        generationJob = scope.launch {
+        generationJob = viewModelScope.launch {
             val currentJob = coroutineContext[Job]
 
             try {
@@ -225,16 +263,20 @@ class DialogController(
                     assistantMessageId = assistantMessageId,
                     events = events
                 )
-            } catch (error: Throwable) {
-                if (error is CancellationException) {
-                    throw error
+            } catch (t: Throwable) {
+                if (t is CancellationException) {
+                    throw t
                 }
-                _events.tryEmit(error.message ?: "Confirmation failed")
+
+                _events.tryEmit(t.message ?: "Confirmation failed")
             } finally {
                 if (generationJob == currentJob) {
                     generationJob = null
                 }
-                _state.update { it.copy(isGenerating = false) }
+
+                _state.update {
+                    it.copy(isGenerating = false)
+                }
             }
         }
     }
@@ -285,29 +327,33 @@ class DialogController(
         nextMessageId += 1
         return value
     }
+
+    override fun onCleared() {
+        terminateModel()
+        super.onCleared()
+    }
 }
 
-data class DialogState(
-    val loadedModelFileName: String? = null,
-    val isLoadingModel: Boolean = false,
+
+data class ChatState(
+    val activeConnection: Connection? = null,
+    val isLaunched: Boolean = false,
+    val isLoading: Boolean = false,
     val isGenerating: Boolean = false,
     val messages: List<ChatMessage> = emptyList(),
-)
+    val input: String = ""
+) {
+    val isActivated: Boolean
+        get() = activeConnection != null
 
-//fun DialogState.appendAssistantChunk(chunk: String): DialogState {
-//    if (messages.isEmpty()) return this
-//
-//    val updated = messages.toMutableList()
-//    val last = updated.lastIndex
-//    updated[last] = updated[last].copy(text = updated[last].text + chunk)
-//
-//    return copy(messages = updated)
-//}
+    val isDialogEmpty: Boolean
+        get() = messages.isEmpty()
+}
 
-fun DialogState.appendAssistantLine(
+private fun ChatState.appendAssistantLine(
     messageId: Long,
     line: String
-): DialogState {
+): ChatState {
     val target = messages.firstOrNull { it.id == messageId } ?: return this
     val separator = if (target.text.isBlank()) "" else "\n"
 
@@ -316,22 +362,24 @@ fun DialogState.appendAssistantLine(
     }
 }
 
-fun DialogState.setMessageConfirmation(
+private fun ChatState.setMessageConfirmation(
     messageId: Long,
     confirmation: ConfirmationRequest
-): DialogState {
+): ChatState {
     return updateMessage(messageId) { message ->
         message.copy(confirmation = confirmation)
     }
 }
 
-fun DialogState.resolveConfirmation(
+private fun ChatState.resolveConfirmation(
     confirmationId: String,
     status: ConfirmationStatus
-): DialogState {
+): ChatState {
     return copy(
         messages = messages.map { message ->
             val confirmation = message.confirmation
+
+            // TODO("Replace with message id based search")
             if (confirmation?.id == confirmationId) {
                 message.copy(
                     confirmation = confirmation.copy(status = status)
@@ -343,9 +391,9 @@ fun DialogState.resolveConfirmation(
     )
 }
 
-fun DialogState.removeEmptyMessage(
+private fun ChatState.removeEmptyMessage(
     messageId: Long
-): DialogState {
+): ChatState {
     return copy(
         messages = messages.filterNot { message ->
             message.id == messageId && message.text.isBlank()
@@ -353,10 +401,10 @@ fun DialogState.removeEmptyMessage(
     )
 }
 
-private fun DialogState.updateMessage(
+private fun ChatState.updateMessage(
     messageId: Long,
     transform: (ChatMessage) -> ChatMessage
-): DialogState {
+): ChatState {
     return copy(
         messages = messages.map { message ->
             if (message.id == messageId) transform(message) else message
