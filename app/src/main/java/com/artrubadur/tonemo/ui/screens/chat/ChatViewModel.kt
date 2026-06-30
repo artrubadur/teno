@@ -23,7 +23,7 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
 class ChatViewModel(
-    private val connectionManager: ConnectionManager,
+    connectionManager: ConnectionManager,
     private val agentOrchestrator: AgentOrchestrator
 ) : ViewModel() {
 
@@ -33,7 +33,7 @@ class ChatViewModel(
     private val _events = MutableSharedFlow<String>(extraBufferCapacity = 1)
     val events: SharedFlow<String> = _events.asSharedFlow()
 
-    private var nextMessageId: Long = 0L
+    private var nextMessageId: Int = 0
     private var generationJob: Job? = null
 
     init {
@@ -158,8 +158,8 @@ class ChatViewModel(
             return
         }
 
-        val userMessageId = nextId()
-        val assistantMessageId = nextId()
+        val userMessageIndex = nextId()
+        val assistantMessageIndex = nextId()
 
         _state.update {
             it.copy(
@@ -167,12 +167,12 @@ class ChatViewModel(
                 isGenerating = true,
                 messages = it.messages + listOf(
                     ChatMessage(
-                        id = userMessageId,
+                        index = userMessageIndex,
                         text = prompt,
                         isUser = true
                     ),
                     ChatMessage(
-                        id = assistantMessageId,
+                        index = assistantMessageIndex,
                         text = "",
                         isUser = false
                     )
@@ -185,16 +185,16 @@ class ChatViewModel(
 
             try {
                 collectAgentEvents(
-                    assistantMessageId = assistantMessageId,
+                    assistantMessageIndex = assistantMessageIndex,
                     events = agentOrchestrator.handleUserMessage(prompt)
                 )
             } catch (_: CancellationException) {
                 _state.update {
-                    it.removeEmptyMessage(assistantMessageId)
+                    it.removeEmptyMessage(assistantMessageIndex)
                 }
             } catch (t: Throwable) {
                 _state.update {
-                    it.removeEmptyMessage(assistantMessageId)
+                    it.removeEmptyMessage(assistantMessageIndex)
                 }
 
                 _events.tryEmit(
@@ -213,24 +213,24 @@ class ChatViewModel(
         }
     }
 
-    fun approveConfirmation(confirmationId: String) {
+    fun approveConfirmation(messageIndex: Int, confirmationId: String) {
         respondToConfirmation(
-            confirmationId = confirmationId,
+            messageIndex = messageIndex,
             status = ConfirmationStatus.APPROVED,
             events = agentOrchestrator.approveConfirmation(confirmationId)
         )
     }
 
-    fun rejectConfirmation(confirmationId: String) {
+    fun rejectConfirmation(messageIndex: Int, confirmationId: String) {
         respondToConfirmation(
-            confirmationId = confirmationId,
+            messageIndex = messageIndex,
             status = ConfirmationStatus.REJECTED,
             events = agentOrchestrator.rejectConfirmation(confirmationId)
         )
     }
 
     private fun respondToConfirmation(
-        confirmationId: String,
+        messageIndex: Int,
         status: ConfirmationStatus,
         events: Flow<AgentEvent>
     ) {
@@ -240,17 +240,9 @@ class ChatViewModel(
             return
         }
 
-        val assistantMessageId = state.messages
-            .firstOrNull { message ->
-                message.confirmation?.id == confirmationId &&
-                        message.confirmation.status == ConfirmationStatus.PENDING
-            }
-            ?.id
-            ?: return
-
         _state.update {
             it.resolveConfirmation(
-                confirmationId = confirmationId,
+                messageIndex = messageIndex,
                 status = status
             ).copy(isGenerating = true)
         }
@@ -260,7 +252,7 @@ class ChatViewModel(
 
             try {
                 collectAgentEvents(
-                    assistantMessageId = assistantMessageId,
+                    assistantMessageIndex = messageIndex,
                     events = events
                 )
             } catch (t: Throwable) {
@@ -282,20 +274,20 @@ class ChatViewModel(
     }
 
     private suspend fun collectAgentEvents(
-        assistantMessageId: Long,
+        assistantMessageIndex: Int,
         events: Flow<AgentEvent>
     ) {
         events.collect { event ->
             _state.update { state ->
                 val withLine = state.appendAssistantLine(
-                    messageId = assistantMessageId,
+                    messageIndex = assistantMessageIndex,
                     line = event.toMessageLine()
                 )
 
                 when (event) {
                     is AgentEvent.ConfirmationRequired -> {
                         withLine.setMessageConfirmation(
-                            messageId = assistantMessageId,
+                            messageIndex = assistantMessageIndex,
                             confirmation = ConfirmationRequest(
                                 id = event.confirmationId,
                                 title = event.title,
@@ -322,7 +314,7 @@ class ChatViewModel(
         }
     }
 
-    private fun nextId(): Long {
+    private fun nextId(): Int {
         val value = nextMessageId
         nextMessageId += 1
         return value
@@ -351,63 +343,68 @@ data class ChatState(
 }
 
 private fun ChatState.appendAssistantLine(
-    messageId: Long,
+    messageIndex: Int,
     line: String
 ): ChatState {
-    val target = messages.firstOrNull { it.id == messageId } ?: return this
+    val target = messages.firstOrNull { it.index == messageIndex } ?: return this
     val separator = if (target.text.isBlank()) "" else "\n"
 
-    return updateMessage(messageId) { message ->
+    return updateMessage(messageIndex) { message ->
         message.copy(text = message.text + separator + line)
     }
 }
 
 private fun ChatState.setMessageConfirmation(
-    messageId: Long,
+    messageIndex: Int,
     confirmation: ConfirmationRequest
 ): ChatState {
-    return updateMessage(messageId) { message ->
-        message.copy(confirmation = confirmation)
-    }
+    val updatedMessages = messages.toMutableList()
+
+    val message = updatedMessages[messageIndex]
+    updatedMessages[messageIndex] = message.copy(confirmation = confirmation)
+
+    return copy(messages = updatedMessages)
 }
 
 private fun ChatState.resolveConfirmation(
-    confirmationId: String,
+    messageIndex: Int,
     status: ConfirmationStatus
 ): ChatState {
-    return copy(
-        messages = messages.map { message ->
-            val confirmation = message.confirmation
+    val updatedMessages = messages.toMutableList()
 
-            // TODO("Replace with message id based search")
-            if (confirmation?.id == confirmationId) {
-                message.copy(
-                    confirmation = confirmation.copy(status = status)
-                )
-            } else {
-                message
-            }
-        }
+    val message = updatedMessages[messageIndex]
+    val confirmation = message.confirmation ?: return this
+
+    updatedMessages[messageIndex] = message.copy(
+        confirmation = confirmation.copy(status = status)
     )
+
+    return copy(messages = updatedMessages)
 }
 
 private fun ChatState.removeEmptyMessage(
-    messageId: Long
+    messageIndex: Int
 ): ChatState {
-    return copy(
-        messages = messages.filterNot { message ->
-            message.id == messageId && message.text.isBlank()
-        }
-    )
+    val message = messages[messageIndex]
+
+    if (message.text.isNotBlank()) {
+        return this
+    }
+
+    val updatedMessages = messages.toMutableList()
+    updatedMessages.removeAt(messageIndex)
+
+    return copy(messages = updatedMessages)
 }
 
 private fun ChatState.updateMessage(
-    messageId: Long,
+    messageIndex: Int,
     transform: (ChatMessage) -> ChatMessage
 ): ChatState {
-    return copy(
-        messages = messages.map { message ->
-            if (message.id == messageId) transform(message) else message
-        }
-    )
+    val updatedMessages = messages.toMutableList()
+
+    val message = updatedMessages[messageIndex]
+    updatedMessages[messageIndex] = transform(message)
+
+    return copy(messages = updatedMessages)
 }

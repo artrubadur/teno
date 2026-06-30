@@ -164,7 +164,7 @@ fun ChatScreen(
                     ) {
                         items(
                             items = state.messages,
-                            key = { it.id }
+                            key = { it.index }
                         ) { message ->
                             MessageCard(
                                 message = message,

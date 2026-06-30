@@ -23,8 +23,8 @@ import com.artrubadur.tonemo.ui.theme.TonemoTheme
 @Composable
 fun MessageCard(
     message: ChatMessage,
-    onApproveConfirmation: (String) -> Unit = {},
-    onRejectConfirmation: (String) -> Unit = {},
+    onApproveConfirmation: (Int, String) -> Unit = { _, _ -> },
+    onRejectConfirmation: (Int, String) -> Unit = { _, _ -> },
     isGenerating: Boolean = false
 ) {
     Box(
@@ -66,14 +66,14 @@ fun MessageCard(
                             PrimaryLeadingIconButton(
                                 iconRes = R.drawable.ic_confirm,
                                 text = "Approve",
-                                onClick = { onApproveConfirmation(confirmation.id) },
+                                onClick = { onApproveConfirmation(message.index, confirmation.id) },
                                 enabled = !isGenerating,
                                 modifier = Modifier.weight(1f)
                             )
                             OutlinedLeadingIconButton(
                                 iconRes = R.drawable.ic_close,
                                 text = "Reject",
-                                onClick = { onRejectConfirmation(confirmation.id) },
+                                onClick = { onRejectConfirmation(message.index, confirmation.id) },
                                 enabled = !isGenerating,
                                 modifier = Modifier.weight(1f)
                             )
@@ -86,7 +86,7 @@ fun MessageCard(
 }
 
 data class ChatMessage(
-    val id: Long,
+    val index: Int,
     val text: String,
     val isUser: Boolean,
     val confirmation: ConfirmationRequest? = null
@@ -111,7 +111,7 @@ private fun MessageCardModelPreview() {
     TonemoTheme {
         MessageCard(
             message = ChatMessage(
-                id = 1,
+                index = 1,
                 text = "Some text",
                 isUser = false
             )
@@ -125,7 +125,7 @@ private fun MessageCardConfirmationPreview() {
     TonemoTheme {
         MessageCard(
             message = ChatMessage(
-                id = 1,
+                index = 1,
                 text = "Confirmation required: Confirm tool execution",
                 isUser = false,
                 confirmation = ConfirmationRequest(
@@ -144,7 +144,7 @@ private fun MessageCardUserPreview() {
     TonemoTheme {
         MessageCard(
             message = ChatMessage(
-                id = 1,
+                index = 1,
                 text = "Some text",
                 isUser = true
             )
