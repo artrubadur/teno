@@ -30,8 +30,8 @@ class ModelRepository(
         targetFile
     }
 
-    suspend fun getModelById(id: String): File = withContext(Dispatchers.IO) {
-        val modelFile = File(modelsDirectory, id)
+    suspend fun getModelByFileName(fileName: String): File = withContext(Dispatchers.IO) {
+        val modelFile = File(modelsDirectory, fileName)
         if (!modelFile.exists() || !modelFile.isFile) {
             throw ModelDataException.ModelFileNotFound(modelFile.absolutePath)
         }

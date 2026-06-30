@@ -5,8 +5,9 @@ import com.artrubadur.tonemo.agent.tools.BrokerResult
 import com.artrubadur.tonemo.agent.tools.ToolBroker
 import com.artrubadur.tonemo.agent.tools.ToolCall
 import com.artrubadur.tonemo.agent.tools.ToolDescriptor
-import com.artrubadur.tonemo.runtime.llm.LlmGenerationOptions
-import com.artrubadur.tonemo.runtime.llm.LlmRuntime
+import com.artrubadur.tonemo.connection.Connection
+import com.artrubadur.tonemo.connection.runtime.llm.LlmGenerationOptions
+import com.artrubadur.tonemo.connection.runtime.llm.LlmRuntime
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.FlowCollector
 import kotlinx.coroutines.flow.flow
@@ -30,8 +31,8 @@ class AgentOrchestrator(
     val isModelLoaded: Boolean
         get() = llmRuntime.isLoaded
 
-    suspend fun loadModel(modelFileName: String) {
-        llmRuntime.load(modelFileName)
+    suspend fun connect(connection: Connection) {
+        llmRuntime.load(connection)
     }
 
     fun terminateModel() {

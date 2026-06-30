@@ -1,23 +1,18 @@
-package com.artrubadur.tonemo.runtime.llm
+package com.artrubadur.tonemo.connection.runtime.llm
 
-import kotlinx.coroutines.flow.Flow
+import com.artrubadur.tonemo.connection.Connection
 
 
 interface LlmRuntime : AutoCloseable {
 
     val isLoaded: Boolean
 
-    suspend fun load(modelPath: String)
+    suspend fun load(connection: Connection)
 
     suspend fun generate(
         prompt: String,
         options: LlmGenerationOptions = LlmGenerationOptions()
     ): String
-
-    fun generateStream(
-        prompt: String,
-        options: LlmGenerationOptions = LlmGenerationOptions()
-    ): Flow<String>
 
     fun stopGeneration()
 }
@@ -34,8 +29,11 @@ sealed class LlmRuntimeException(
     cause: Throwable? = null
 ) : RuntimeException(message, cause) {
 
-    class ModelNotLoaded :
-        LlmRuntimeException("LLM model is not loaded")
+    class UnsupportedConnectionType :
+        LlmRuntimeException("Unsupported connection type")
+
+    class RuntimeIsNotLoaded :
+        LlmRuntimeException("LLM runtime is not loaded")
 
     class ModelFileNotFound(path: String) :
         LlmRuntimeException("LLM model file not found `$path`")

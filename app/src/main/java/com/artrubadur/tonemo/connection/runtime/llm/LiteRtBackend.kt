@@ -1,4 +1,4 @@
-package com.artrubadur.tonemo.runtime.llm
+package com.artrubadur.tonemo.connection.runtime.llm
 
 import android.content.Context
 import com.google.ai.edge.litertlm.Backend

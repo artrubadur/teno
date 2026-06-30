@@ -1,7 +1,10 @@
-package com.artrubadur.tonemo.runtime.llm
+package com.artrubadur.tonemo.connection.runtime.llm
 
 import android.content.Context
 import android.util.Log
+import com.artrubadur.tonemo.connection.Connection
+import com.artrubadur.tonemo.connection.LocalConnection
+import com.artrubadur.tonemo.connection.ModelType
 import com.artrubadur.tonemo.data.model.ModelStore
 import com.google.ai.edge.litertlm.Content
 import com.google.ai.edge.litertlm.Contents
@@ -29,7 +32,7 @@ import java.util.concurrent.atomic.AtomicReference
 
 class LiteRtLlmRuntime(
     private val appContext: Context,
-    private val modelService: ModelStore,
+    private val modelStore: ModelStore,
     private val dispatcher: CoroutineDispatcher = Dispatchers.IO,
     private val defaultBackend: LiteRtBackend = LiteRtBackend.Cpu,
     private val logSeverity: LogSeverity = LogSeverity.ERROR
@@ -46,13 +49,18 @@ class LiteRtLlmRuntime(
     override val isLoaded: Boolean
         get() = loaded.get()
 
-    override suspend fun load(modelPath: String) {
+    override suspend fun load(connection: Connection) {
+        if (connection !is LocalConnection ||
+            connection.config.modelType != ModelType.LITERTLM
+        ) {
+            throw LlmRuntimeException.UnsupportedConnectionType()
+        }
         withContext(dispatcher) {
             lock.withLock {
                 val resolvedModelPath = try {
-                    modelService.getModel(modelPath).absolutePath
+                    modelStore.getModel(connection.config.fileName).absolutePath
                 } catch (_: Throwable) {
-                    throw LlmRuntimeException.ModelFileNotFound(modelPath)
+                    throw LlmRuntimeException.ModelFileNotFound(connection.config.fileName)
                 }
 
                 activeGenerationJob.getAndSet(null)?.cancel()
@@ -78,7 +86,7 @@ class LiteRtLlmRuntime(
                 } catch (t: Throwable) {
                     loaded.set(false)
                     closeLocked()
-                    throw LlmRuntimeException.LoadFailed(modelPath, t)
+                    throw LlmRuntimeException.LoadFailed(connection.config.fileName, t)
                 }
             }
         }
@@ -97,7 +105,7 @@ class LiteRtLlmRuntime(
         return builder.toString()
     }
 
-    override fun generateStream(
+    private fun generateStream(
         prompt: String,
         options: LlmGenerationOptions
     ): Flow<String> = channelFlow {
@@ -107,7 +115,7 @@ class LiteRtLlmRuntime(
         try {
             withContext(dispatcher) {
                 lock.withLock {
-                    val currentEngine = engine ?: throw LlmRuntimeException.ModelNotLoaded()
+                    val currentEngine = engine ?: throw LlmRuntimeException.RuntimeIsNotLoaded()
                     val currentConversation = currentEngine.createConversation(
                         options.toConversationConfig()
                     )

@@ -9,14 +9,10 @@ import com.artrubadur.tonemo.agent.tools.ToolBroker
 import com.artrubadur.tonemo.agent.tools.ToolRegistry
 import com.artrubadur.tonemo.agent.tools.impl.LogTool
 import com.artrubadur.tonemo.agent.tools.impl.TimeTool
-import com.artrubadur.tonemo.runtime.llm.LiteRtLlmRuntime
-import com.artrubadur.tonemo.runtime.llm.LlmRuntime
 import org.koin.dsl.bind
 import org.koin.dsl.module
 
 val agentModule = module {
-    single<LlmRuntime> { LiteRtLlmRuntime(get(), get()) }
-
     factory { LogTool() } bind AgentTool::class
     factory { TimeTool() } bind AgentTool::class
 

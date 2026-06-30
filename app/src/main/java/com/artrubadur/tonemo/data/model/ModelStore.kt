@@ -23,8 +23,8 @@ class ModelStore(
         )
     }
 
-    suspend fun getModel(id: String): File {
-        return modelRepository.getModelById(id)
+    suspend fun getModel(fileName: String): File {
+        return modelRepository.getModelByFileName(fileName)
     }
 
     suspend fun deleteModel(id: String) {

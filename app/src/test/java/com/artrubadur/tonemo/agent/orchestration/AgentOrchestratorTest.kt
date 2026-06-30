@@ -9,10 +9,9 @@ import com.artrubadur.tonemo.agent.tools.ToolRegistry
 import com.artrubadur.tonemo.agent.tools.ToolResult
 import com.artrubadur.tonemo.agent.tools.ToolRisk
 import com.artrubadur.tonemo.agent.tools.toJsonSchema
-import com.artrubadur.tonemo.runtime.llm.LlmGenerationOptions
-import com.artrubadur.tonemo.runtime.llm.LlmRuntime
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.flowOf
+import com.artrubadur.tonemo.connection.Connection
+import com.artrubadur.tonemo.connection.runtime.llm.LlmGenerationOptions
+import com.artrubadur.tonemo.connection.runtime.llm.LlmRuntime
 import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.runBlocking
 import org.junit.Assert.assertEquals
@@ -115,7 +114,7 @@ class AgentOrchestratorTest {
     ) : LlmRuntime {
         override val isLoaded: Boolean = true
 
-        override suspend fun load(modelPath: String) = Unit
+        override suspend fun load(connection: Connection) = Unit
 
         override suspend fun generate(
             prompt: String,
@@ -124,11 +123,6 @@ class AgentOrchestratorTest {
             assertTrue(prompt.isNotBlank())
             return responses.removeAt(0)
         }
-
-        override fun generateStream(
-            prompt: String,
-            options: LlmGenerationOptions
-        ): Flow<String> = flowOf(responses.removeAt(0))
 
         override fun stopGeneration() = Unit
 

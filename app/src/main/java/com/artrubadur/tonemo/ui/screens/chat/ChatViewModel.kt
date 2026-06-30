@@ -7,7 +7,6 @@ import com.artrubadur.tonemo.agent.orchestration.AgentOrchestrator
 import com.artrubadur.tonemo.connection.Connection
 import com.artrubadur.tonemo.connection.ConnectionManager
 import com.artrubadur.tonemo.connection.ConnectionType
-import com.artrubadur.tonemo.connection.LocalConnection
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.Flow
@@ -55,7 +54,9 @@ class ChatViewModel(
     }
 
     fun launchActiveModel() {
-        if (!_state.value.isActivated) {
+        val activeConnection = _state.value.activeConnection
+
+        if (activeConnection == null) {
             _events.tryEmit("No active generation model. Select one in Models.")
             return
         }
@@ -64,21 +65,7 @@ class ChatViewModel(
             return
         }
 
-        val localConnection = _state.value.activeConnection as? LocalConnection
-
-        // TODO("Add remote connection support")
-        if (localConnection == null) {
-            _events.tryEmit("Remote LLM connections is not supported yet.")
-            return
-        }
-
         stopGeneration()
-
-        _state.update {
-            it.copy(
-                isLoading = true,
-            )
-        }
 
         viewModelScope.launch {
             _state.update {
@@ -89,19 +76,19 @@ class ChatViewModel(
             }
 
             try {
-                agentOrchestrator.loadModel(localConnection.config.fileName)
+                agentOrchestrator.connect(activeConnection)
 
                 _state.update {
                     it.copy(
+                        isLoading = false,
                         isLaunched = true,
-                        isLoading = false
                     )
                 }
             } catch (t: Throwable) {
                 _state.update {
                     it.copy(
+                        isLoading = false,
                         isLaunched = false,
-                        isLoading = false
                     )
                 }
                 _events.tryEmit(
