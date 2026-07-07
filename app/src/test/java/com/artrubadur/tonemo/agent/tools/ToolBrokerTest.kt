@@ -2,10 +2,7 @@ package com.artrubadur.tonemo.agent.tools
 
 import com.artrubadur.tonemo.agent.orchestration.AgentSession
 import com.artrubadur.tonemo.agent.policy.SafetyPolicy
-import com.artrubadur.tonemo.agent.tools.impl.TimeTool
 import kotlinx.coroutines.runBlocking
-import kotlinx.serialization.json.Json
-import kotlinx.serialization.json.jsonObject
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Test
@@ -13,21 +10,21 @@ import org.junit.Test
 class ToolBrokerTest {
 
     @Test
-    fun `executes tool without arguments when args json is absent`() = runBlocking {
+    fun `executes tool without arguments when arguments are absent`() = runBlocking {
         val broker = ToolBroker(
-            registry = ToolRegistry(listOf(TimeTool())),
+            registry = ToolRegistry(listOf(EchoTool())),
             safetyPolicy = SafetyPolicy()
         )
 
-        val result = broker.dispatch(
-            call = ToolCall(tool = "time", argsJson = null),
+        val result = broker.execute(
+            call = ToolCall(tool = "echo"),
             session = testSession()
         )
 
         assertTrue(result is BrokerResult.Executed)
         val executed = result as BrokerResult.Executed
-        assertEquals("time", executed.tool)
-        assertTrue(Json.parseToJsonElement(executed.resultJson).jsonObject.containsKey("time"))
+        assertEquals("echo", executed.call.tool)
+        assertTrue((executed.result.result as Map<*, *>).containsKey("ok"))
     }
 
     @Test
@@ -38,25 +35,40 @@ class ToolBrokerTest {
             safetyPolicy = SafetyPolicy()
         )
 
-        val pending = broker.dispatch(
-            call = ToolCall(tool = tool.name, argsJson = null),
+        val pending = broker.execute(
+            call = ToolCall(tool = tool.name),
             session = testSession()
         )
 
         assertTrue(pending is BrokerResult.NeedsConfirmation)
         assertEquals(0, tool.executions)
         val confirmation = pending as BrokerResult.NeedsConfirmation
-        assertEquals(tool.name, confirmation.tool)
-        assertEquals("{}", confirmation.argsJson)
+        assertEquals(tool.name, confirmation.call.tool)
+        assertTrue(confirmation.call.arguments.isEmpty())
     }
 
     private fun testSession() = AgentSession(
         id = "test-session",
-        userMessage = "What time is it?",
-        availableTools = emptyList()
+        userRequest = "What time is it?",
+        tools = emptyList()
     )
 
-    private class ConfirmTool : AgentTool<NoToolArgs> {
+    private class EchoTool : Tool<NoToolArgs> {
+        var executions = 0
+
+        override val name = "echo"
+        override val description = "Echoes a static result"
+        override val risk = ToolRisk.SAFE
+        override val argsSerializer = NoToolArgs.serializer()
+        override val argsSchema = argsSerializer.toJsonSchema()
+
+        override suspend fun executeTyped(args: NoToolArgs): Map<String, Boolean> {
+            executions += 1
+            return mapOf("ok" to true)
+        }
+    }
+
+    private class ConfirmTool : Tool<NoToolArgs> {
         var executions = 0
 
         override val name = "confirm"
@@ -65,9 +77,9 @@ class ToolBrokerTest {
         override val argsSerializer = NoToolArgs.serializer()
         override val argsSchema = argsSerializer.toJsonSchema()
 
-        override suspend fun execute(args: NoToolArgs): ToolResult {
+        override suspend fun executeTyped(args: NoToolArgs): Map<String, Boolean> {
             executions += 1
-            return ToolResult.Success("""{"executed":true}""")
+            return mapOf("executed" to true)
         }
     }
 }

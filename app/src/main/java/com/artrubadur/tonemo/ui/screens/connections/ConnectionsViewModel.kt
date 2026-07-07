@@ -81,7 +81,7 @@ class ConnectionsViewModel(
         when (_state.value.cardAction) {
             CardAction.DELETE -> onDeleteActionClick(connection)
             CardAction.UPDATE -> onUpdateActionClick(connection)
-            else -> {}
+            else -> Unit
         }
     }
 

@@ -18,6 +18,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarDuration
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
@@ -50,7 +51,10 @@ fun ConnectionsScreen(
 
     LaunchedEffect(viewModel) {
         viewModel.events.collect { message ->
-            snackbarHostState.showSnackbar(message)
+            snackbarHostState.showSnackbar(
+                message = message,
+                duration = SnackbarDuration.Long
+            )
         }
     }
 
@@ -198,13 +202,13 @@ fun ConnectionsScreen(
     }
 
     when (state.dialogState.dialogStage) {
-        (DialogStage.SOURCE) -> ConnectionSourceDialog(
+        DialogStage.SOURCE -> ConnectionSourceDialog(
             onLocalSelect = { importModelLauncher.launch(arrayOf("*/*")) },
             onExternalSelect = { viewModel.setDialogStage(DialogStage.REMOTE) },
             onDismiss = { viewModel.setDialogStage(null) }
         )
 
-        (DialogStage.REMOTE) -> RemoteConnectionDialog(
+        DialogStage.REMOTE -> RemoteConnectionDialog(
             initialConfig = state.dialogState.remoteConfig,
             onConfirm = { config ->
                 if (!viewModel.addRemoteDraftData(config)) return@RemoteConnectionDialog
@@ -216,7 +220,7 @@ fun ConnectionsScreen(
             }
         )
 
-        (DialogStage.DETAILS) -> ConnectionDetailsDialog(
+        DialogStage.DETAILS -> ConnectionDetailsDialog(
             initialName = state.dialogState.name,
             initialType = state.dialogState.type,
             onConfirm = { name, type ->
@@ -234,6 +238,6 @@ fun ConnectionsScreen(
             }
         )
 
-        (null) -> {}
+        null -> Unit
     }
 }

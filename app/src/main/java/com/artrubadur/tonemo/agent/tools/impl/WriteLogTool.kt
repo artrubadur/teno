@@ -1,18 +1,18 @@
 package com.artrubadur.tonemo.agent.tools.impl
 
 import android.util.Log
-import com.artrubadur.tonemo.agent.tools.AgentTool
-import com.artrubadur.tonemo.agent.tools.ToolResult
+import com.artrubadur.tonemo.agent.tools.Tool
 import com.artrubadur.tonemo.agent.tools.ToolRisk
 import com.artrubadur.tonemo.agent.tools.toJsonSchema
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
-class LogTool : AgentTool<LogToolArgs> {
+class LogTool : Tool<LogToolArgs> {
 
-    override val name = "log"
+    override val name = "write_log"
 
-    override val description = "Writes a debug message to the app log for internal diagnostics."
+    override val description =
+        "Use when the user explicitly asks to record a diagnostic or debug message. Writes the provided message to the internal app log."
 
     override val risk = ToolRisk.SAFE
 
@@ -20,7 +20,7 @@ class LogTool : AgentTool<LogToolArgs> {
 
     override val argsSchema = argsSerializer.toJsonSchema()
 
-    override suspend fun execute(args: LogToolArgs): ToolResult {
+    override suspend fun executeTyped(args: LogToolArgs): Map<String, Boolean> {
         when (args.level) {
             LogLevel.DEBUG -> Log.d("TonemoToolCall", args.message)
             LogLevel.INFO -> Log.i("TonemoToolCall", args.message)
@@ -28,7 +28,7 @@ class LogTool : AgentTool<LogToolArgs> {
             LogLevel.ERROR -> Log.e("TonemoToolCall", args.message)
         }
 
-        return ToolResult.Success("""{"logged":true}""")
+        return mapOf("ok" to true)
     }
 }
 

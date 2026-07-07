@@ -39,7 +39,9 @@ class ChatViewModel(
         connectionManager
             .observeActiveConnection(ConnectionType.LLM)
             .onEach { connection ->
-                connection ?: terminateModel()
+                if (_state.value.activeConnection != connection || connection == null) {
+                    terminateModel()
+                }
                 _state.update { state ->
                     state.copy(activeConnection = connection)
                 }
@@ -92,8 +94,7 @@ class ChatViewModel(
                     )
                 }
                 _events.tryEmit(
-                    t.cause?.message
-                        ?: t.message ?: "Failed to launch model"
+                    "Failed to launch model: ${t.message}: ${t.cause?.message}"
                 )
             }
         }
@@ -185,8 +186,7 @@ class ChatViewModel(
                 }
 
                 _events.tryEmit(
-                    t.cause?.message
-                        ?: t.message ?: "Generation failed"
+                    "Generation failed: ${t.message}: ${t.cause?.message}"
                 )
             } finally {
                 if (generationJob == currentJob) {
@@ -247,7 +247,9 @@ class ChatViewModel(
                     throw t
                 }
 
-                _events.tryEmit(t.message ?: "Confirmation failed")
+                _events.tryEmit(
+                    "Confirmation failed: ${t.message}: ${t.cause?.message}"
+                )
             } finally {
                 if (generationJob == currentJob) {
                     generationJob = null
@@ -292,11 +294,11 @@ class ChatViewModel(
     private fun AgentEvent.toMessageLine(): String {
         return when (this) {
             is AgentEvent.FinalAnswer -> message
-            is AgentEvent.ToolCallStarted -> "Tool call: $tool ${argsJson ?: "{}"}"
-            is AgentEvent.ToolExecuted -> "Tool executed: $tool $resultJson"
-            is AgentEvent.ToolFailed -> "Tool failed: $tool - $reason"
-            is AgentEvent.ToolBlocked -> "Tool blocked: $tool - $reason"
-            is AgentEvent.ConfirmationRequired -> "Confirmation required: $title\n$description"
+            is AgentEvent.ToolStarted -> "#${call.id} '${call.tool}' tool call: ${call.arguments}"
+            is AgentEvent.ToolExecuted -> "#${result.toolCallId} '${result.tool}' tool executed: ${result.result}"
+            is AgentEvent.ToolFailed -> "#${result.toolCallId} '${result.tool}' tool failed: ${result.result}"
+            is AgentEvent.ToolBlocked -> "#${result.toolCallId} '${result.tool}' tool blocked: ${result.result}"
+            is AgentEvent.ConfirmationRequired -> "#${call.id} '${call.tool}' confirmation required: $title\n$description"
             is AgentEvent.Failed -> "Agent failed: $reason"
         }
     }
@@ -333,22 +335,31 @@ private fun ChatState.appendAssistantLine(
     messageIndex: Int,
     line: String
 ): ChatState {
-    val target = messages.firstOrNull { it.index == messageIndex } ?: return this
-    val separator = if (target.text.isBlank()) "" else "\n"
+    val actualIndex = messages.indexOfFirst { it.index == messageIndex }
+    if (actualIndex == -1) return this
 
-    return updateMessage(messageIndex) { message ->
-        message.copy(text = message.text + separator + line)
-    }
+    val updatedMessages = messages.toMutableList()
+    val message = updatedMessages[actualIndex]
+
+    val separator = if (message.text.isBlank()) "" else "\n"
+    updatedMessages[actualIndex] = message.copy(text = message.text + separator + line)
+
+    return copy(messages = updatedMessages)
 }
 
 private fun ChatState.setMessageConfirmation(
     messageIndex: Int,
     confirmation: ConfirmationRequest
 ): ChatState {
-    val updatedMessages = messages.toMutableList()
+    val actualIndex = messages.indexOfFirst { it.index == messageIndex }
+    if (actualIndex == -1) return this
 
-    val message = updatedMessages[messageIndex]
-    updatedMessages[messageIndex] = message.copy(confirmation = confirmation)
+    val updatedMessages = messages.toMutableList()
+    val message = updatedMessages[actualIndex]
+
+    updatedMessages[actualIndex] = message.copy(
+        confirmation = confirmation
+    )
 
     return copy(messages = updatedMessages)
 }
@@ -357,12 +368,15 @@ private fun ChatState.resolveConfirmation(
     messageIndex: Int,
     status: ConfirmationStatus
 ): ChatState {
-    val updatedMessages = messages.toMutableList()
+    val actualIndex = messages.indexOfFirst { it.index == messageIndex }
+    if (actualIndex == -1) return this
 
-    val message = updatedMessages[messageIndex]
+    val updatedMessages = messages.toMutableList()
+    val message = updatedMessages[actualIndex]
+
     val confirmation = message.confirmation ?: return this
 
-    updatedMessages[messageIndex] = message.copy(
+    updatedMessages[actualIndex] = message.copy(
         confirmation = confirmation.copy(status = status)
     )
 
@@ -372,26 +386,16 @@ private fun ChatState.resolveConfirmation(
 private fun ChatState.removeEmptyMessage(
     messageIndex: Int
 ): ChatState {
-    val message = messages[messageIndex]
+    val actualIndex = messages.indexOfFirst { it.index == messageIndex }
+    if (actualIndex == -1) return this
 
+    val updatedMessages = messages.toMutableList()
+    val message = updatedMessages[actualIndex]
     if (message.text.isNotBlank()) {
         return this
     }
 
-    val updatedMessages = messages.toMutableList()
-    updatedMessages.removeAt(messageIndex)
-
-    return copy(messages = updatedMessages)
-}
-
-private fun ChatState.updateMessage(
-    messageIndex: Int,
-    transform: (ChatMessage) -> ChatMessage
-): ChatState {
-    val updatedMessages = messages.toMutableList()
-
-    val message = updatedMessages[messageIndex]
-    updatedMessages[messageIndex] = transform(message)
+    updatedMessages.removeAt(actualIndex)
 
     return copy(messages = updatedMessages)
 }

@@ -8,96 +8,112 @@ class ToolBroker(
     private val registry: ToolRegistry,
     private val safetyPolicy: SafetyPolicy
 ) {
-    suspend fun dispatch(
+    suspend fun execute(
         call: ToolCall,
         session: AgentSession
     ): BrokerResult {
         val tool = registry.get(call.tool)
-            ?: return BrokerResult.Blocked(call.tool, "Unknown tool")
+            ?: return BrokerResult.Blocked(
+                call = call,
+                result = ToolResult(
+                    toolCallId = call.id,
+                    tool = call.tool,
+                    result = mapOf("message" to "Unknown tool"),
+                )
+            )
 
-        // TODO(Blocked("Tool not allowed for this model"))
+        // TODO(Blocked("Tool not allowed for this connection"))
         // TODO(Blocked("Tool not allowed in current session"))
 
-        val args = try {
-            tool.decodeArgs(call.argsJson)
-        } catch (e: Exception) {
-            return BrokerResult.Blocked(tool.name, "Invalid arguments: ${e.message}")
-        }
+        when (val decision = safetyPolicy.check(tool, session)) {
+            is SafetyDecision.Block -> return BrokerResult.Blocked(
+                call = call,
+                result = ToolResult(
+                    toolCallId = call.id,
+                    tool = call.tool,
+                    result = mapOf("message" to "Blocked: ${decision.reason}"),
+                )
+            )
 
-        when (val safety = safetyPolicy.check(tool, args, session)) {
-            is SafetyDecision.Block -> return BrokerResult.Blocked(tool.name, safety.reason)
             is SafetyDecision.RequireConfirmation -> {
                 return BrokerResult.NeedsConfirmation(
-                    tool = tool.name,
-                    argsJson = call.argsJson ?: "{}",
-                    title = safety.title,
-                    description = safety.description
+                    call = call,
+                    title = decision.title,
+                    description = decision.description
                 )
             }
 
             is SafetyDecision.Allow -> Unit
         }
 
-        return executeTool(tool, args)
+        return executeTool(tool, call)
     }
 
     suspend fun executeApproved(call: ToolCall): BrokerResult {
         val tool = registry.get(call.tool)
-            ?: return BrokerResult.Blocked(call.tool, "Unknown tool")
+            ?: return BrokerResult.Blocked(
+                call = call,
+                result = ToolResult(
+                    toolCallId = call.id,
+                    tool = call.tool,
+                    result = mapOf("message" to "Unknown tool"),
+                )
+            )
 
-        val args = try {
-            tool.decodeArgs(call.argsJson)
-        } catch (e: Exception) {
-            return BrokerResult.Blocked(tool.name, "Invalid arguments: ${e.message}")
-        }
-
-        return executeTool(tool, args)
-    }
-
-    fun listAvailableTools(): List<ToolDescriptor> {
-        return registry.all().map { it.toDescriptor() }
+        return executeTool(tool, call)
     }
 
     private suspend fun executeTool(
-        tool: AgentTool<*>,
-        args: Any
+        tool: Tool<*>,
+        call: ToolCall,
     ): BrokerResult {
-        return when (val result = tool.executeUntyped(args)) {
-            is ToolResult.Success -> BrokerResult.Executed(
-                tool = tool.name,
-                resultJson = result.resultJson
+        val result = try {
+            tool.execute(call.arguments)
+        } catch (e: Exception) {
+            return BrokerResult.Failed(
+                call = call,
+                result = ToolResult(
+                    toolCallId = call.id,
+                    tool = call.tool,
+                    result = mapOf("message" to "Failed: ${e.message ?: ""}"),
+                )
             )
-
-            is ToolResult.Error -> BrokerResult.Failed(tool.name, result.message)
         }
+
+        return BrokerResult.Executed(
+            call = call,
+            result = ToolResult(
+                toolCallId = call.id,
+                tool = call.tool,
+                result = result,
+            )
+        )
+    }
+
+    fun listToolSpecs(): List<ToolSpec> {
+        return registry.all().map { it.toSpec() }
     }
 }
 
-data class ToolCall(
-    val tool: String,
-    val argsJson: String?
-)
-
-sealed class BrokerResult {
+sealed interface BrokerResult {
     data class Executed(
-        val tool: String,
-        val resultJson: String
-    ) : BrokerResult()
-
-    data class NeedsConfirmation(
-        val tool: String,
-        val argsJson: String,
-        val title: String,
-        val description: String
-    ) : BrokerResult()
+        val call: ToolCall,
+        val result: ToolResult
+    ) : BrokerResult
 
     data class Blocked(
-        val tool: String,
-        val reason: String
-    ) : BrokerResult()
+        val call: ToolCall,
+        val result: ToolResult
+    ) : BrokerResult
 
     data class Failed(
-        val tool: String,
-        val reason: String
-    ) : BrokerResult()
+        val call: ToolCall,
+        val result: ToolResult
+    ) : BrokerResult
+
+    data class NeedsConfirmation(
+        val call: ToolCall,
+        val title: String,
+        val description: String
+    ) : BrokerResult
 }

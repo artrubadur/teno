@@ -1,12 +1,11 @@
 package com.artrubadur.tonemo.agent.policy
 
 import com.artrubadur.tonemo.agent.orchestration.AgentSession
-import com.artrubadur.tonemo.agent.tools.AgentTool
+import com.artrubadur.tonemo.agent.tools.Tool
 
 class SafetyPolicy {
     fun check(
-        tool: AgentTool<*>,
-        args: Any,
+        tool: Tool<*>,
         session: AgentSession
     ): SafetyDecision {
         return when (tool.risk) {

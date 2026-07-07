@@ -2,15 +2,16 @@ package com.artrubadur.tonemo.agent.orchestration
 
 import com.artrubadur.tonemo.agent.policy.ConfirmationManager
 import com.artrubadur.tonemo.agent.policy.SafetyPolicy
-import com.artrubadur.tonemo.agent.tools.AgentTool
 import com.artrubadur.tonemo.agent.tools.NoToolArgs
+import com.artrubadur.tonemo.agent.tools.Tool
 import com.artrubadur.tonemo.agent.tools.ToolBroker
+import com.artrubadur.tonemo.agent.tools.ToolCall
 import com.artrubadur.tonemo.agent.tools.ToolRegistry
-import com.artrubadur.tonemo.agent.tools.ToolResult
 import com.artrubadur.tonemo.agent.tools.ToolRisk
 import com.artrubadur.tonemo.agent.tools.toJsonSchema
 import com.artrubadur.tonemo.connection.Connection
-import com.artrubadur.tonemo.connection.runtime.llm.LlmGenerationOptions
+import com.artrubadur.tonemo.connection.runtime.llm.LlmRequest
+import com.artrubadur.tonemo.connection.runtime.llm.LlmResponse
 import com.artrubadur.tonemo.connection.runtime.llm.LlmRuntime
 import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.runBlocking
@@ -24,9 +25,11 @@ class AgentOrchestratorTest {
     fun `runs tool loop until final answer`() = runBlocking {
         val runtime = FakeLlmRuntime(
             responses = mutableListOf(
-                """{"type":"tool_call","tool":"echo","args":{}}""",
-                """{"type":"final","message":"done"}"""
-            )
+                LlmResponse.ToolCalls(
+                    listOf(ToolCall(tool = "echo", arguments = mapOf()))
+                ),
+                LlmResponse.Final("done")
+            ),
         )
         val tool = EchoTool()
         val orchestrator = AgentOrchestrator(
@@ -36,13 +39,12 @@ class AgentOrchestratorTest {
                 safetyPolicy = SafetyPolicy()
             ),
             confirmationManager = ConfirmationManager(),
-            promptBuilder = AgentPromptBuilder()
         )
 
         val events = orchestrator.handleUserMessage("hello").toList()
 
         assertEquals(3, events.size)
-        assertTrue(events[0] is AgentEvent.ToolCallStarted)
+        assertTrue(events[0] is AgentEvent.ToolStarted)
         assertTrue(events[1] is AgentEvent.ToolExecuted)
         assertTrue(events[2] is AgentEvent.FinalAnswer)
         assertEquals(1, tool.executions)
@@ -52,9 +54,11 @@ class AgentOrchestratorTest {
     fun `continues after confirmation approval`() = runBlocking {
         val runtime = FakeLlmRuntime(
             responses = mutableListOf(
-                """{"type":"tool_call","tool":"confirm","args":{}}""",
-                """{"type":"final","message":"approved"}"""
-            )
+                LlmResponse.ToolCalls(
+                    listOf(ToolCall(tool = "confirm", arguments = mapOf()))
+                ),
+                LlmResponse.Final("approved")
+            ),
         )
         val tool = ConfirmTool()
         val orchestrator = AgentOrchestrator(
@@ -64,7 +68,6 @@ class AgentOrchestratorTest {
                 safetyPolicy = SafetyPolicy()
             ),
             confirmationManager = ConfirmationManager(),
-            promptBuilder = AgentPromptBuilder()
         )
 
         val firstRun = orchestrator.handleUserMessage("confirm this").toList()
@@ -83,9 +86,11 @@ class AgentOrchestratorTest {
     fun `rejecting confirmation reports rejected tool`() = runBlocking {
         val runtime = FakeLlmRuntime(
             responses = mutableListOf(
-                """{"type":"tool_call","tool":"confirm","args":{}}""",
-                """{"type":"final","message":"rejected"}"""
-            )
+                LlmResponse.ToolCalls(
+                    listOf(ToolCall(tool = "confirm", arguments = mapOf()))
+                ),
+                LlmResponse.Final("rejected")
+            ),
         )
         val tool = ConfirmTool()
         val orchestrator = AgentOrchestrator(
@@ -95,7 +100,6 @@ class AgentOrchestratorTest {
                 safetyPolicy = SafetyPolicy()
             ),
             confirmationManager = ConfirmationManager(),
-            promptBuilder = AgentPromptBuilder()
         )
 
         val firstRun = orchestrator.handleUserMessage("reject this").toList()
@@ -104,23 +108,20 @@ class AgentOrchestratorTest {
         val events = orchestrator.rejectConfirmation(confirmation.confirmationId).toList()
         val event = events.first() as AgentEvent.ToolBlocked
 
-        assertEquals(tool.name, event.tool)
+        assertEquals(tool.name, event.result.tool)
         assertTrue(events.last() is AgentEvent.FinalAnswer)
         assertEquals(0, tool.executions)
     }
 
     private class FakeLlmRuntime(
-        private val responses: MutableList<String>
+        private val responses: MutableList<LlmResponse>
     ) : LlmRuntime {
         override val isLoaded: Boolean = true
 
-        override suspend fun load(connection: Connection) = Unit
+        override suspend fun connect(connection: Connection) = Unit
 
-        override suspend fun generate(
-            prompt: String,
-            options: LlmGenerationOptions
-        ): String {
-            assertTrue(prompt.isNotBlank())
+        override suspend fun generate(request: LlmRequest): LlmResponse {
+            assertTrue(request.userRequest.isNotBlank())
             return responses.removeAt(0)
         }
 
@@ -129,7 +130,7 @@ class AgentOrchestratorTest {
         override fun close() = Unit
     }
 
-    private class EchoTool : AgentTool<NoToolArgs> {
+    private class EchoTool : Tool<NoToolArgs> {
         var executions = 0
 
         override val name = "echo"
@@ -138,13 +139,13 @@ class AgentOrchestratorTest {
         override val argsSerializer = NoToolArgs.serializer()
         override val argsSchema = argsSerializer.toJsonSchema()
 
-        override suspend fun execute(args: NoToolArgs): ToolResult {
+        override suspend fun executeTyped(args: NoToolArgs): Map<String, Boolean> {
             executions += 1
-            return ToolResult.Success("""{"echoed":true}""")
+            return mapOf("ok" to true)
         }
     }
 
-    private class ConfirmTool : AgentTool<NoToolArgs> {
+    private class ConfirmTool : Tool<NoToolArgs> {
         var executions = 0
 
         override val name = "confirm"
@@ -153,9 +154,9 @@ class AgentOrchestratorTest {
         override val argsSerializer = NoToolArgs.serializer()
         override val argsSchema = argsSerializer.toJsonSchema()
 
-        override suspend fun execute(args: NoToolArgs): ToolResult {
+        override suspend fun executeTyped(args: NoToolArgs): Map<String, Boolean> {
             executions += 1
-            return ToolResult.Success("""{"confirmed":true}""")
+            return mapOf("ok" to true)
         }
     }
 }

@@ -1,7 +1,11 @@
-package com.artrubadur.tonemo.connection.runtime.llm
+package com.artrubadur.tonemo.connection.runtime.llm.impl
 
 import com.artrubadur.tonemo.connection.Connection
 import com.artrubadur.tonemo.connection.RemoteConnection
+import com.artrubadur.tonemo.connection.runtime.llm.LlmException
+import com.artrubadur.tonemo.connection.runtime.llm.LlmRequest
+import com.artrubadur.tonemo.connection.runtime.llm.LlmResponse
+import com.artrubadur.tonemo.connection.runtime.llm.LlmRuntime
 import java.util.concurrent.atomic.AtomicBoolean
 
 class RemoteLlmRuntime : LlmRuntime {
@@ -11,17 +15,14 @@ class RemoteLlmRuntime : LlmRuntime {
     override val isLoaded: Boolean
         get() = loaded.get()
 
-    override suspend fun load(connection: Connection) {
+    override suspend fun connect(connection: Connection) {
         if (connection !is RemoteConnection) {
-            throw LlmRuntimeException.UnsupportedConnectionType()
+            throw LlmException.UnsupportedConnectionType()
         }
         TODO("Not yet implemented")
     }
 
-    override suspend fun generate(
-        prompt: String,
-        options: LlmGenerationOptions
-    ): String {
+    override suspend fun generate(request: LlmRequest): LlmResponse {
         TODO("Not yet implemented")
     }
 

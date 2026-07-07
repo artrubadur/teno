@@ -2,6 +2,7 @@ package com.artrubadur.tonemo.agent.tools
 
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.KSerializer
+import kotlinx.serialization.Serializable
 import kotlinx.serialization.descriptors.PrimitiveKind
 import kotlinx.serialization.descriptors.SerialDescriptor
 import kotlinx.serialization.descriptors.SerialKind
@@ -14,11 +15,9 @@ import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.put
 import kotlinx.serialization.json.putJsonArray
 
-private val json = Json { prettyPrint = true }
-
 fun <T> KSerializer<T>.toJsonSchema(): String {
     val schema = descriptor.toSchema()
-    return json.encodeToString(JsonObject.serializer(), schema)
+    return Json.encodeToString(JsonObject.serializer(), schema)
 }
 
 @OptIn(ExperimentalSerializationApi::class)
@@ -64,3 +63,6 @@ private fun SerialDescriptor.toSchema(): JsonObject {
         }
     }
 }
+
+@Serializable
+class NoToolArgs
