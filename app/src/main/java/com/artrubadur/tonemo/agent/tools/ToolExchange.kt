@@ -1,15 +1,15 @@
 package com.artrubadur.tonemo.agent.tools
 
-import java.util.UUID
+import kotlinx.serialization.json.JsonObject
 
 data class ToolCall(
-    val id: String = UUID.randomUUID().toString(),
+    val id: String,
     val tool: String,
-    val arguments: Map<String, Any?> = emptyMap()
+    val arguments: JsonObject
 )
 
 data class ToolResult(
     val toolCallId: String,
     val tool: String,
-    val result: Any?,
+    val result: JsonObject,
 )

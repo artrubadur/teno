@@ -23,6 +23,7 @@ internal object AgentDefaults {
             "Call a tool only when the user's request requires that tool's result or action.",
             "Do not call tools speculatively, for unrelated information, " +
                     "or merely because a tool is available.",
+            "If any tool fails, clearly state that the requested action failed or was only partially completed.",
 
             "Answer only the user's current request.",
             "Present the final answer in natural, concise, user-friendly language.",
@@ -32,7 +33,8 @@ internal object AgentDefaults {
             "Do not offer additional help, suggestions, next steps, " +
                     "or related topics unless explicitly requested.",
             "Do not invite the user to continue, choose an option, or provide more information.",
-            "End the response immediately after the requested answer is complete."
+            "End the response immediately after the requested answer is complete.",
+            "After tool calls finish, always return a non-empty final answer to the user.",
         )
     )
 

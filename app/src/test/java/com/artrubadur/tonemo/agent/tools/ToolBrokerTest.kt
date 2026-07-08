@@ -3,6 +3,9 @@ package com.artrubadur.tonemo.agent.tools
 import com.artrubadur.tonemo.agent.orchestration.AgentSession
 import com.artrubadur.tonemo.agent.policy.SafetyPolicy
 import kotlinx.coroutines.runBlocking
+import kotlinx.serialization.json.JsonObject
+import kotlinx.serialization.json.buildJsonObject
+import kotlinx.serialization.json.put
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Test
@@ -17,7 +20,7 @@ class ToolBrokerTest {
         )
 
         val result = broker.execute(
-            call = ToolCall(tool = "echo"),
+            call = ToolCall(tool = "echo", id = "id", arguments = buildJsonObject { }),
             session = testSession()
         )
 
@@ -36,7 +39,7 @@ class ToolBrokerTest {
         )
 
         val pending = broker.execute(
-            call = ToolCall(tool = tool.name),
+            call = ToolCall(tool = tool.name, id = "id", arguments = buildJsonObject { }),
             session = testSession()
         )
 
@@ -53,33 +56,31 @@ class ToolBrokerTest {
         tools = emptyList()
     )
 
-    private class EchoTool : Tool<NoToolArgs> {
+    private class EchoTool : Tool<NoArgs> {
         var executions = 0
 
         override val name = "echo"
         override val description = "Echoes a static result"
         override val risk = ToolRisk.SAFE
-        override val argsSerializer = NoToolArgs.serializer()
-        override val argsSchema = argsSerializer.toJsonSchema()
+        override val argsSerializer = NoArgs.serializer()
 
-        override suspend fun executeTyped(args: NoToolArgs): Map<String, Boolean> {
+        override suspend fun executeTyped(args: NoArgs): JsonObject {
             executions += 1
-            return mapOf("ok" to true)
+            return buildJsonObject { put("ok", true) }
         }
     }
 
-    private class ConfirmTool : Tool<NoToolArgs> {
+    private class ConfirmTool : Tool<NoArgs> {
         var executions = 0
 
         override val name = "confirm"
-        override val description = "Requires confirmation"
+        override val description = "Needs confirmation"
         override val risk = ToolRisk.REQUIRES_CONFIRMATION
-        override val argsSerializer = NoToolArgs.serializer()
-        override val argsSchema = argsSerializer.toJsonSchema()
+        override val argsSerializer = NoArgs.serializer()
 
-        override suspend fun executeTyped(args: NoToolArgs): Map<String, Boolean> {
+        override suspend fun executeTyped(args: NoArgs): JsonObject {
             executions += 1
-            return mapOf("executed" to true)
+            return buildJsonObject { put("ok", true) }
         }
     }
 }

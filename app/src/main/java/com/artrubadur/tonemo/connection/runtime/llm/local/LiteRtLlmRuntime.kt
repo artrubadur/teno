@@ -1,11 +1,14 @@
-package com.artrubadur.tonemo.connection.runtime.llm.impl
+package com.artrubadur.tonemo.connection.runtime.llm.local
 
 import android.content.Context
+import com.artrubadur.tonemo.agent.tools.ToolCall
 import com.artrubadur.tonemo.agent.tools.ToolSpec
+import com.artrubadur.tonemo.agent.tools.toJsonString
 import com.artrubadur.tonemo.connection.Connection
 import com.artrubadur.tonemo.connection.LocalConnection
 import com.artrubadur.tonemo.connection.ModelType
 import com.artrubadur.tonemo.connection.runtime.llm.LlmException
+import com.artrubadur.tonemo.connection.runtime.llm.LlmMessage
 import com.artrubadur.tonemo.connection.runtime.llm.LlmRequest
 import com.artrubadur.tonemo.connection.runtime.llm.LlmResponse
 import com.artrubadur.tonemo.connection.runtime.llm.LlmRuntime
@@ -29,8 +32,15 @@ import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
+import kotlinx.serialization.json.JsonArray
+import kotlinx.serialization.json.JsonElement
+import kotlinx.serialization.json.JsonNull
+import kotlinx.serialization.json.JsonObject
+import kotlinx.serialization.json.JsonPrimitive
+import java.util.UUID
 import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicReference
+import kotlin.coroutines.cancellation.CancellationException
 
 class LiteRtLlmRuntime(
     private val appContext: Context,
@@ -40,19 +50,18 @@ class LiteRtLlmRuntime(
     private val logSeverity: LogSeverity = LogSeverity.ERROR,
 ) : LlmRuntime {
 
-    private val lock = Mutex()
+    private val ready = AtomicBoolean(false)
 
+    override val isReady: Boolean
+        get() = ready.get()
+    private val activeGenerationJob = AtomicReference<Job?>(null)
     private var engine: Engine? = null
+    private val lock = Mutex()
     private var loadedModelPath: String? = null
     private var conversation: Conversation? = null
     private var conversationSessionId: String? = null
-    private var sentToolResultCount: Int = 0
+    private var syncedMessageCount: Int = 0
 
-    private val activeGenerationJob = AtomicReference<Job?>(null)
-    private val loaded = AtomicBoolean(false)
-
-    override val isLoaded: Boolean
-        get() = loaded.get()
 
     override suspend fun connect(connection: Connection) {
         if (connection !is LocalConnection ||
@@ -68,8 +77,8 @@ class LiteRtLlmRuntime(
                     throw LlmException.ModelFileNotFound(connection.config.fileName)
                 }
 
-                activeGenerationJob.getAndSet(null)?.cancel()
-                closeLocked()
+                stopGeneration()
+                cleanup()
 
                 try {
                     Engine.setNativeMinLogSeverity(logSeverity)
@@ -84,11 +93,11 @@ class LiteRtLlmRuntime(
 
                     engine = newEngine
                     loadedModelPath = resolvedModelPath
-                    loaded.set(true)
+                    ready.set(true)
                 } catch (t: Throwable) {
-                    loaded.set(false)
-                    closeLocked()
-                    throw LlmException.LoadFailed(connection.config.fileName, t)
+                    ready.set(false)
+                    cleanup()
+                    throw LlmException.LoadingFailed(connection.config.fileName, t)
                 }
             }
         }
@@ -104,12 +113,18 @@ class LiteRtLlmRuntime(
             return withContext(dispatcher) {
                 lock.withLock {
                     val currentConversation = conversationFor(request)
-                    val response = currentConversation.sendMessage(request.toMessage())
+                    val response = currentConversation.sendMessage(request.toLiteRtMessage())
+                    syncedMessageCount = request.messages.size + 1
                     response.toLlmResponse()
                 }
             }
+        } catch (t: CancellationException) {
+            throw t
         } catch (t: Throwable) {
-            throw LlmException.GenerationFailed(t)
+            throw LlmException.GenerationFailed(
+                message = "Failed to generate a response from the local model runtime.",
+                cause = t
+            )
         } finally {
             activeGenerationJob.compareAndSet(generationJob, null)
         }
@@ -120,28 +135,28 @@ class LiteRtLlmRuntime(
     }
 
     override fun close() {
-        activeGenerationJob.getAndSet(null)?.cancel()
+        stopGeneration()
 
         runBlocking {
             withContext(dispatcher) {
                 lock.withLock {
-                    closeLocked()
+                    cleanup()
                 }
             }
         }
     }
 
-    private fun closeLocked() {
+    private fun cleanup() {
         conversation?.close()
         conversation = null
         conversationSessionId = null
-        sentToolResultCount = 0
+        syncedMessageCount = 0
 
         engine?.close()
         engine = null
 
         loadedModelPath = null
-        loaded.set(false)
+        ready.set(false)
     }
 
     private fun LlmRequest.buildConversationConfig(): ConversationConfig {
@@ -158,64 +173,104 @@ class LiteRtLlmRuntime(
     }
 
     private fun conversationFor(request: LlmRequest): Conversation {
-        val currentEngine = engine ?: throw LlmException.RuntimeIsNotLoaded()
+        val currentEngine = engine ?: throw LlmException.RuntimeIsNotReady()
 
         if (conversation == null || conversationSessionId != request.sessionId) {
             conversation?.close()
             conversation = currentEngine.createConversation(request.buildConversationConfig())
             conversationSessionId = request.sessionId
-            sentToolResultCount = 0
+            syncedMessageCount = 0
         }
 
-        return conversation ?: throw LlmException.RuntimeIsNotLoaded()
+        return conversation ?: throw LlmException.RuntimeIsNotReady()
     }
 
-    private fun LlmRequest.toMessage(): Message {
-        val pendingResults = toolResults.drop(sentToolResultCount)
+    private fun LlmRequest.toLiteRtMessage(): Message {
+        val pendingMessages = messages.drop(syncedMessageCount)
 
-        return if (pendingResults.isNotEmpty()) {
-            sentToolResultCount = toolResults.size
-            Message.tool(
-                Contents.of(
-                    pendingResults.map { result ->
-                        Content.ToolResponse(result.tool, result.result)
-                    }
+        return when (val first = pendingMessages.first()) {
+            is LlmMessage.User -> {
+                Message.user(first.content)
+            }
+
+            is LlmMessage.Tool -> {
+                Message.tool(
+                    Contents.of(
+                        pendingMessages.map { message ->
+                            val result = (message as LlmMessage.Tool).result
+
+                            Content.ToolResponse(
+                                result.tool,
+                                result.result
+                            )
+                        }
+                    )
                 )
-            )
-        } else {
-            Message.user(userRequest)
+            }
+
+            is LlmMessage.AssistantToolCalls,
+            is LlmMessage.AssistantFinal -> {
+                error(
+                    "Assistant messages are generated by LiteRT " +
+                            "and must not be sent back"
+                )
+            }
         }
     }
+
 
     private fun Message.toLlmResponse(): LlmResponse {
         if (toolCalls.isNotEmpty()) {
             return LlmResponse.ToolCalls(
                 calls = toolCalls.map { call ->
-                    com.artrubadur.tonemo.agent.tools.ToolCall(
+                    ToolCall(
+                        id = UUID.randomUUID().toString(),
                         tool = call.name,
-                        arguments = call.arguments.mapValues { (_, value) -> value }
+                        arguments = call.arguments.toJsonObject()
                     )
                 }
             )
         }
 
-        return LlmResponse.Final(toTextChunk())
+        return LlmResponse.Final(
+            contents.contents
+                .asSequence()
+                .mapNotNull { content ->
+                    (content as? Content.Text)?.text
+                }
+                .joinToString(separator = "")
+        )
     }
 
-    private fun Message.toTextChunk(): String {
-        return contents.contents
-            .asSequence()
-            .mapNotNull { content ->
-                (content as? Content.Text)?.text
+    private fun Map<String, Any?>.toJsonObject(): JsonObject =
+        JsonObject(this.mapValues { (_, value) -> value.toJsonElement() })
+
+    private fun Any?.toJsonElement(): JsonElement = when (this) {
+        null -> JsonNull
+        is JsonElement -> this
+        is String -> JsonPrimitive(this)
+        is Boolean -> JsonPrimitive(this)
+        is Int -> JsonPrimitive(this)
+        is Long -> JsonPrimitive(this)
+        is Float -> JsonPrimitive(this)
+        is Double -> JsonPrimitive(this)
+        is Number -> JsonPrimitive(this)
+        is Map<*, *> -> JsonObject(
+            this.entries.associate { (k, v) ->
+                k.toString() to v.toJsonElement()
             }
-            .joinToString(separator = "")
+        )
+
+        is Iterable<*> -> JsonArray(this.map { it.toJsonElement() })
+        is Array<*> -> JsonArray(this.map { it.toJsonElement() })
+        else -> JsonPrimitive(this.toString())
     }
 
     private fun ToolSpec.toOpenApiTool(): OpenApiTool {
         val spec = this
         return object : OpenApiTool {
             override fun getToolDescriptionJsonString(): String {
-                return """{"name":"${spec.name}","description":"${spec.description}","parameters":${spec.argsSchema}}"""
+                return """{"name":"${spec.name}","description":"${spec.description}","parameters":${spec.argsSchema.toJsonString()}}"""
             }
 
             override fun execute(paramsJsonString: String): String {

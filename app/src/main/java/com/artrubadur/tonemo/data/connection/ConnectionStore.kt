@@ -81,7 +81,6 @@ class ConnectionStore(
                 connectionId = id,
                 baseUrl = config.baseUrl,
                 model = config.model,
-                authType = config.authType,
                 apiKey = config.apiKey,
             )
         )
@@ -114,7 +113,6 @@ class ConnectionStore(
                 connectionId = id,
                 baseUrl = config.baseUrl,
                 model = config.model,
-                authType = config.authType,
                 apiKey = config.apiKey,
             )
         )

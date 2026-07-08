@@ -2,19 +2,22 @@ package com.artrubadur.tonemo.agent.orchestration
 
 import com.artrubadur.tonemo.agent.policy.ConfirmationManager
 import com.artrubadur.tonemo.agent.policy.SafetyPolicy
-import com.artrubadur.tonemo.agent.tools.NoToolArgs
+import com.artrubadur.tonemo.agent.tools.NoArgs
 import com.artrubadur.tonemo.agent.tools.Tool
 import com.artrubadur.tonemo.agent.tools.ToolBroker
 import com.artrubadur.tonemo.agent.tools.ToolCall
 import com.artrubadur.tonemo.agent.tools.ToolRegistry
 import com.artrubadur.tonemo.agent.tools.ToolRisk
-import com.artrubadur.tonemo.agent.tools.toJsonSchema
 import com.artrubadur.tonemo.connection.Connection
+import com.artrubadur.tonemo.connection.runtime.llm.LlmMessage
 import com.artrubadur.tonemo.connection.runtime.llm.LlmRequest
 import com.artrubadur.tonemo.connection.runtime.llm.LlmResponse
 import com.artrubadur.tonemo.connection.runtime.llm.LlmRuntime
 import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.runBlocking
+import kotlinx.serialization.json.JsonObject
+import kotlinx.serialization.json.buildJsonObject
+import kotlinx.serialization.json.put
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Test
@@ -26,7 +29,7 @@ class AgentOrchestratorTest {
         val runtime = FakeLlmRuntime(
             responses = mutableListOf(
                 LlmResponse.ToolCalls(
-                    listOf(ToolCall(tool = "echo", arguments = mapOf()))
+                    listOf(ToolCall(tool = "echo", id = "id", arguments = buildJsonObject { }))
                 ),
                 LlmResponse.Final("done")
             ),
@@ -55,7 +58,7 @@ class AgentOrchestratorTest {
         val runtime = FakeLlmRuntime(
             responses = mutableListOf(
                 LlmResponse.ToolCalls(
-                    listOf(ToolCall(tool = "confirm", arguments = mapOf()))
+                    listOf(ToolCall(tool = "confirm", id = "id", arguments = buildJsonObject { }))
                 ),
                 LlmResponse.Final("approved")
             ),
@@ -87,7 +90,7 @@ class AgentOrchestratorTest {
         val runtime = FakeLlmRuntime(
             responses = mutableListOf(
                 LlmResponse.ToolCalls(
-                    listOf(ToolCall(tool = "confirm", arguments = mapOf()))
+                    listOf(ToolCall(tool = "confirm", id = "id", arguments = buildJsonObject { }))
                 ),
                 LlmResponse.Final("rejected")
             ),
@@ -116,12 +119,13 @@ class AgentOrchestratorTest {
     private class FakeLlmRuntime(
         private val responses: MutableList<LlmResponse>
     ) : LlmRuntime {
-        override val isLoaded: Boolean = true
+        override val isReady: Boolean = true
 
         override suspend fun connect(connection: Connection) = Unit
 
         override suspend fun generate(request: LlmRequest): LlmResponse {
-            assertTrue(request.userRequest.isNotBlank())
+            val firstMessage = request.messages.first()
+            assertTrue(firstMessage is LlmMessage.User && firstMessage.content.isNotBlank())
             return responses.removeAt(0)
         }
 
@@ -130,33 +134,31 @@ class AgentOrchestratorTest {
         override fun close() = Unit
     }
 
-    private class EchoTool : Tool<NoToolArgs> {
+    private class EchoTool : Tool<NoArgs> {
         var executions = 0
 
         override val name = "echo"
         override val description = "Echoes a static result"
         override val risk = ToolRisk.SAFE
-        override val argsSerializer = NoToolArgs.serializer()
-        override val argsSchema = argsSerializer.toJsonSchema()
+        override val argsSerializer = NoArgs.serializer()
 
-        override suspend fun executeTyped(args: NoToolArgs): Map<String, Boolean> {
+        override suspend fun executeTyped(args: NoArgs): JsonObject {
             executions += 1
-            return mapOf("ok" to true)
+            return buildJsonObject { put("ok", true) }
         }
     }
 
-    private class ConfirmTool : Tool<NoToolArgs> {
+    private class ConfirmTool : Tool<NoArgs> {
         var executions = 0
 
         override val name = "confirm"
         override val description = "Needs confirmation"
         override val risk = ToolRisk.REQUIRES_CONFIRMATION
-        override val argsSerializer = NoToolArgs.serializer()
-        override val argsSchema = argsSerializer.toJsonSchema()
+        override val argsSerializer = NoArgs.serializer()
 
-        override suspend fun executeTyped(args: NoToolArgs): Map<String, Boolean> {
+        override suspend fun executeTyped(args: NoArgs): JsonObject {
             executions += 1
-            return mapOf("ok" to true)
+            return buildJsonObject { put("ok", true) }
         }
     }
 }

@@ -37,13 +37,11 @@ data class RemoteConnection(
 data class RemoteConnectionConfig(
     val baseUrl: String,
     val model: String,
-    val authType: String,
     val apiKey: String
 ) {
     val isValid: Boolean
         get() = baseUrl.isNotBlank() &&
                 model.isNotBlank() &&
-                authType.isNotBlank() &&
                 apiKey.isNotBlank()
 }
 

@@ -44,6 +44,5 @@ data class RemoteConnectionConfigEntity(
     @PrimaryKey val connectionId: String,
     val baseUrl: String,
     val model: String,
-    val authType: String,
     val apiKey: String,
 )

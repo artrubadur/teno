@@ -1,10 +1,10 @@
 package com.artrubadur.tonemo.agent.tools
 
+import kotlinx.schema.generator.json.serialization.SerializationClassJsonSchemaGenerator
+import kotlinx.schema.json.JsonSchema
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
-import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonArray
-import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.JsonPrimitive
 import kotlinx.serialization.json.jsonArray
 import kotlinx.serialization.json.jsonObject
@@ -17,7 +17,7 @@ class ToolArgsSchemaTest {
 
     @Test
     fun `generates object schema with properties`() {
-        val schema = TestArgs.serializer().toSchemaObject()
+        val schema = TestArgs.serializer().toSchema().toJsonObject()
 
         assertEquals(JsonPrimitive("object"), schema["type"])
 
@@ -30,7 +30,7 @@ class ToolArgsSchemaTest {
 
     @Test
     fun `marks only fields without defaults as required`() {
-        val schema = TestArgs.serializer().toSchemaObject()
+        val schema = TestArgs.serializer().toSchema().toJsonObject()
 
         assertEquals(
             JsonArray(listOf(JsonPrimitive("message"), JsonPrimitive("enabled"))),
@@ -40,7 +40,7 @@ class ToolArgsSchemaTest {
 
     @Test
     fun `generates enum schema using serial names`() {
-        val schema = TestArgs.serializer().toSchemaObject()
+        val schema = TestArgs.serializer().toSchema().toJsonObject()
         val levelSchema = schema["properties"]!!.jsonObject["level"]!!.jsonObject
 
         assertEquals(JsonPrimitive("string"), levelSchema["type"])
@@ -59,14 +59,14 @@ class ToolArgsSchemaTest {
 
     @Test
     fun `omits required for object with only optional fields`() {
-        val schema = OptionalArgs.serializer().toSchemaObject()
+        val schema = OptionalArgs.serializer().toSchema().toJsonObject()
 
         assertFalse(schema.containsKey("required"))
     }
 
     @Test
     fun `generates nested object schema`() {
-        val schema = NestedArgs.serializer().toSchemaObject()
+        val schema = NestedArgs.serializer().toSchema().toJsonObject()
         val childSchema = schema["properties"]!!.jsonObject["child"]!!.jsonObject
 
         assertEquals(JsonPrimitive("object"), childSchema["type"])
@@ -75,7 +75,7 @@ class ToolArgsSchemaTest {
 
     @Test
     fun `generates empty object schema when no arguments are needed`() {
-        val schema = NoArgs.serializer().toSchemaObject()
+        val schema = NoArgs.serializer().toSchema().toJsonObject()
 
         assertEquals(JsonPrimitive("object"), schema["type"])
         assertTrue(schema["properties"]!!.jsonObject.isEmpty())
@@ -83,8 +83,9 @@ class ToolArgsSchemaTest {
         assertFalse(schema.containsKey("required"))
     }
 
-    private fun <T> kotlinx.serialization.KSerializer<T>.toSchemaObject(): JsonObject =
-        Json.parseToJsonElement(toJsonSchema()).jsonObject
+    private fun <T> kotlinx.serialization.KSerializer<T>.toSchema(): JsonSchema =
+        SerializationClassJsonSchemaGenerator.Default
+            .generateSchema(this.descriptor)
 
     @Serializable
     private data class TestArgs(

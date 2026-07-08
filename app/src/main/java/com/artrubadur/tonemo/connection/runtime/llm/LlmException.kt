@@ -8,15 +8,18 @@ sealed class LlmException(
     class UnsupportedConnectionType :
         LlmException("Unsupported connection type")
 
-    class RuntimeIsNotLoaded :
-        LlmException("LLM runtime is not loaded")
+    class RuntimeIsNotReady :
+        LlmException("LLM runtime is not ready")
 
     class ModelFileNotFound(path: String) :
         LlmException("LLM model file not found `$path`")
 
-    class LoadFailed(path: String, cause: Throwable?) :
+    class LoadingFailed(path: String, cause: Throwable?) :
         LlmException("Failed to load LLM model `$path`", cause)
 
-    class GenerationFailed(cause: Throwable?) :
-        LlmException("LLM generation failed", cause)
+    class GenerationFailed(message: String, cause: Throwable?) :
+        LlmException("LLM generation failed: $message", cause)
+
+    class InvalidResponse(message: String, cause: Throwable?) :
+        LlmException("Invalid response: $message", cause)
 }

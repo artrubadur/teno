@@ -10,6 +10,8 @@ import com.artrubadur.tonemo.connection.runtime.llm.LlmRuntime
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.FlowCollector
 import kotlinx.coroutines.flow.flow
+import kotlinx.serialization.json.JsonPrimitive
+import kotlinx.serialization.json.buildJsonObject
 import java.util.UUID
 
 class AgentOrchestrator(
@@ -18,7 +20,7 @@ class AgentOrchestrator(
     private val confirmationManager: ConfirmationManager,
 ) {
     val isModelLoaded: Boolean
-        get() = llmRuntime.isLoaded
+        get() = llmRuntime.isReady
 
     suspend fun connect(connection: Connection) {
         llmRuntime.connect(connection)
@@ -91,7 +93,9 @@ class AgentOrchestrator(
             val result = ToolResult(
                 toolCallId = confirmation.call.id,
                 tool = confirmation.call.tool,
-                result = mapOf("message" to "Confirmation rejected")
+                result = buildJsonObject {
+                    put("message", JsonPrimitive("Confirmation rejected"))
+                }
             )
 
             val session = confirmation.session

@@ -7,7 +7,6 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -43,7 +42,7 @@ fun RemoteConnectionDialog(
         onDismissRequest = onDismiss
     ) {
         DialogContent(
-            initialConfig = initialConfig ?: RemoteConnectionConfig("", "", "", ""),
+            initialConfig = initialConfig ?: RemoteConnectionConfig("", "", ""),
             onDismiss = onDismiss,
             onConfirm = onConfirm
         )
@@ -62,7 +61,6 @@ private fun DialogContent(
 
     var baseUrl by remember { mutableStateOf(initialConfig.baseUrl) }
     var model by remember { mutableStateOf(initialConfig.model) }
-    var authType by remember { mutableStateOf(initialConfig.authType) }
     var apiKey by remember { mutableStateOf(initialConfig.apiKey) }
 
     Surface(
@@ -96,49 +94,35 @@ private fun DialogContent(
             )
 
 
-            Row(
+            OutlinedTextField(
+                value = apiKey,
+                onValueChange = { apiKey = it },
                 modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-                OutlinedTextField(
-                    value = authType,
-                    onValueChange = { authType = it },
-                    shape = RoundedCornerShape(8.dp),
-                    label = { Text("Auth Type") },
-                    singleLine = true,
-                    modifier = Modifier.width(140.dp)
-                )
-
-                OutlinedTextField(
-                    value = apiKey,
-                    onValueChange = { apiKey = it },
-                    modifier = Modifier.weight(1f),
-                    shape = RoundedCornerShape(8.dp),
-                    label = { Text("API Key") },
-                    singleLine = true,
-                    interactionSource = interactionSource,
-                    visualTransformation = if (apiKeyVisible) {
-                        VisualTransformation.None
-                    } else {
-                        PasswordVisualTransformation()
-                    },
-                    trailingIcon = {
-                        IconButton(onClick = { apiKeyVisible = !apiKeyVisible }) {
-                            Icon(
-                                painter = if (apiKeyVisible) painterResource(R.drawable.ic_hide) else painterResource(
-                                    R.drawable.ic_show
-                                ),
-                                contentDescription = null,
-                                tint = if (isFocused) {
-                                    MaterialTheme.colorScheme.primary
-                                } else {
-                                    MaterialTheme.colorScheme.onSurfaceVariant
-                                }
-                            )
-                        }
+                shape = RoundedCornerShape(8.dp),
+                label = { Text("API Key") },
+                singleLine = true,
+                interactionSource = interactionSource,
+                visualTransformation = if (apiKeyVisible) {
+                    VisualTransformation.None
+                } else {
+                    PasswordVisualTransformation()
+                },
+                trailingIcon = {
+                    IconButton(onClick = { apiKeyVisible = !apiKeyVisible }) {
+                        Icon(
+                            painter = if (apiKeyVisible) painterResource(R.drawable.ic_hide) else painterResource(
+                                R.drawable.ic_show
+                            ),
+                            contentDescription = null,
+                            tint = if (isFocused) {
+                                MaterialTheme.colorScheme.primary
+                            } else {
+                                MaterialTheme.colorScheme.onSurfaceVariant
+                            }
+                        )
                     }
-                )
-            }
+                }
+            )
 
 
             Row(
@@ -153,7 +137,6 @@ private fun DialogContent(
                             RemoteConnectionConfig(
                                 baseUrl.trim(),
                                 model.trim(),
-                                authType.trim(),
                                 apiKey.trim()
                             )
                         )
@@ -180,7 +163,7 @@ private fun DialogContent(
 private fun DialogPreview() {
     TonemoTheme {
         DialogContent(
-            initialConfig = RemoteConnectionConfig("", "", "", ""),
+            initialConfig = RemoteConnectionConfig("", "", ""),
             onDismiss = {},
             onConfirm = {}
         )

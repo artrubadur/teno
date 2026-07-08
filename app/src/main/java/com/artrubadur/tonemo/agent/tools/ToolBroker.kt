@@ -3,6 +3,8 @@ package com.artrubadur.tonemo.agent.tools
 import com.artrubadur.tonemo.agent.orchestration.AgentSession
 import com.artrubadur.tonemo.agent.policy.SafetyDecision
 import com.artrubadur.tonemo.agent.policy.SafetyPolicy
+import kotlinx.serialization.json.buildJsonObject
+import kotlinx.serialization.json.put
 
 class ToolBroker(
     private val registry: ToolRegistry,
@@ -18,7 +20,9 @@ class ToolBroker(
                 result = ToolResult(
                     toolCallId = call.id,
                     tool = call.tool,
-                    result = mapOf("message" to "Unknown tool"),
+                    result = buildJsonObject {
+                        put("message", "Unknown tool")
+                    }
                 )
             )
 
@@ -31,7 +35,9 @@ class ToolBroker(
                 result = ToolResult(
                     toolCallId = call.id,
                     tool = call.tool,
-                    result = mapOf("message" to "Blocked: ${decision.reason}"),
+                    result = buildJsonObject {
+                        put("message", "Blocked: ${decision.reason}")
+                    }
                 )
             )
 
@@ -56,7 +62,9 @@ class ToolBroker(
                 result = ToolResult(
                     toolCallId = call.id,
                     tool = call.tool,
-                    result = mapOf("message" to "Unknown tool"),
+                    result = buildJsonObject {
+                        put("message", "Unknown tool")
+                    }
                 )
             )
 
@@ -75,7 +83,9 @@ class ToolBroker(
                 result = ToolResult(
                     toolCallId = call.id,
                     tool = call.tool,
-                    result = mapOf("message" to "Failed: ${e.message ?: ""}"),
+                    result = buildJsonObject {
+                        put("message", "Failed: ${e.message ?: ""}")
+                    }
                 )
             )
         }

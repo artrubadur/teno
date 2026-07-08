@@ -76,7 +76,6 @@ interface ConnectionDao {
         UPDATE remote_connection_configs
         SET baseUrl = :baseUrl,
             model = :model,
-            authType = :authType,
             apiKey = :apiKey
         WHERE connectionId = :id
     """
@@ -85,7 +84,6 @@ interface ConnectionDao {
         id: String,
         baseUrl: String,
         model: String,
-        authType: String,
         apiKey: String,
     )
 
@@ -101,7 +99,6 @@ interface ConnectionDao {
             id = id,
             baseUrl = config.baseUrl,
             model = config.model,
-            authType = config.authType,
             apiKey = config.apiKey,
         )
     }

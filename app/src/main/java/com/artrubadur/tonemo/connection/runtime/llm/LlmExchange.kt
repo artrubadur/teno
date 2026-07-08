@@ -25,12 +25,28 @@ data class AgentInstructions(
 data class LlmRequest(
     val sessionId: String,
     val instructions: AgentInstructions,
-    val userRequest: String,
+    val messages: List<LlmMessage>,
     val tools: List<ToolSpec> = emptyList(),
-    val toolCalls: List<ToolCall> = emptyList(),
-    val toolResults: List<ToolResult> = emptyList(),
     val options: LlmOptions = LlmOptions()
 )
+
+sealed interface LlmMessage {
+    data class User(
+        val content: String
+    ) : LlmMessage
+
+    data class AssistantToolCalls(
+        val calls: List<ToolCall>
+    ) : LlmMessage
+
+    data class Tool(
+        val result: ToolResult
+    ) : LlmMessage
+
+    data class AssistantFinal(
+        val content: String
+    ) : LlmMessage
+}
 
 sealed interface LlmResponse {
     data class Final(

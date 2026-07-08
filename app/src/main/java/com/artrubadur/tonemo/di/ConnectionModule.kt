@@ -3,8 +3,8 @@ package com.artrubadur.tonemo.di
 import com.artrubadur.tonemo.connection.ModelType
 import com.artrubadur.tonemo.connection.runtime.llm.LlmRuntime
 import com.artrubadur.tonemo.connection.runtime.llm.RoutingLlmRuntime
-import com.artrubadur.tonemo.connection.runtime.llm.impl.LiteRtLlmRuntime
-import com.artrubadur.tonemo.connection.runtime.llm.impl.RemoteLlmRuntime
+import com.artrubadur.tonemo.connection.runtime.llm.local.LiteRtLlmRuntime
+import com.artrubadur.tonemo.connection.runtime.llm.remote.RemoteLlmRuntime
 import org.koin.dsl.module
 
 val connectionModule = module {

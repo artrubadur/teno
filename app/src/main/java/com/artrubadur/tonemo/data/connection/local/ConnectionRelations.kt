@@ -64,7 +64,6 @@ private fun ConnectionWithConfig.toRemoteConnection(): RemoteConnection {
         config = RemoteConnectionConfig(
             baseUrl = config.baseUrl,
             model = config.model,
-            authType = config.authType,
             apiKey = config.apiKey,
         ),
     )

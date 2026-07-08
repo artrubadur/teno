@@ -4,7 +4,7 @@ import com.artrubadur.tonemo.connection.Connection
 import com.artrubadur.tonemo.connection.LocalConnection
 import com.artrubadur.tonemo.connection.ModelType
 import com.artrubadur.tonemo.connection.RemoteConnection
-import com.artrubadur.tonemo.connection.runtime.llm.impl.RemoteLlmRuntime
+import com.artrubadur.tonemo.connection.runtime.llm.remote.RemoteLlmRuntime
 
 class RoutingLlmRuntime(
     private val remoteRuntime: RemoteLlmRuntime,
@@ -13,8 +13,8 @@ class RoutingLlmRuntime(
 
     private var activeRuntime: LlmRuntime? = null
 
-    override val isLoaded: Boolean
-        get() = activeRuntime?.isLoaded == true
+    override val isReady: Boolean
+        get() = activeRuntime?.isReady == true
 
     override suspend fun connect(connection: Connection) {
         val runtime = resolveRuntime(connection)
@@ -54,6 +54,6 @@ class RoutingLlmRuntime(
     }
 
     private fun requireActiveRuntime(): LlmRuntime {
-        return activeRuntime ?: throw LlmException.RuntimeIsNotLoaded()
+        return activeRuntime ?: throw LlmException.RuntimeIsNotReady()
     }
 }

@@ -5,7 +5,7 @@ import com.artrubadur.tonemo.connection.Connection
 
 interface LlmRuntime : AutoCloseable {
 
-    val isLoaded: Boolean
+    val isReady: Boolean
 
     suspend fun connect(connection: Connection)
 
@@ -17,16 +17,9 @@ interface LlmRuntime : AutoCloseable {
 }
 
 data class LlmOptions(
-    val toolChoice: ToolChoice = ToolChoice.AUTO,
     val temperature: Double = 0.1,
     val topK: Int = 40,
     val topP: Double = 0.9,
     val maxTokens: Int = 500
 )
-
-enum class ToolChoice {
-    NONE,
-    AUTO,
-    REQUIRED
-}
 
