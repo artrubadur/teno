@@ -8,17 +8,13 @@ plugins {
 android {
     namespace = "com.artrubadur.tonemo"
     compileSdk {
-        version = release(36) {
-            minorApiLevel = 1
-        }
+        version = release(37)
     }
 
     defaultConfig {
         applicationId = "com.artrubadur.tonemo"
         minSdk = 30
-        //noinspection OldTargetApi
-        targetSdk = 36
-        versionCode = 1
+        targetSdk = 37
         versionName = "1.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
