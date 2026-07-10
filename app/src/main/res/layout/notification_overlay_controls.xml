@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="48dp"
+    android:gravity="center_vertical"
+    android:orientation="horizontal"
+    android:paddingHorizontal="8dp">
+
+    <ImageButton
+        android:id="@+id/overlay_notification_action_button"
+        android:layout_width="44dp"
+        android:layout_height="44dp"
+        android:background="?android:attr/selectableItemBackgroundBorderless"
+        android:contentDescription="@string/notification_action_input"
+        android:padding="8dp"
+        android:scaleType="fitCenter"
+        android:tint="?android:attr/colorAccent"
+        tools:ignore="UseAppTint" />
+
+    <TextView
+        android:id="@+id/overlay_notification_spacer"
+        android:layout_width="0dp"
+        android:layout_height="1dp"
+        android:layout_weight="1"
+        android:text="" />
+
+    <ImageButton
+        android:id="@+id/overlay_notification_lifecycle_button"
+        android:layout_width="44dp"
+        android:layout_height="44dp"
+        android:background="?android:attr/selectableItemBackgroundBorderless"
+        android:contentDescription="@string/notification_action_lifecycle"
+        android:padding="8dp"
+        android:scaleType="fitCenter"
+        android:src="@drawable/ic_launch"
+        android:tint="?android:attr/colorAccent"
+        tools:ignore="UseAppTint" />
+
+    <ImageButton
+        android:id="@+id/overlay_notification_shutdown_button"
+        android:layout_width="44dp"
+        android:layout_height="44dp"
+        android:background="?android:attr/selectableItemBackgroundBorderless"
+        android:contentDescription="@string/notification_action_shutdown"
+        android:padding="8dp"
+        android:scaleType="fitCenter"
+        android:src="@drawable/ic_close"
+        android:tint="?android:attr/colorAccent"
+        tools:ignore="UseAppTint" />
+
+</LinearLayout>

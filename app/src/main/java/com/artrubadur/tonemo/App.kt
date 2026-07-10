@@ -14,7 +14,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.artrubadur.tonemo.ui.screens.chat.ChatScreen
 import com.artrubadur.tonemo.ui.screens.connections.ConnectionsScreen
-import com.artrubadur.tonemo.ui.screens.onboarding.OnboardingScreen
+import com.artrubadur.tonemo.ui.screens.home.HomeScreen
 
 @Composable
 fun App() {
@@ -24,7 +24,7 @@ fun App() {
         NavHost(
             modifier = Modifier.padding(innerPadding),
             navController = navController,
-            startDestination = Route.Onboarding,
+            startDestination = Route.Home,
             enterTransition = {
                 slideIntoContainer(
                     towards = AnimatedContentTransitionScope.SlideDirection.Left,
@@ -55,8 +55,8 @@ fun App() {
                     onBack = { navController.popBackStack() }
                 )
             }
-            composable(Route.Onboarding) {
-                OnboardingScreen(
+            composable(Route.Home) {
+                HomeScreen(
                     onOpenChat = { navController.navigate(Route.Chat) },
                     onOpenConnections = { navController.navigate(Route.Connections) }
                 )
@@ -71,7 +71,7 @@ fun App() {
 }
 
 private object Route {
-    const val Onboarding = "onboarding"
+    const val Home = "home"
     const val Connections = "connections"
     const val Chat = "chat"
 }

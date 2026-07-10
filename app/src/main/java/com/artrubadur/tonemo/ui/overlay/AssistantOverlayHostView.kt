@@ -1,9 +1,10 @@
-package com.artrubadur.tonemo.ui.overlays.bubble
+package com.artrubadur.tonemo.ui.overlay
 
 import android.annotation.SuppressLint
 import android.content.Context
 import android.widget.FrameLayout
-import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.platform.ComposeView
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleOwner
@@ -13,12 +14,12 @@ import androidx.savedstate.SavedStateRegistry
 import androidx.savedstate.SavedStateRegistryController
 import androidx.savedstate.SavedStateRegistryOwner
 import androidx.savedstate.setViewTreeSavedStateRegistryOwner
+import com.artrubadur.tonemo.ui.theme.TonemoTheme
 
 @SuppressLint("ViewConstructor")
-open class LifecycleComposeHostView(
+class AssistantOverlayHostView(
     context: Context,
-    composeLayoutParams: LayoutParams,
-    content: @Composable () -> Unit,
+    controller: OverlayAgentController,
 ) : FrameLayout(context), LifecycleOwner, SavedStateRegistryOwner {
 
     private val lifecycleRegistry = LifecycleRegistry(this)
@@ -40,8 +41,27 @@ open class LifecycleComposeHostView(
 
         lifecycleRegistry.currentState = Lifecycle.State.CREATED
 
-        composeView.setContent(content)
-        addView(composeView, composeLayoutParams)
+        composeView.setContent {
+            val state by controller.state.collectAsState()
+            TonemoTheme {
+                AssistantOverlayView(
+                    state = state,
+                    onInputChanged = controller::onInputChanged,
+                    onSend = controller::onSend,
+                    onStop = controller::stopWork,
+                    onOutsideClick = controller::onOutsideClick,
+                    onIslandHidden = controller::onIslandHidden,
+                )
+            }
+        }
+
+        addView(
+            composeView,
+            LayoutParams(
+                LayoutParams.MATCH_PARENT,
+                LayoutParams.MATCH_PARENT
+            )
+        )
     }
 
     fun onAttachedToWindowManager() {

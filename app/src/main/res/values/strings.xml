@@ -1,3 +1,6 @@
 <resources>
     <string name="app_name">tonemo</string>
+    <string name="notification_action_input">Open input</string>
+    <string name="notification_action_lifecycle">Assistant action</string>
+    <string name="notification_action_shutdown">Stop service</string>
 </resources>

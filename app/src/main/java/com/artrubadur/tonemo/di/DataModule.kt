@@ -15,7 +15,7 @@ val databaseModule = module {
             androidContext(),
             AppDatabase::class.java,
             "tonemo_database"
-        ).build()
+        ).enableMultiInstanceInvalidation().build()
     }
     single {
         get<AppDatabase>().connectionDao()
