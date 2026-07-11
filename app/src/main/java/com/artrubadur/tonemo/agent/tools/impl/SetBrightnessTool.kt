@@ -3,6 +3,7 @@ package com.artrubadur.tonemo.agent.tools.impl
 import android.content.Context
 import android.provider.Settings
 import com.artrubadur.tonemo.agent.tools.Tool
+import com.artrubadur.tonemo.agent.tools.ToolPermission
 import com.artrubadur.tonemo.agent.tools.ToolRisk
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.JsonObject
@@ -16,9 +17,13 @@ class SetBrightnessTool(
 
     override val name = "set_brightness"
 
+    override val title = "Set brightness"
+
     override val description = "Sets system screen brightness as a value from 0.0 to 1.0"
 
     override val risk = ToolRisk.SAFE
+
+    override val requiredPermissions = setOf(ToolPermission.WRITE_SETTINGS)
 
     override val argsSerializer = SetBrightnessToolArgs.serializer()
 

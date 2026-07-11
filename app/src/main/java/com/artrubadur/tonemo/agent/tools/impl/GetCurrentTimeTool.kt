@@ -13,6 +13,8 @@ class GetCurrentTimeTool : Tool<NoArgs> {
 
     override val name = "get_current_time"
 
+    override val title = "Get current time"
+
     override val description =
         "Returns the current date, weekday, time, and timezone"
 

@@ -6,6 +6,7 @@ import com.artrubadur.tonemo.data.connection.ConnectionStore
 import com.artrubadur.tonemo.data.database.AppDatabase
 import com.artrubadur.tonemo.data.model.ModelRepository
 import com.artrubadur.tonemo.data.model.ModelStore
+import com.artrubadur.tonemo.data.tools.ToolSettingsStore
 import org.koin.android.ext.koin.androidContext
 import org.koin.dsl.module
 
@@ -27,4 +28,5 @@ val databaseModule = module {
     single { ModelStore(get(), androidContext()) }
 
     single { ConnectionManager(get(), get()) }
+    single { ToolSettingsStore(androidContext()) }
 }

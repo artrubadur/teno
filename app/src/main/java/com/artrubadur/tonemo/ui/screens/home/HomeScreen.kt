@@ -24,7 +24,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.core.net.toUri
 import com.artrubadur.tonemo.R
-import com.artrubadur.tonemo.ui.components.buttons.OutlinedButton
+import com.artrubadur.tonemo.ui.components.buttons.OutlinedIconButton
 import com.artrubadur.tonemo.ui.components.buttons.PrimaryIconButton
 import org.koin.compose.viewmodel.koinViewModel
 
@@ -32,6 +32,7 @@ import org.koin.compose.viewmodel.koinViewModel
 fun HomeScreen(
     onOpenChat: () -> Unit = {},
     onOpenConnections: () -> Unit = {},
+    onOpenTools: () -> Unit = {},
     viewModel: HomeViewModel = koinViewModel(),
 ) {
     val context = LocalContext.current
@@ -86,14 +87,23 @@ fun HomeScreen(
                 style = MaterialTheme.typography.headlineMedium
             )
             Row(
-                horizontalArrangement = Arrangement.spacedBy(16.dp)
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                OutlinedButton(onClick = onOpenChat) {
-                    Text(text = "Chat")
-                }
-                OutlinedButton(onClick = onOpenConnections) {
-                    Text(text = "Connections")
-                }
+                OutlinedIconButton(
+                    iconRes = R.drawable.ic_chat,
+                    contentDescription = "Chat",
+                    onClick = onOpenChat
+                )
+                OutlinedIconButton(
+                    iconRes = R.drawable.ic_tools,
+                    contentDescription = "Connections",
+                    onClick = onOpenTools
+                )
+                OutlinedIconButton(
+                    iconRes = R.drawable.ic_storage,
+                    contentDescription = "Tools",
+                    onClick = onOpenConnections
+                )
             }
         }
 

@@ -10,8 +10,11 @@ private val ToolJson = Json { ignoreUnknownKeys = true }
 
 interface Tool<TArgs : Any> {
     val name: String
+    val title: String
     val description: String
     val risk: ToolRisk
+    val requiredPermissions: Set<ToolPermission>
+        get() = emptySet()
     val argsSerializer: KSerializer<TArgs>
     val argsSchema: JsonSchema
         get() = SerializationClassJsonSchemaGenerator.Default
@@ -33,12 +36,16 @@ enum class ToolRisk {
 
 fun Tool<*>.toSpec() = ToolSpec(
     name = name,
+    title = title,
     description = description,
     argsSchema = argsSchema,
+    requiredPermissions = requiredPermissions,
 )
 
 data class ToolSpec(
     val name: String,
+    val title: String,
     val description: String,
     val argsSchema: JsonSchema,
+    val requiredPermissions: Set<ToolPermission> = emptySet(),
 )

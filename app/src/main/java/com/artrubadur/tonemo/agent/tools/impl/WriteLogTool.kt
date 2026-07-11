@@ -13,6 +13,8 @@ class LogTool : Tool<WriteLogToolArgs> {
 
     override val name = "write_log"
 
+    override val title = "Write log"
+
     override val description =
         "Writes a message to the internal app log"
 

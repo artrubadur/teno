@@ -15,6 +15,7 @@ import androidx.navigation.compose.rememberNavController
 import com.artrubadur.tonemo.ui.screens.chat.ChatScreen
 import com.artrubadur.tonemo.ui.screens.connections.ConnectionsScreen
 import com.artrubadur.tonemo.ui.screens.home.HomeScreen
+import com.artrubadur.tonemo.ui.screens.tools.ToolsScreen
 
 @Composable
 fun App() {
@@ -58,11 +59,17 @@ fun App() {
             composable(Route.Home) {
                 HomeScreen(
                     onOpenChat = { navController.navigate(Route.Chat) },
-                    onOpenConnections = { navController.navigate(Route.Connections) }
+                    onOpenConnections = { navController.navigate(Route.Connections) },
+                    onOpenTools = { navController.navigate(Route.Tools) }
                 )
             }
             composable(Route.Connections) {
                 ConnectionsScreen(
+                    onBack = { navController.popBackStack() }
+                )
+            }
+            composable(Route.Tools) {
+                ToolsScreen(
                     onBack = { navController.popBackStack() }
                 )
             }
@@ -74,4 +81,5 @@ private object Route {
     const val Home = "home"
     const val Connections = "connections"
     const val Chat = "chat"
+    const val Tools = "tools"
 }

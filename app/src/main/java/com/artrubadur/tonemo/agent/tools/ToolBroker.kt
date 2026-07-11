@@ -8,7 +8,8 @@ import kotlinx.serialization.json.put
 
 class ToolBroker(
     private val registry: ToolRegistry,
-    private val safetyPolicy: SafetyPolicy
+    private val safetyPolicy: SafetyPolicy,
+    private val toolManager: ToolManager,
 ) {
     suspend fun execute(
         call: ToolCall,
@@ -25,6 +26,10 @@ class ToolBroker(
                     }
                 )
             )
+
+        if (!toolManager.isEnabled(tool)) {
+            return disabledToolResult(call)
+        }
 
         // TODO(Blocked("Tool not allowed for this connection"))
         // TODO(Blocked("Tool not allowed in current session"))
@@ -68,6 +73,10 @@ class ToolBroker(
                 )
             )
 
+        if (!toolManager.isEnabled(tool)) {
+            return disabledToolResult(call)
+        }
+
         return executeTool(tool, call)
     }
 
@@ -100,8 +109,21 @@ class ToolBroker(
         )
     }
 
-    fun listToolSpecs(): List<ToolSpec> {
-        return registry.all().map { it.toSpec() }
+    suspend fun listToolSpecs(): List<ToolSpec> {
+        return toolManager.enabledSpecs()
+    }
+
+    private fun disabledToolResult(call: ToolCall): BrokerResult.Blocked {
+        return BrokerResult.Blocked(
+            call = call,
+            result = ToolResult(
+                toolCallId = call.id,
+                tool = call.tool,
+                result = buildJsonObject {
+                    put("message", "Tool is disabled")
+                }
+            )
+        )
     }
 }
 

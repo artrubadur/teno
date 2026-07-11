@@ -1,5 +1,6 @@
 package com.artrubadur.tonemo.agent.orchestration
 
+import android.util.Log
 import com.artrubadur.tonemo.agent.policy.ConfirmationManager
 import com.artrubadur.tonemo.agent.tools.BrokerResult
 import com.artrubadur.tonemo.agent.tools.ToolBroker
@@ -35,13 +36,13 @@ class AgentOrchestrator(
     }
 
     fun sendMessage(userMessage: String): Flow<AgentEvent> {
-        val session = AgentSession(
-            id = UUID.randomUUID().toString(),
-            userRequest = userMessage,
-            tools = toolBroker.listToolSpecs()
-        )
-
         return flow {
+            val session = AgentSession(
+                id = UUID.randomUUID().toString(),
+                userRequest = userMessage,
+                tools = toolBroker.listToolSpecs()
+            )
+            Log.d("AgentOrchestrator", toolBroker.listToolSpecs().map { it.name }.toString())
             runAgentLoop(session)
         }
     }

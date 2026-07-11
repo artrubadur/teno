@@ -5,6 +5,7 @@ import com.artrubadur.tonemo.agent.policy.ConfirmationManager
 import com.artrubadur.tonemo.agent.policy.SafetyPolicy
 import com.artrubadur.tonemo.agent.tools.Tool
 import com.artrubadur.tonemo.agent.tools.ToolBroker
+import com.artrubadur.tonemo.agent.tools.ToolManager
 import com.artrubadur.tonemo.agent.tools.ToolRegistry
 import com.artrubadur.tonemo.agent.tools.impl.GetBrightnessTool
 import com.artrubadur.tonemo.agent.tools.impl.GetCurrentTimeTool
@@ -25,10 +26,11 @@ val agentModule = module {
             tools = getAll<Tool<*>>()
         )
     }
+    single { ToolManager(androidContext(), get(), get()) }
 
     single { ConfirmationManager() }
     single { SafetyPolicy() }
-    single { ToolBroker(get(), get()) }
+    single { ToolBroker(get(), get(), get()) }
     single { AgentOrchestrator(get(), get(), get()) }
 }
 

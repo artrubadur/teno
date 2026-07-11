@@ -16,6 +16,8 @@ class GetBrightnessTool(
 
     override val name = "get_brightness"
 
+    override val title = "Get brightness"
+
     override val description = "Returns current system brightness"
 
     override val risk = ToolRisk.SAFE
