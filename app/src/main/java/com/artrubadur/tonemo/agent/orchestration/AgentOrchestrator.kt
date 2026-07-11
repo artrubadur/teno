@@ -19,22 +19,22 @@ class AgentOrchestrator(
     private val toolBroker: ToolBroker,
     private val confirmationManager: ConfirmationManager,
 ) {
-    val isModelLoaded: Boolean
+    val isReady: Boolean
         get() = llmRuntime.isReady
 
     suspend fun connect(connection: Connection) {
         llmRuntime.connect(connection)
     }
 
-    fun terminateModel() {
+    fun terminateConnection() {
         llmRuntime.close()
     }
 
-    fun stopGeneration() {
+    fun stopWork() {
         llmRuntime.stopGeneration()
     }
 
-    fun handleUserMessage(userMessage: String): Flow<AgentEvent> {
+    fun sendMessage(userMessage: String): Flow<AgentEvent> {
         val session = AgentSession(
             id = UUID.randomUUID().toString(),
             userRequest = userMessage,

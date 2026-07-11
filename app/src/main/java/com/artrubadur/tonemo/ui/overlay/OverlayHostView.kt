@@ -17,9 +17,9 @@ import androidx.savedstate.setViewTreeSavedStateRegistryOwner
 import com.artrubadur.tonemo.ui.theme.TonemoTheme
 
 @SuppressLint("ViewConstructor")
-class AssistantOverlayHostView(
+class OverlayHostView(
     context: Context,
-    controller: OverlayAgentController,
+    controller: OverlayController,
 ) : FrameLayout(context), LifecycleOwner, SavedStateRegistryOwner {
 
     private val lifecycleRegistry = LifecycleRegistry(this)
@@ -44,7 +44,7 @@ class AssistantOverlayHostView(
         composeView.setContent {
             val state by controller.state.collectAsState()
             TonemoTheme {
-                AssistantOverlayView(
+                OverlayView(
                     state = state,
                     onInputChanged = controller::onInputChanged,
                     onSend = controller::onSend,

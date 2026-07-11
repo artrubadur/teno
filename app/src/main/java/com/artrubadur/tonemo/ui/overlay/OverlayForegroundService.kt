@@ -15,8 +15,6 @@ import android.view.WindowManager
 import androidx.core.app.NotificationManagerCompat
 import androidx.core.app.ServiceCompat
 import androidx.core.content.ContextCompat
-import com.artrubadur.tonemo.agent.orchestration.AgentOrchestrator
-import com.artrubadur.tonemo.connection.ConnectionManager
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -25,25 +23,20 @@ import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onEach
-import org.koin.core.component.KoinComponent
-import org.koin.core.component.inject
 
-class OverlayForegroundService : Service(), KoinComponent {
-    private val connectionManager: ConnectionManager by inject()
-    private val agentOrchestrator: AgentOrchestrator by inject()
-
+class OverlayForegroundService : Service() {
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate)
 
-    private lateinit var controller: OverlayAgentController
+    private lateinit var controller: OverlayController
     private lateinit var notificationFactory: OverlayNotificationFactory
     private var windowManager: WindowManager? = null
-    private var overlayView: AssistantOverlayHostView? = null
+    private var overlayView: OverlayHostView? = null
 
     override fun onCreate() {
         super.onCreate()
         notificationFactory = OverlayNotificationFactory(this)
         notificationFactory.ensureChannel()
-        controller = OverlayAgentController(scope, connectionManager, agentOrchestrator)
+        controller = OverlayController(scope, application)
 
         showForegroundNotification()
 
@@ -65,10 +58,10 @@ class OverlayForegroundService : Service(), KoinComponent {
             ACTION_START -> showForegroundNotification()
             ACTION_INPUT -> controller.onOpenInput()
             ACTION_STOP -> controller.stopWork()
-            ACTION_LAUNCH -> controller.launchActiveModel()
-            ACTION_TERMINATE -> controller.terminateModel()
+            ACTION_LAUNCH -> controller.launchActiveConnection()
+            ACTION_TERMINATE -> controller.terminateConnection()
             ACTION_SHUTDOWN -> {
-                controller.terminateModel()
+                controller.terminateConnection()
                 stopSelf()
             }
 
@@ -80,7 +73,7 @@ class OverlayForegroundService : Service(), KoinComponent {
 
     override fun onDestroy() {
         removeOverlay()
-        controller.terminateModel()
+        controller.close()
         scope.cancel()
         super.onDestroy()
     }
@@ -123,7 +116,7 @@ class OverlayForegroundService : Service(), KoinComponent {
     private fun showOverlayIfNeeded() {
         if (overlayView != null) return
 
-        val view = AssistantOverlayHostView(this, controller)
+        val view = OverlayHostView(this, controller)
         val params = WindowManager.LayoutParams(
             WindowManager.LayoutParams.MATCH_PARENT,
             WindowManager.LayoutParams.MATCH_PARENT,

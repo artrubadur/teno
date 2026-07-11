@@ -1,0 +1,46 @@
+package com.artrubadur.tonemo.agent.controller
+
+import com.artrubadur.tonemo.agent.orchestration.AgentEvent
+import kotlinx.serialization.Serializable
+
+@Serializable
+data class AgentControllerState(
+    val activeConnectionId: String? = null,
+    val activeConnectionName: String? = null,
+    val isReady: Boolean = false,
+    val isLoading: Boolean = false,
+    val isWorking: Boolean = false,
+)
+
+@Serializable
+sealed interface AgentControllerCommand {
+    @Serializable
+    data object LaunchActiveConnection : AgentControllerCommand
+
+    @Serializable
+    data object TerminateConnection : AgentControllerCommand
+
+    @Serializable
+    data object StopWork : AgentControllerCommand
+
+    @Serializable
+    data class SendMessage(val prompt: String) : AgentControllerCommand
+
+    @Serializable
+    data class ApproveConfirmation(val confirmationId: String) : AgentControllerCommand
+
+    @Serializable
+    data class RejectConfirmation(val confirmationId: String) : AgentControllerCommand
+}
+
+@Serializable
+sealed interface AgentControllerEvent {
+    @Serializable
+    data class StateChanged(val state: AgentControllerState) : AgentControllerEvent
+
+    @Serializable
+    data class Message(val message: String) : AgentControllerEvent
+
+    @Serializable
+    data class Agent(val event: AgentEvent) : AgentControllerEvent
+}

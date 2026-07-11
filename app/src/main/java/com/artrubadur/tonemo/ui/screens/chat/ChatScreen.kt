@@ -100,10 +100,10 @@ fun ChatScreen(
                 horizontalArrangement = Arrangement.spacedBy(16.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                if (!state.isLaunched) {
+                if (!state.isReady) {
                     PrimaryIconButton(
                         iconRes = R.drawable.ic_launch,
-                        onClick = { viewModel.launchActiveModel() },
+                        onClick = { viewModel.launchActiveConnection() },
                         enabled = state.isActivated && !state.isLoading,
                         contentDescription = "Launch agent",
                         modifier = Modifier.size(48.dp),
@@ -112,7 +112,7 @@ fun ChatScreen(
                     ErrorIconButton(
                         iconRes = R.drawable.ic_stop,
                         contentDescription = "Terminate agent",
-                        onClick = viewModel::terminateModel,
+                        onClick = viewModel::terminateConnection,
                         modifier = Modifier.size(48.dp),
                     )
                 }
@@ -122,7 +122,7 @@ fun ChatScreen(
                     contentDescription = "Reset chat",
                     onClick = viewModel::resetConversation,
                     modifier = Modifier.size(48.dp),
-                    enabled = !state.isDialogEmpty && !state.isGenerating
+                    enabled = !state.isDialogEmpty && !state.isWorking
                 )
 
                 Card(
@@ -139,8 +139,7 @@ fun ChatScreen(
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Text(
-                            text = state.activeConnection?.name
-                                ?: "No active generation model",
+                            text = state.activeConnectionName ?: "No active connection.",
                             style = MaterialTheme.typography.bodyMedium,
                             color = MaterialTheme.colorScheme.onSurface,
                             modifier = Modifier.weight(1f),
@@ -174,13 +173,13 @@ fun ChatScreen(
                                 message = message,
                                 onApproveConfirmation = viewModel::approveConfirmation,
                                 onRejectConfirmation = viewModel::rejectConfirmation,
-                                isGenerating = state.isGenerating
+                                isWorking = state.isWorking
                             )
                         }
                     }
                 }
 
-                if (state.isDialogEmpty || !state.isLaunched) {
+                if (state.isDialogEmpty || !state.isReady) {
                     Box(
                         modifier = Modifier
                             .fillMaxSize()
@@ -189,9 +188,9 @@ fun ChatScreen(
                     ) {
                         Text(
                             text = if (!state.isActivated) {
-                                "Select a generation model."
-                            } else if (!state.isLaunched) {
-                                "Activate a model before sending messages."
+                                "Select a connection."
+                            } else if (!state.isReady) {
+                                "Activate a connection before sending messages."
                             } else {
                                 "Start the conversation."
                             },
@@ -214,7 +213,7 @@ fun ChatScreen(
                     modifier = Modifier
                         .weight(1f)
                         .heightIn(min = 48.dp),
-                    enabled = state.isLaunched,
+                    enabled = state.isReady,
                     placeholder = {
                         Text(text = "Type a message", style = MaterialTheme.typography.bodyLarge)
                     },
@@ -227,11 +226,11 @@ fun ChatScreen(
                     shape = RoundedCornerShape(24.dp)
                 )
 
-                if (state.isGenerating) {
+                if (state.isWorking) {
                     OutlinedIconButton(
                         iconRes = R.drawable.ic_stop,
-                        contentDescription = "Stop generation",
-                        onClick = viewModel::stopGeneration,
+                        contentDescription = "Stop work",
+                        onClick = viewModel::stopWork,
                         modifier = Modifier.size(48.dp)
                     )
                 } else {
@@ -240,7 +239,7 @@ fun ChatScreen(
                         contentDescription = "Send message",
                         onClick = viewModel::sendMessage,
                         modifier = Modifier.size(48.dp),
-                        enabled = state.isLaunched && state.input.isNotBlank(),
+                        enabled = state.canSend,
                     )
                 }
             }

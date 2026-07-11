@@ -12,9 +12,7 @@ val appModule = module {
         HomeViewModel(androidApplication())
     }
     viewModel {
-        ChatViewModel(
-            get(), get()
-        )
+        ChatViewModel(androidApplication())
     }
     viewModel {
         ConnectionsViewModel(

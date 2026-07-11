@@ -101,7 +101,7 @@ fun ConnectionsScreen(
                 ) {
                     PrimaryIconButton(
                         iconRes = R.drawable.ic_add,
-                        contentDescription = "Add model",
+                        contentDescription = "Add connection",
                         onClick = { viewModel.setDialogStage(DialogStage.SOURCE) },
                         modifier = Modifier.size(48.dp),
                         enabled = !state.isLoading,
@@ -110,7 +110,7 @@ fun ConnectionsScreen(
                     if (state.cardAction == CardAction.DELETE) {
                         SecondaryIconButton(
                             iconRes = R.drawable.ic_delete,
-                            contentDescription = "Delete model",
+                            contentDescription = "Delete connection",
                             onClick = { viewModel.setCardAction(null) },
                             modifier = Modifier.size(48.dp),
                             enabled = !state.isLoading,
@@ -118,7 +118,7 @@ fun ConnectionsScreen(
                     } else {
                         OutlinedIconButton(
                             iconRes = R.drawable.ic_delete,
-                            contentDescription = "Delete model",
+                            contentDescription = "Delete connection",
                             onClick = { viewModel.setCardAction(CardAction.DELETE) },
                             modifier = Modifier.size(48.dp),
                             enabled = !state.isLoading and connections.isNotEmpty(),
@@ -128,7 +128,7 @@ fun ConnectionsScreen(
                     if (state.cardAction == CardAction.UPDATE) {
                         SecondaryIconButton(
                             iconRes = R.drawable.ic_edit,
-                            contentDescription = "Edit model",
+                            contentDescription = "Edit connection",
                             onClick = { viewModel.setCardAction(null) },
                             modifier = Modifier.size(48.dp),
                             enabled = !state.isLoading,
@@ -136,23 +136,13 @@ fun ConnectionsScreen(
                     } else {
                         OutlinedIconButton(
                             iconRes = R.drawable.ic_edit,
-                            contentDescription = "Edit model",
+                            contentDescription = "Edit connection",
                             onClick = { viewModel.setCardAction(CardAction.UPDATE) },
                             modifier = Modifier.size(48.dp),
                             enabled = !state.isLoading and connections.isNotEmpty(),
                         )
                     }
                 }
-
-//                DropdownMenu(
-//                    options = ConnectionType.entries.map(ConnectionType::name),
-//                    selectedOption = state.typeFilter?.name,
-//                    onSelect = { selectedName ->
-//                        viewModel.setTypeFilter(ConnectionType.entries.firstOrNull { it.name == selectedName })
-//                    },
-//                    buttonModifier = Modifier.size(48.dp),
-//                    emptyOption = "All",
-//                )
             }
 
             when {
@@ -174,7 +164,7 @@ fun ConnectionsScreen(
                             .weight(1f),
                         contentAlignment = Alignment.Center
                     ) {
-                        Text(text = "No models")
+                        Text(text = "No connections")
                     }
                 }
 
@@ -186,9 +176,9 @@ fun ConnectionsScreen(
                         items(
                             items = connections,
                             key = { it.id }
-                        ) { model ->
+                        ) { connection ->
                             ConnectionCard(
-                                connection = model,
+                                connection = connection,
                                 onClick = viewModel::onCardClick,
                                 onToggleActive = viewModel::onToggleActive
                             )

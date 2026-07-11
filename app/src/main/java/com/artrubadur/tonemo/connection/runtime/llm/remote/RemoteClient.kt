@@ -49,7 +49,7 @@ class RemoteClient(
         val apiResponse: ApiResponse = response.body()
 
         Log.d(
-            "RemoteClient",
+            TAG,
             "usage=" +
                     "prompt=${apiResponse.usage.promptTokens}, " +
                     "cached=${apiResponse.usage.promptTokensDetails?.cachedTokens ?: 0}, " +
@@ -68,4 +68,7 @@ class RemoteClient(
         return "${baseUrl.trimEnd('/')}/chat/completions"
     }
 
+    private companion object {
+        const val TAG = "RemoteClient"
+    }
 }

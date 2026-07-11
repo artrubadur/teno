@@ -66,7 +66,7 @@ class ConnectionsViewModel(
             try {
                 connectionManager.setActiveConnection(connection.id)
             } catch (e: Exception) {
-                _events.tryEmit(e.message ?: "Failed to set active model")
+                _events.tryEmit(e.message ?: "Failed to set active connection")
             }
         }
     }
@@ -99,7 +99,7 @@ class ConnectionsViewModel(
                     it.copy(isLoading = false)
                 }
             } catch (e: Exception) {
-                _events.tryEmit(e.message ?: "Failed to delete model")
+                _events.tryEmit(e.message ?: "Failed to delete connection")
                 _state.update {
                     it.copy(isLoading = false)
                 }
@@ -233,7 +233,7 @@ class ConnectionsViewModel(
                     )
                 }
             } catch (e: Exception) {
-                _events.tryEmit(e.message ?: "Failed to update model")
+                _events.tryEmit(e.message ?: "Failed to update connection")
 
                 _state.update {
                     it.copy(isLoading = false)
@@ -273,7 +273,7 @@ class ConnectionsViewModel(
                     )
                 }
             } catch (e: Exception) {
-                _events.tryEmit(e.message ?: "Failed to add model")
+                _events.tryEmit(e.message ?: "Failed to add connection")
 
                 _state.update {
                     it.copy(isLoading = false)

@@ -38,7 +38,7 @@ import com.artrubadur.tonemo.ui.components.buttons.ErrorIconButton
 import com.artrubadur.tonemo.ui.components.buttons.OutlinedIconButton
 
 @Composable
-fun AssistantOverlayView(
+fun OverlayView(
     state: OverlayState,
     onInputChanged: (String) -> Unit,
     onSend: () -> Unit,
@@ -57,6 +57,12 @@ fun AssistantOverlayView(
             }
         }
     )
+    val statusText = when {
+        !state.latestEvent.isNullOrBlank() -> state.latestEvent
+        state.isWorking -> "Agent is working..."
+        !state.isActivated -> "No active connection."
+        else -> null
+    }
 
     LaunchedEffect(state.focusInput, state.isIslandVisible, state.isWorking) {
         if (state.focusInput && state.isIslandVisible && !state.isWorking) {
@@ -96,10 +102,9 @@ fun AssistantOverlayView(
             shadowElevation = 8.dp,
         ) {
             Column {
-                if (!state.latestEvent.isNullOrBlank() || state.isWorking)
+                if (statusText != null)
                     Text(
-                        text = state.latestEvent
-                            ?: "Agent is working...",
+                        text = statusText,
                         modifier = Modifier
                             .fillMaxWidth(1f)
                             .padding(horizontal = 14.dp, vertical = 12.dp),
@@ -151,7 +156,7 @@ fun AssistantOverlayView(
                     if (state.isWorking || state.isLoading) {
                         ErrorIconButton(
                             iconRes = R.drawable.ic_stop,
-                            contentDescription = "Stop generation",
+                            contentDescription = "Stop work",
                             onClick = onStop,
                             modifier = Modifier.size(44.dp),
                         )

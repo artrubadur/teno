@@ -31,6 +31,11 @@
         </activity>
 
         <service
+            android:name=".agent.controller.AgentControllerService"
+            android:exported="false"
+            android:process=":agent" />
+
+        <service
             android:name=".ui.overlay.OverlayForegroundService"
             android:exported="false"
             android:foregroundServiceType="dataSync"

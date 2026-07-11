@@ -25,7 +25,7 @@ fun MessageCard(
     message: ChatMessage,
     onApproveConfirmation: (Int, String) -> Unit = { _, _ -> },
     onRejectConfirmation: (Int, String) -> Unit = { _, _ -> },
-    isGenerating: Boolean = false
+    isWorking: Boolean = false
 ) {
     Box(
         modifier = Modifier.fillMaxWidth(),
@@ -46,12 +46,12 @@ fun MessageCard(
                 verticalArrangement = Arrangement.spacedBy(6.dp)
             ) {
                 Text(
-                    text = if (message.isUser) "You" else "Model",
+                    text = if (message.isUser) "You" else "Agent",
                     style = MaterialTheme.typography.labelMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
                 Text(
-                    text = if (message.text.isBlank() && !message.isUser) "..." else message.text,
+                    text = if (message.text.isBlank() && !message.isUser) "" else message.text,
                     style = MaterialTheme.typography.bodyLarge
                 )
 
@@ -67,14 +67,14 @@ fun MessageCard(
                                 iconRes = R.drawable.ic_confirm,
                                 text = "Approve",
                                 onClick = { onApproveConfirmation(message.index, confirmation.id) },
-                                enabled = !isGenerating,
+                                enabled = !isWorking,
                                 modifier = Modifier.weight(1f)
                             )
                             OutlinedLeadingIconButton(
                                 iconRes = R.drawable.ic_close,
                                 text = "Reject",
                                 onClick = { onRejectConfirmation(message.index, confirmation.id) },
-                                enabled = !isGenerating,
+                                enabled = !isWorking,
                                 modifier = Modifier.weight(1f)
                             )
                         }

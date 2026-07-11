@@ -26,8 +26,8 @@ import com.artrubadur.tonemo.ui.theme.TonemoTheme
 @Composable
 fun ConnectionCard(
     connection: Connection,
-    onClick: ((model: Connection) -> Unit),
-    onToggleActive: ((model: Connection) -> Unit)
+    onClick: ((connection: Connection) -> Unit),
+    onToggleActive: ((connection: Connection) -> Unit)
 ) {
     Card(
         onClick = { onClick(connection) },
@@ -93,7 +93,7 @@ private fun ConnectionCardActivePreview() {
             connection = LocalConnection(
                 id = "123",
                 type = ConnectionType.LLM,
-                name = "Model name",
+                name = "Connection name",
                 active = true,
                 addedAt = 1,
                 config = LocalConnectionConfig(
@@ -115,7 +115,7 @@ private fun ConnectionCardInactivePreview() {
             connection = LocalConnection(
                 id = "123",
                 type = ConnectionType.LLM,
-                name = "Model name",
+                name = "Connection name",
                 active = false,
                 addedAt = 1,
                 config = LocalConnectionConfig(

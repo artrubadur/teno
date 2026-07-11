@@ -1,15 +1,13 @@
 package com.artrubadur.tonemo.ui.screens.chat
 
+import android.app.Application
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.artrubadur.tonemo.agent.controller.AgentControllerClient
+import com.artrubadur.tonemo.agent.controller.AgentControllerCommand
+import com.artrubadur.tonemo.agent.controller.AgentControllerEvent
+import com.artrubadur.tonemo.agent.controller.AgentControllerState
 import com.artrubadur.tonemo.agent.orchestration.AgentEvent
-import com.artrubadur.tonemo.agent.orchestration.AgentOrchestrator
-import com.artrubadur.tonemo.connection.Connection
-import com.artrubadur.tonemo.connection.ConnectionManager
-import com.artrubadur.tonemo.connection.ConnectionType
-import kotlinx.coroutines.CancellationException
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharedFlow
@@ -19,12 +17,12 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.update
-import kotlinx.coroutines.launch
 
 class ChatViewModel(
-    connectionManager: ConnectionManager,
-    private val agentOrchestrator: AgentOrchestrator
+    application: Application,
 ) : ViewModel() {
+
+    private val agentController = AgentControllerClient(application)
 
     private val _state = MutableStateFlow(ChatState())
     val state: StateFlow<ChatState> = _state.asStateFlow()
@@ -33,19 +31,15 @@ class ChatViewModel(
     val events: SharedFlow<String> = _events.asSharedFlow()
 
     private var nextMessageId: Int = 0
-    private var generationJob: Job? = null
+    private var activeAssistantMessageIndex: Int? = null
 
     init {
-        connectionManager
-            .observeActiveConnection(ConnectionType.LLM)
-            .onEach { connection ->
-                if (_state.value.activeConnection != connection || connection == null) {
-                    terminateModel()
-                }
-                _state.update { state ->
-                    state.copy(activeConnection = connection)
-                }
-            }
+        agentController.state
+            .onEach(::applyAgentState)
+            .launchIn(viewModelScope)
+
+        agentController.events
+            .onEach(::handleControllerEvent)
             .launchIn(viewModelScope)
     }
 
@@ -55,104 +49,51 @@ class ChatViewModel(
         }
     }
 
-    fun launchActiveModel() {
-        val activeConnection = _state.value.activeConnection
-
-        if (activeConnection == null) {
-            _events.tryEmit("No active generation model. Select one in Models.")
-            return
-        }
-
-        if (agentOrchestrator.isModelLoaded) {
-            return
-        }
-
-        stopGeneration()
-
-        viewModelScope.launch {
-            _state.update {
-                it.copy(
-                    isLoading = true,
-                    isLaunched = false
-                )
-            }
-
-            try {
-                agentOrchestrator.connect(activeConnection)
-
-                _state.update {
-                    it.copy(
-                        isLoading = false,
-                        isLaunched = true,
-                    )
-                }
-            } catch (t: Throwable) {
-                _state.update {
-                    it.copy(
-                        isLoading = false,
-                        isLaunched = false,
-                    )
-                }
-                _events.tryEmit(
-                    "Failed to launch model: ${t.message}: ${t.cause?.message}"
-                )
-            }
-        }
+    fun launchActiveConnection() {
+        agentController.send(AgentControllerCommand.LaunchActiveConnection)
     }
 
-    fun terminateModel() {
+    fun terminateConnection() {
         resetConversation()
-
-        agentOrchestrator.terminateModel()
-
+        agentController.send(AgentControllerCommand.TerminateConnection)
         _state.update {
             it.copy(
-                isLaunched = false,
+                isReady = false,
+                isWorking = false,
+                isLoading = false,
             )
         }
     }
 
     fun resetConversation() {
-        viewModelScope.launch {
-            stopGeneration()
-
-            _state.update {
-                it.copy(
-                    messages = emptyList()
-                )
-            }
+        stopWork()
+        activeAssistantMessageIndex = null
+        _state.update {
+            it.copy(messages = emptyList())
         }
     }
 
-    fun stopGeneration() {
-        generationJob?.cancel()
-        generationJob = null
-        agentOrchestrator.stopGeneration()
-
+    fun stopWork() {
+        agentController.send(AgentControllerCommand.StopWork)
         _state.update {
-            it.copy(isGenerating = false)
+            it.copy(isWorking = false)
         }
     }
 
     fun sendMessage() {
-        val state = _state.value
-        val prompt = state.input.trim()
+        val current = _state.value
+        val prompt = current.input.trim()
 
-        if (
-            prompt.isEmpty() ||
-            state.activeConnection == null ||
-            state.isGenerating
-        ) {
-            return
-        }
+        if (!current.canSend) return
 
         val userMessageIndex = nextId()
         val assistantMessageIndex = nextId()
+        activeAssistantMessageIndex = assistantMessageIndex
 
         _state.update {
             it.copy(
                 input = "",
-                isGenerating = true,
+                isWorking = true,
                 messages = it.messages + listOf(
                     ChatMessage(
                         index = userMessageIndex,
@@ -168,43 +109,14 @@ class ChatViewModel(
             )
         }
 
-        generationJob = viewModelScope.launch {
-            val currentJob = coroutineContext[Job]
-
-            try {
-                collectAgentEvents(
-                    assistantMessageIndex = assistantMessageIndex,
-                    events = agentOrchestrator.handleUserMessage(prompt)
-                )
-            } catch (_: CancellationException) {
-                _state.update {
-                    it.removeEmptyMessage(assistantMessageIndex)
-                }
-            } catch (t: Throwable) {
-                _state.update {
-                    it.removeEmptyMessage(assistantMessageIndex)
-                }
-
-                _events.tryEmit(
-                    "Generation failed: ${t.message}: ${t.cause?.message}"
-                )
-            } finally {
-                if (generationJob == currentJob) {
-                    generationJob = null
-                }
-
-                _state.update {
-                    it.copy(isGenerating = false)
-                }
-            }
-        }
+        agentController.send(AgentControllerCommand.SendMessage(prompt))
     }
 
     fun approveConfirmation(messageIndex: Int, confirmationId: String) {
         respondToConfirmation(
             messageIndex = messageIndex,
             status = ConfirmationStatus.APPROVED,
-            events = agentOrchestrator.approveConfirmation(confirmationId)
+            command = AgentControllerCommand.ApproveConfirmation(confirmationId)
         )
     }
 
@@ -212,81 +124,82 @@ class ChatViewModel(
         respondToConfirmation(
             messageIndex = messageIndex,
             status = ConfirmationStatus.REJECTED,
-            events = agentOrchestrator.rejectConfirmation(confirmationId)
+            command = AgentControllerCommand.RejectConfirmation(confirmationId)
         )
     }
 
     private fun respondToConfirmation(
         messageIndex: Int,
         status: ConfirmationStatus,
-        events: Flow<AgentEvent>
+        command: AgentControllerCommand
     ) {
-        val state = _state.value
+        val current = _state.value
+        if (current.isWorking) return
 
-        if (state.isGenerating) {
-            return
-        }
-
+        activeAssistantMessageIndex = messageIndex
         _state.update {
             it.resolveConfirmation(
                 messageIndex = messageIndex,
                 status = status
-            ).copy(isGenerating = true)
+            ).copy(isWorking = true)
+        }
+        agentController.send(command)
+    }
+
+    private fun applyAgentState(agentState: AgentControllerState) {
+        val messageIndex = activeAssistantMessageIndex
+        val shouldRemoveEmptyMessage =
+            _state.value.isWorking && !agentState.isWorking && messageIndex != null
+
+        _state.update {
+            val updated = if (shouldRemoveEmptyMessage) {
+                it.removeEmptyMessage(messageIndex)
+            } else {
+                it
+            }
+
+            updated.copy(
+                activeConnectionName = agentState.activeConnectionName,
+                isReady = agentState.isReady,
+                isLoading = agentState.isLoading,
+                isWorking = agentState.isWorking,
+            )
         }
 
-        generationJob = viewModelScope.launch {
-            val currentJob = coroutineContext[Job]
-
-            try {
-                collectAgentEvents(
-                    assistantMessageIndex = messageIndex,
-                    events = events
-                )
-            } catch (t: Throwable) {
-                if (t is CancellationException) {
-                    throw t
-                }
-
-                _events.tryEmit(
-                    "Confirmation failed: ${t.message}: ${t.cause?.message}"
-                )
-            } finally {
-                if (generationJob == currentJob) {
-                    generationJob = null
-                }
-
-                _state.update {
-                    it.copy(isGenerating = false)
-                }
-            }
+        if (!agentState.isWorking) {
+            activeAssistantMessageIndex = null
         }
     }
 
-    private suspend fun collectAgentEvents(
-        assistantMessageIndex: Int,
-        events: Flow<AgentEvent>
-    ) {
-        events.collect { event ->
-            _state.update { state ->
-                val withLine = state.appendAssistantLine(
-                    messageIndex = assistantMessageIndex,
-                    line = event.toMessageLine()
-                )
+    private fun handleControllerEvent(event: AgentControllerEvent) {
+        when (event) {
+            is AgentControllerEvent.Agent -> collectAgentEvent(event.event)
+            is AgentControllerEvent.Message -> _events.tryEmit(event.message)
+            is AgentControllerEvent.StateChanged -> Unit
+        }
+    }
 
-                when (event) {
-                    is AgentEvent.ConfirmationRequired -> {
-                        withLine.setMessageConfirmation(
-                            messageIndex = assistantMessageIndex,
-                            confirmation = ConfirmationRequest(
-                                id = event.confirmationId,
-                                title = event.title,
-                                description = event.description
-                            )
+    private fun collectAgentEvent(event: AgentEvent) {
+        val assistantMessageIndex = activeAssistantMessageIndex ?: return
+        _state.update { state ->
+            val withLine = state.appendAssistantLine(
+                messageIndex = assistantMessageIndex,
+                line = event.toMessageLine()
+            )
+
+            when (event) {
+                is AgentEvent.ConfirmationRequired -> {
+                    withLine.setMessageConfirmation(
+                        messageIndex = assistantMessageIndex,
+                        confirmation = ConfirmationRequest(
+                            id = event.confirmationId,
+                            title = event.title,
+                            description = event.description
                         )
-                    }
-
-                    else -> withLine
+                    )
                 }
+
+                else -> withLine
             }
         }
     }
@@ -310,92 +223,6 @@ class ChatViewModel(
     }
 
     override fun onCleared() {
-        terminateModel()
-        super.onCleared()
+        agentController.close()
     }
-}
-
-
-data class ChatState(
-    val activeConnection: Connection? = null,
-    val isLaunched: Boolean = false,
-    val isLoading: Boolean = false,
-    val isGenerating: Boolean = false,
-    val messages: List<ChatMessage> = emptyList(),
-    val input: String = ""
-) {
-    val isActivated: Boolean
-        get() = activeConnection != null
-
-    val isDialogEmpty: Boolean
-        get() = messages.isEmpty()
-}
-
-private fun ChatState.appendAssistantLine(
-    messageIndex: Int,
-    line: String
-): ChatState {
-    val actualIndex = messages.indexOfFirst { it.index == messageIndex }
-    if (actualIndex == -1) return this
-
-    val updatedMessages = messages.toMutableList()
-    val message = updatedMessages[actualIndex]
-
-    val separator = if (message.text.isBlank()) "" else "\n"
-    updatedMessages[actualIndex] = message.copy(text = message.text + separator + line)
-
-    return copy(messages = updatedMessages)
-}
-
-private fun ChatState.setMessageConfirmation(
-    messageIndex: Int,
-    confirmation: ConfirmationRequest
-): ChatState {
-    val actualIndex = messages.indexOfFirst { it.index == messageIndex }
-    if (actualIndex == -1) return this
-
-    val updatedMessages = messages.toMutableList()
-    val message = updatedMessages[actualIndex]
-
-    updatedMessages[actualIndex] = message.copy(
-        confirmation = confirmation
-    )
-
-    return copy(messages = updatedMessages)
-}
-
-private fun ChatState.resolveConfirmation(
-    messageIndex: Int,
-    status: ConfirmationStatus
-): ChatState {
-    val actualIndex = messages.indexOfFirst { it.index == messageIndex }
-    if (actualIndex == -1) return this
-
-    val updatedMessages = messages.toMutableList()
-    val message = updatedMessages[actualIndex]
-
-    val confirmation = message.confirmation ?: return this
-
-    updatedMessages[actualIndex] = message.copy(
-        confirmation = confirmation.copy(status = status)
-    )
-
-    return copy(messages = updatedMessages)
-}
-
-private fun ChatState.removeEmptyMessage(
-    messageIndex: Int
-): ChatState {
-    val actualIndex = messages.indexOfFirst { it.index == messageIndex }
-    if (actualIndex == -1) return this
-
-    val updatedMessages = messages.toMutableList()
-    val message = updatedMessages[actualIndex]
-    if (message.text.isNotBlank()) {
-        return this
-    }
-
-    updatedMessages.removeAt(actualIndex)
-
-    return copy(messages = updatedMessages)
 }
