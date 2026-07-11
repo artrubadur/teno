@@ -86,11 +86,6 @@ class HomeViewModel(
     }
 }
 
-data class HomeState(
-    val overlayPermissionGranted: Boolean = false,
-    val notificationPermissionGranted: Boolean = true,
-)
-
 sealed interface HomeCommand {
     data object RequestOverlayPermission : HomeCommand
     data object RequestNotificationPermission : HomeCommand
