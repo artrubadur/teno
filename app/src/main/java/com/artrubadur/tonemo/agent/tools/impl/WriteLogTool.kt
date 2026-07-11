@@ -9,18 +9,18 @@ import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.put
 
-class LogTool : Tool<LogToolArgs> {
+class LogTool : Tool<WriteLogToolArgs> {
 
     override val name = "write_log"
 
     override val description =
-        "Writes a message to the internal app log."
+        "Writes a message to the internal app log"
 
     override val risk = ToolRisk.SAFE
 
-    override val argsSerializer = LogToolArgs.serializer()
+    override val argsSerializer = WriteLogToolArgs.serializer()
 
-    override suspend fun executeTyped(args: LogToolArgs): JsonObject {
+    override suspend fun executeTyped(args: WriteLogToolArgs): JsonObject {
         when (args.level) {
             LogLevel.DEBUG -> Log.d("TonemoToolCall", args.message)
             LogLevel.INFO -> Log.i("TonemoToolCall", args.message)
@@ -35,7 +35,7 @@ class LogTool : Tool<LogToolArgs> {
 }
 
 @Serializable
-data class LogToolArgs(
+data class WriteLogToolArgs(
     val message: String,
     val level: LogLevel = LogLevel.DEBUG
 )
