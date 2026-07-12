@@ -17,7 +17,7 @@ import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import com.artrubadur.teno.R
-import com.artrubadur.teno.ui.theme.TenoTheme
+import com.artrubadur.teno.ui.theme.AppTheme
 import androidx.compose.material3.FilledIconButton as MaterialFilledIconButton
 import androidx.compose.material3.IconButton as MaterialIconButton
 import androidx.compose.material3.OutlinedIconButton as MaterialOutlinedIconButton
@@ -89,15 +89,17 @@ fun OutlinedIconButton(
         modifier = modifier,
         enabled = enabled,
         colors = IconButtonDefaults.outlinedIconButtonColors(
-            contentColor = MaterialTheme.colorScheme.outline,
-            disabledContentColor = MaterialTheme.colorScheme.outlineVariant,
+            contentColor = MaterialTheme.colorScheme.onSurface,
+            disabledContentColor = MaterialTheme.colorScheme.onSurface.copy(
+                alpha = 0.38f
+            ),
         ),
         border = BorderStroke(
             width = IconButtonDefaults.outlinedIconButtonBorder(enabled).width,
             color = if (enabled) {
                 MaterialTheme.colorScheme.outline
             } else {
-                MaterialTheme.colorScheme.outlineVariant
+                MaterialTheme.colorScheme.outline.copy(alpha = 0.12f)
             },
         ),
         interactionSource = interactionSource,
@@ -201,7 +203,7 @@ private fun FilledIconButtonBase(
 @Preview(showBackground = true)
 @Composable
 private fun PrimaryEnabledPreview() {
-    TenoTheme {
+    AppTheme {
         PrimaryIconButton(
             iconRes = R.drawable.ic_delete,
             onClick = {},
@@ -213,7 +215,7 @@ private fun PrimaryEnabledPreview() {
 @Preview(showBackground = true)
 @Composable
 private fun PrimaryDisabledPreview() {
-    TenoTheme {
+    AppTheme {
         PrimaryIconButton(
             iconRes = R.drawable.ic_delete,
             onClick = {},
@@ -226,7 +228,7 @@ private fun PrimaryDisabledPreview() {
 @Preview(showBackground = true)
 @Composable
 private fun SecondaryEnabledPreview() {
-    TenoTheme {
+    AppTheme {
         SecondaryIconButton(
             iconRes = R.drawable.ic_delete,
             onClick = {},
@@ -238,7 +240,7 @@ private fun SecondaryEnabledPreview() {
 @Preview(showBackground = true)
 @Composable
 private fun SecondaryDisabledPreview() {
-    TenoTheme {
+    AppTheme {
         SecondaryIconButton(
             iconRes = R.drawable.ic_delete,
             onClick = {},
@@ -251,7 +253,7 @@ private fun SecondaryDisabledPreview() {
 @Preview(showBackground = true)
 @Composable
 private fun OutlinedEnabledPreview() {
-    TenoTheme {
+    AppTheme {
         OutlinedIconButton(
             iconRes = R.drawable.ic_delete,
             onClick = {},
@@ -263,7 +265,7 @@ private fun OutlinedEnabledPreview() {
 @Preview(showBackground = true)
 @Composable
 private fun OutlinedDisabledPreview() {
-    TenoTheme {
+    AppTheme {
         OutlinedIconButton(
             iconRes = R.drawable.ic_delete,
             onClick = {},
@@ -276,7 +278,7 @@ private fun OutlinedDisabledPreview() {
 @Preview(showBackground = true)
 @Composable
 private fun PlainEnabledPreview() {
-    TenoTheme {
+    AppTheme {
         PlainIconButton(
             iconRes = R.drawable.ic_delete,
             onClick = {},
@@ -288,7 +290,7 @@ private fun PlainEnabledPreview() {
 @Preview(showBackground = true)
 @Composable
 private fun PlainDisabledPreview() {
-    TenoTheme {
+    AppTheme {
         PlainIconButton(
             iconRes = R.drawable.ic_delete,
             onClick = {},
@@ -301,7 +303,7 @@ private fun PlainDisabledPreview() {
 @Preview(showBackground = true)
 @Composable
 private fun ErrorEnabledPreview() {
-    TenoTheme {
+    AppTheme {
         ErrorIconButton(
             iconRes = R.drawable.ic_delete,
             onClick = {},

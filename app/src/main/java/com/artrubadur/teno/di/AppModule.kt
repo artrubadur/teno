@@ -10,7 +10,7 @@ import org.koin.dsl.module
 
 val appModule = module {
     viewModel {
-        HomeViewModel(androidApplication())
+        HomeViewModel(androidApplication(), get())
     }
     viewModel {
         ChatViewModel(androidApplication())

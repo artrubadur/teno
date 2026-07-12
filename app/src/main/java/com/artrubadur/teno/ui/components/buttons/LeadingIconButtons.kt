@@ -16,7 +16,7 @@ import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import com.artrubadur.teno.R
-import com.artrubadur.teno.ui.theme.TenoTheme
+import com.artrubadur.teno.ui.theme.AppTheme
 
 @Composable
 fun PrimaryLeadingIconButton(
@@ -138,7 +138,7 @@ private fun LeadingIconButtonContent(
 @Preview(showBackground = true)
 @Composable
 private fun PrimaryEnabledPreview() {
-    TenoTheme {
+    AppTheme {
         PrimaryLeadingIconButton(
             iconRes = R.drawable.ic_add,
             text = "Primary",
@@ -150,7 +150,7 @@ private fun PrimaryEnabledPreview() {
 @Preview(showBackground = true)
 @Composable
 private fun PrimaryDisabledPreview() {
-    TenoTheme {
+    AppTheme {
         PrimaryLeadingIconButton(
             iconRes = R.drawable.ic_add,
             text = "Primary",
@@ -163,7 +163,7 @@ private fun PrimaryDisabledPreview() {
 @Preview(showBackground = true)
 @Composable
 private fun OutlinedEnabledPreview() {
-    TenoTheme {
+    AppTheme {
         OutlinedLeadingIconButton(
             iconRes = R.drawable.ic_add,
             text = "Outlined",
@@ -175,7 +175,7 @@ private fun OutlinedEnabledPreview() {
 @Preview(showBackground = true)
 @Composable
 private fun OutlinedDisabledPreview() {
-    TenoTheme {
+    AppTheme {
         OutlinedLeadingIconButton(
             iconRes = R.drawable.ic_add,
             text = "Outlined",
@@ -188,7 +188,7 @@ private fun OutlinedDisabledPreview() {
 @Preview(showBackground = true)
 @Composable
 private fun PlainEnabledPreview() {
-    TenoTheme {
+    AppTheme {
         PlainLeadingIconButton(
             iconRes = R.drawable.ic_add,
             text = "Outlined",
@@ -200,7 +200,7 @@ private fun PlainEnabledPreview() {
 @Preview(showBackground = true)
 @Composable
 private fun PlainDisabledPreview() {
-    TenoTheme {
+    AppTheme {
         PlainLeadingIconButton(
             iconRes = R.drawable.ic_add,
             text = "Outlined",

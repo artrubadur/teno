@@ -21,7 +21,7 @@ import com.artrubadur.teno.connection.LocalConnection
 import com.artrubadur.teno.connection.LocalConnectionConfig
 import com.artrubadur.teno.connection.ModelType
 import com.artrubadur.teno.ui.components.buttons.PrimaryIconButton
-import com.artrubadur.teno.ui.theme.TenoTheme
+import com.artrubadur.teno.ui.theme.AppTheme
 
 @Composable
 fun ConnectionCard(
@@ -88,7 +88,7 @@ fun ConnectionCard(
 @Preview
 @Composable
 private fun ConnectionCardActivePreview() {
-    TenoTheme {
+    AppTheme {
         ConnectionCard(
             connection = LocalConnection(
                 id = "123",
@@ -110,7 +110,7 @@ private fun ConnectionCardActivePreview() {
 @Preview
 @Composable
 private fun ConnectionCardInactivePreview() {
-    TenoTheme {
+    AppTheme {
         ConnectionCard(
             connection = LocalConnection(
                 id = "123",
@@ -132,7 +132,7 @@ private fun ConnectionCardInactivePreview() {
 @Preview
 @Composable
 private fun ConnectionCardLongNamePreview() {
-    TenoTheme {
+    AppTheme {
         ConnectionCard(
             connection = LocalConnection(
                 id = "123",

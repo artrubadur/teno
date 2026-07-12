@@ -30,7 +30,7 @@ import com.artrubadur.teno.R
 import com.artrubadur.teno.connection.RemoteConnectionConfig
 import com.artrubadur.teno.ui.components.buttons.PlainLeadingIconButton
 import com.artrubadur.teno.ui.components.buttons.PrimaryLeadingIconButton
-import com.artrubadur.teno.ui.theme.TenoTheme
+import com.artrubadur.teno.ui.theme.AppTheme
 
 @Composable
 fun RemoteConnectionDialog(
@@ -161,7 +161,7 @@ private fun DialogContent(
 @Preview
 @Composable
 private fun DialogPreview() {
-    TenoTheme {
+    AppTheme {
         DialogContent(
             initialConfig = RemoteConnectionConfig("", "", ""),
             onDismiss = {},

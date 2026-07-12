@@ -24,7 +24,7 @@ import com.artrubadur.teno.agent.tools.NoArgs
 import com.artrubadur.teno.agent.tools.ToolPermission
 import com.artrubadur.teno.agent.tools.ToolSpec
 import com.artrubadur.teno.ui.components.buttons.OutlinedIconButton
-import com.artrubadur.teno.ui.theme.TenoTheme
+import com.artrubadur.teno.ui.theme.AppTheme
 import kotlinx.schema.generator.json.serialization.SerializationClassJsonSchemaGenerator
 
 @Composable
@@ -129,7 +129,7 @@ private fun PermissionItem(
 @Preview(showBackground = true)
 @Composable
 private fun ToolCardCollapsedPreview() {
-    TenoTheme {
+    AppTheme {
         Surface {
             ToolCard(
                 tool = previewToolItem(),
@@ -144,7 +144,7 @@ private fun ToolCardCollapsedPreview() {
 @Preview(showBackground = true)
 @Composable
 private fun ToolCardExpandedPreview() {
-    TenoTheme {
+    AppTheme {
         Surface {
             ToolCard(
                 tool = previewToolItem(),

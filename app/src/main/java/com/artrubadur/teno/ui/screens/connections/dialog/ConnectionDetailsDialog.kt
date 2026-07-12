@@ -24,7 +24,7 @@ import com.artrubadur.teno.R
 import com.artrubadur.teno.connection.ConnectionType
 import com.artrubadur.teno.ui.components.buttons.PlainLeadingIconButton
 import com.artrubadur.teno.ui.components.buttons.PrimaryLeadingIconButton
-import com.artrubadur.teno.ui.theme.TenoTheme
+import com.artrubadur.teno.ui.theme.AppTheme
 
 
 @Composable
@@ -123,12 +123,12 @@ private fun DialogContent(
 @Preview
 @Composable
 private fun DialogPreview() {
-    TenoTheme {
+    AppTheme {
         DialogContent(
             initialName = "",
             initialType = ConnectionType.LLM,
             onDismiss = {},
-            onConfirm = { name, type -> },
+            onConfirm = { _, _ -> },
         )
     }
 }

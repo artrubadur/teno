@@ -11,18 +11,35 @@ import android.os.Build
 import android.provider.Settings
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
+import com.artrubadur.teno.connection.Connection
+import com.artrubadur.teno.connection.ConnectionManager
+import com.artrubadur.teno.connection.ConnectionType
 import com.artrubadur.teno.ui.overlay.OverlayForegroundService
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 
 class HomeViewModel(
     private val application: Application,
+    connectionManager: ConnectionManager
 ) : ViewModel() {
 
     private val _state = MutableStateFlow(HomeState())
     val state: StateFlow<HomeState> = _state.asStateFlow()
+
+    val activeConnection: StateFlow<Connection?> =
+        connectionManager
+            .observeActiveConnection(ConnectionType.LLM)
+            .stateIn(
+                scope = viewModelScope,
+                started = SharingStarted.WhileSubscribed(5_000),
+                initialValue = null
+            )
+
     private val overlayStateReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context, intent: Intent) {
             if (intent.action != OverlayForegroundService.ACTION_STATE) return
@@ -84,7 +101,6 @@ class HomeViewModel(
 
     private fun verifyOverlayRunning() {
         if (_state.value.overlayChanging) return
-        applyOverlayRunning(false)
         OverlayForegroundService.requestRunningState(application)
     }
 

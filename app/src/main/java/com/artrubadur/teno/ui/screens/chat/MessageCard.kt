@@ -18,7 +18,7 @@ import androidx.compose.ui.unit.dp
 import com.artrubadur.teno.R
 import com.artrubadur.teno.ui.components.buttons.OutlinedLeadingIconButton
 import com.artrubadur.teno.ui.components.buttons.PrimaryLeadingIconButton
-import com.artrubadur.teno.ui.theme.TenoTheme
+import com.artrubadur.teno.ui.theme.AppTheme
 
 @Composable
 fun MessageCard(
@@ -108,7 +108,7 @@ enum class ConfirmationStatus {
 @Preview
 @Composable
 private fun MessageCardModelPreview() {
-    TenoTheme {
+    AppTheme {
         MessageCard(
             message = ChatMessage(
                 index = 1,
@@ -122,7 +122,7 @@ private fun MessageCardModelPreview() {
 @Preview
 @Composable
 private fun MessageCardConfirmationPreview() {
-    TenoTheme {
+    AppTheme {
         MessageCard(
             message = ChatMessage(
                 index = 1,
@@ -141,7 +141,7 @@ private fun MessageCardConfirmationPreview() {
 @Preview
 @Composable
 private fun MessageCardUserPreview() {
-    TenoTheme {
+    AppTheme {
         MessageCard(
             message = ChatMessage(
                 index = 1,

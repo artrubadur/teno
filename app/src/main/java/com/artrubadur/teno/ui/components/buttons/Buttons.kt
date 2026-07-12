@@ -13,7 +13,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.tooling.preview.Preview
-import com.artrubadur.teno.ui.theme.TenoTheme
+import com.artrubadur.teno.ui.theme.AppTheme
 import androidx.compose.material3.Button as MaterialButton
 import androidx.compose.material3.OutlinedButton as MaterialOutlinedButton
 
@@ -80,15 +80,17 @@ fun OutlinedButton(
         enabled = enabled,
         shape = shape,
         colors = ButtonDefaults.outlinedButtonColors(
-            contentColor = MaterialTheme.colorScheme.outline,
-            disabledContentColor = MaterialTheme.colorScheme.outlineVariant,
+            contentColor = MaterialTheme.colorScheme.onSurface,
+            disabledContentColor = MaterialTheme.colorScheme.onSurface.copy(
+                alpha = 0.38f
+            ),
         ),
         border = BorderStroke(
             width = ButtonDefaults.outlinedButtonBorder(enabled).width,
             color = if (enabled) {
                 MaterialTheme.colorScheme.outline
             } else {
-                MaterialTheme.colorScheme.outlineVariant
+                MaterialTheme.colorScheme.outline.copy(alpha = 0.12f)
             },
         ),
         contentPadding = contentPadding,
@@ -150,7 +152,7 @@ private fun FilledButtonBase(
 @Preview(showBackground = true)
 @Composable
 private fun PrimaryEnabledPreview() {
-    TenoTheme {
+    AppTheme {
         PrimaryButton(onClick = {}) {
             Text("Primary")
         }
@@ -160,7 +162,7 @@ private fun PrimaryEnabledPreview() {
 @Preview(showBackground = true)
 @Composable
 private fun PrimaryDisabledPreview() {
-    TenoTheme {
+    AppTheme {
         PrimaryButton(onClick = {}, enabled = false) {
             Text("Primary")
         }
@@ -170,7 +172,7 @@ private fun PrimaryDisabledPreview() {
 @Preview(showBackground = true)
 @Composable
 private fun SecondaryEnabledPreview() {
-    TenoTheme {
+    AppTheme {
         SecondaryButton(onClick = {}) {
             Text("Secondary")
         }
@@ -180,7 +182,7 @@ private fun SecondaryEnabledPreview() {
 @Preview(showBackground = true)
 @Composable
 private fun SecondaryDisabledPreview() {
-    TenoTheme {
+    AppTheme {
         SecondaryButton(onClick = {}, enabled = false) {
             Text("Secondary")
         }
@@ -190,7 +192,7 @@ private fun SecondaryDisabledPreview() {
 @Preview(showBackground = true)
 @Composable
 private fun OutlinedEnabledPreview() {
-    TenoTheme {
+    AppTheme {
         OutlinedButton(onClick = {}) {
             Text("Outlined")
         }
@@ -200,7 +202,7 @@ private fun OutlinedEnabledPreview() {
 @Preview(showBackground = true)
 @Composable
 private fun OutlinedDisabledPreview() {
-    TenoTheme {
+    AppTheme {
         OutlinedButton(onClick = {}, enabled = false) {
             Text("Outlined")
         }
@@ -210,7 +212,7 @@ private fun OutlinedDisabledPreview() {
 @Preview(showBackground = true)
 @Composable
 private fun PlainEnabledPreview() {
-    TenoTheme {
+    AppTheme {
         PlainButton(onClick = {}) {
             Text("Plain")
         }
@@ -220,7 +222,7 @@ private fun PlainEnabledPreview() {
 @Preview(showBackground = true)
 @Composable
 private fun PlainDisabledPreview() {
-    TenoTheme {
+    AppTheme {
         PlainButton(onClick = {}, enabled = false) {
             Text("Plain")
         }

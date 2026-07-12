@@ -14,7 +14,7 @@ import androidx.savedstate.SavedStateRegistry
 import androidx.savedstate.SavedStateRegistryController
 import androidx.savedstate.SavedStateRegistryOwner
 import androidx.savedstate.setViewTreeSavedStateRegistryOwner
-import com.artrubadur.teno.ui.theme.TenoTheme
+import com.artrubadur.teno.ui.theme.AppTheme
 
 @SuppressLint("ViewConstructor")
 class OverlayHostView(
@@ -43,7 +43,7 @@ class OverlayHostView(
 
         composeView.setContent {
             val state by controller.state.collectAsState()
-            TenoTheme {
+            AppTheme {
                 OverlayView(
                     state = state,
                     onInputChanged = controller::onInputChanged,
