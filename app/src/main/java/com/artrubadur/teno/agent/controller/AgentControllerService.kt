@@ -52,6 +52,7 @@ class AgentControllerService : Service(), KoinComponent {
                     it.copy(
                         activeConnectionId = connection?.id,
                         activeConnectionName = connection?.name,
+                        activeConnectionKind = connection?.kind,
                     )
                 }
             }

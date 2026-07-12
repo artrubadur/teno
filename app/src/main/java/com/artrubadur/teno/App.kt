@@ -53,7 +53,8 @@ fun App() {
         ) {
             composable(Route.Chat) {
                 ChatScreen(
-                    onBack = { navController.popBackStack() }
+                    onBack = { navController.popBackStack() },
+                    onOpenConnections = { navController.navigate(Route.Connections) },
                 )
             }
             composable(Route.Home) {

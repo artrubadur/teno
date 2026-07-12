@@ -1,4 +1,4 @@
-package com.artrubadur.teno.ui.screens.chat
+package com.artrubadur.teno.ui.screens.chat.components
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.MaterialTheme
@@ -23,33 +24,45 @@ import com.artrubadur.teno.ui.theme.AppTheme
 @Composable
 fun MessageCard(
     message: ChatMessage,
-    onApproveConfirmation: (Int, String) -> Unit = { _, _ -> },
-    onRejectConfirmation: (Int, String) -> Unit = { _, _ -> },
-    isWorking: Boolean = false
+    onApproveConfirmation: (Int, String) -> Unit,
+    onRejectConfirmation: (Int, String) -> Unit,
+    isWorking: Boolean
 ) {
+    val bubbleShape = if (message.isUser) {
+        RoundedCornerShape(
+            topStart = 16.dp,
+            topEnd = 16.dp,
+            bottomStart = 16.dp,
+            bottomEnd = 0.dp
+        )
+    } else {
+        RoundedCornerShape(
+            topStart = 16.dp,
+            topEnd = 16.dp,
+            bottomStart = 0.dp,
+            bottomEnd = 16.dp
+        )
+    }
+
     Box(
         modifier = Modifier.fillMaxWidth(),
         contentAlignment = if (message.isUser) Alignment.CenterEnd else Alignment.CenterStart
     ) {
         Card(
             modifier = Modifier.fillMaxWidth(0.85f),
-            colors = CardDefaults.cardColors(
-                containerColor = if (message.isUser) {
-                    MaterialTheme.colorScheme.primaryContainer
-                } else {
-                    MaterialTheme.colorScheme.surfaceContainerHigh
-                }
+            shape = bubbleShape,
+            colors = if (message.isUser) CardDefaults.cardColors(
+                containerColor = MaterialTheme.colorScheme.primaryContainer,
+                contentColor = MaterialTheme.colorScheme.onPrimaryContainer
+            ) else CardDefaults.cardColors(
+                containerColor = MaterialTheme.colorScheme.surface,
+                contentColor = MaterialTheme.colorScheme.onSurface
             )
         ) {
             Column(
                 modifier = Modifier.padding(16.dp),
                 verticalArrangement = Arrangement.spacedBy(6.dp)
             ) {
-                Text(
-                    text = if (message.isUser) "You" else "Agent",
-                    style = MaterialTheme.typography.labelMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
                 Text(
                     text = if (message.text.isBlank() && !message.isUser) "" else message.text,
                     style = MaterialTheme.typography.bodyLarge
@@ -114,7 +127,10 @@ private fun MessageCardModelPreview() {
                 index = 1,
                 text = "Some text",
                 isUser = false
-            )
+            ),
+            onApproveConfirmation = { _, _ -> },
+            onRejectConfirmation = { _, _ -> },
+            isWorking = false,
         )
     }
 }
@@ -133,7 +149,10 @@ private fun MessageCardConfirmationPreview() {
                     title = "Confirm tool execution",
                     description = "Runs a tool"
                 )
-            )
+            ),
+            onApproveConfirmation = { _, _ -> },
+            onRejectConfirmation = { _, _ -> },
+            isWorking = false,
         )
     }
 }
@@ -145,9 +164,12 @@ private fun MessageCardUserPreview() {
         MessageCard(
             message = ChatMessage(
                 index = 1,
-                text = "Some text",
+                text = "Some some some text",
                 isUser = true
-            )
+            ),
+            onApproveConfirmation = { _, _ -> },
+            onRejectConfirmation = { _, _ -> },
+            isWorking = false,
         )
     }
 }

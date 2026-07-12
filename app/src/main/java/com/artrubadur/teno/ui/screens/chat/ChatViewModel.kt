@@ -8,6 +8,9 @@ import com.artrubadur.teno.agent.controller.AgentControllerCommand
 import com.artrubadur.teno.agent.controller.AgentControllerEvent
 import com.artrubadur.teno.agent.controller.AgentControllerState
 import com.artrubadur.teno.agent.orchestration.AgentEvent
+import com.artrubadur.teno.ui.screens.chat.components.ChatMessage
+import com.artrubadur.teno.ui.screens.chat.components.ConfirmationRequest
+import com.artrubadur.teno.ui.screens.chat.components.ConfirmationStatus
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharedFlow
@@ -159,6 +162,7 @@ class ChatViewModel(
 
             updated.copy(
                 activeConnectionName = agentState.activeConnectionName,
+                activeConnectionKind = agentState.activeConnectionKind,
                 isReady = agentState.isReady,
                 isLoading = agentState.isLoading,
                 isWorking = agentState.isWorking,

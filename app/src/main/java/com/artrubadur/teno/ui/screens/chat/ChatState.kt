@@ -1,7 +1,13 @@
 package com.artrubadur.teno.ui.screens.chat
 
+import com.artrubadur.teno.connection.ConnectionKind
+import com.artrubadur.teno.ui.screens.chat.components.ChatMessage
+import com.artrubadur.teno.ui.screens.chat.components.ConfirmationRequest
+import com.artrubadur.teno.ui.screens.chat.components.ConfirmationStatus
+
 data class ChatState(
     val activeConnectionName: String? = null,
+    val activeConnectionKind: ConnectionKind? = null,
     val isReady: Boolean = false,
     val isLoading: Boolean = false,
     val isWorking: Boolean = false,

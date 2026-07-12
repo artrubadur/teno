@@ -1,12 +1,14 @@
 package com.artrubadur.teno.agent.controller
 
 import com.artrubadur.teno.agent.orchestration.AgentEvent
+import com.artrubadur.teno.connection.ConnectionKind
 import kotlinx.serialization.Serializable
 
 @Serializable
 data class AgentControllerState(
     val activeConnectionId: String? = null,
     val activeConnectionName: String? = null,
+    val activeConnectionKind: ConnectionKind? = null,
     val isReady: Boolean = false,
     val isLoading: Boolean = false,
     val isWorking: Boolean = false,
