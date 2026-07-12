@@ -2,6 +2,10 @@ package com.artrubadur.teno.ui.screens.home
 
 import android.Manifest
 import android.app.Application
+import android.content.BroadcastReceiver
+import android.content.Context
+import android.content.Intent
+import android.content.IntentFilter
 import android.content.pm.PackageManager
 import android.os.Build
 import android.provider.Settings
@@ -19,14 +23,31 @@ class HomeViewModel(
 
     private val _state = MutableStateFlow(HomeState())
     val state: StateFlow<HomeState> = _state.asStateFlow()
-
-    private var pendingEnable = false
+    private val overlayStateReceiver = object : BroadcastReceiver() {
+        override fun onReceive(context: Context, intent: Intent) {
+            if (intent.action != OverlayForegroundService.ACTION_STATE) return
+            applyOverlayRunning(
+                intent.getBooleanExtra(OverlayForegroundService.EXTRA_IS_RUNNING, false)
+            )
+        }
+    }
 
     init {
+        ContextCompat.registerReceiver(
+            application,
+            overlayStateReceiver,
+            IntentFilter(OverlayForegroundService.ACTION_STATE),
+            ContextCompat.RECEIVER_NOT_EXPORTED
+        )
         refresh()
     }
 
     fun refresh() {
+        refreshPermissions()
+        verifyOverlayRunning()
+    }
+
+    private fun refreshPermissions() {
         _state.update {
             it.copy(
                 overlayPermissionGranted = Settings.canDrawOverlays(application),
@@ -35,9 +56,15 @@ class HomeViewModel(
         }
     }
 
-    fun setOverlayEnabled(): HomeCommand? {
-        refresh()
-        pendingEnable = true
+    fun setOverlayEnabled(enabled: Boolean): HomeCommand? {
+        refreshPermissions()
+
+        if (!enabled) {
+            _state.update { it.copy(overlayChanging = true) }
+            OverlayForegroundService.shutdown(application)
+            applyOverlayRunning(false)
+            return null
+        }
 
         if (!_state.value.overlayPermissionGranted) {
             return HomeCommand.RequestOverlayPermission
@@ -47,34 +74,31 @@ class HomeViewModel(
             return HomeCommand.RequestNotificationPermission
         }
 
+        _state.update { it.copy(overlayChanging = true) }
         OverlayForegroundService.start(application)
-        pendingEnable = false
 
         return null
     }
 
-    fun onOverlayPermissionResult() {
-        refresh()
+    fun retryEnableOverlay(): HomeCommand? = setOverlayEnabled(true)
 
-        if (!pendingEnable) return
-        if (!state.value.overlayPermissionGranted) {
-            pendingEnable = false
-            return
-        }
-
-        setOverlayEnabled()
+    private fun verifyOverlayRunning() {
+        if (_state.value.overlayChanging) return
+        applyOverlayRunning(false)
+        OverlayForegroundService.requestRunningState(application)
     }
 
-    fun onNotificationPermissionResult() {
-        refresh()
-
-        if (!pendingEnable) return
-        if (!state.value.notificationPermissionGranted) {
-            pendingEnable = false
-            return
+    private fun applyOverlayRunning(isRunning: Boolean) {
+        _state.update {
+            it.copy(
+                overlayEnabled = isRunning,
+                overlayChanging = false,
+            )
         }
+    }
 
-        setOverlayEnabled()
+    override fun onCleared() {
+        application.unregisterReceiver(overlayStateReceiver)
     }
 
     private fun hasNotificationPermission(): Boolean {

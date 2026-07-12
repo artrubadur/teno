@@ -54,7 +54,6 @@ class ChatViewModel(
     }
 
     fun terminateConnection() {
-        resetConversation()
         agentController.send(AgentControllerCommand.TerminateConnection)
         _state.update {
             it.copy(

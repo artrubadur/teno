@@ -13,9 +13,10 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
@@ -23,9 +24,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.core.net.toUri
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
+import androidx.lifecycle.compose.LocalLifecycleOwner
 import com.artrubadur.teno.R
 import com.artrubadur.teno.ui.components.buttons.OutlinedIconButton
-import com.artrubadur.teno.ui.components.buttons.PrimaryIconButton
 import org.koin.compose.viewmodel.koinViewModel
 
 @Composable
@@ -36,12 +39,30 @@ fun HomeScreen(
     viewModel: HomeViewModel = koinViewModel(),
 ) {
     val context = LocalContext.current
+    val lifecycleOwner = LocalLifecycleOwner.current
     val state by viewModel.state.collectAsState()
+
+    val notificationPermissionLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.RequestPermission()
+    ) {
+        viewModel.retryEnableOverlay()
+    }
+
+    fun requestNotificationPermission() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            notificationPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
+        } else {
+            viewModel.retryEnableOverlay()
+        }
+    }
 
     val overlayPermissionLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.StartActivityForResult()
     ) {
-        viewModel.onOverlayPermissionResult()
+        when (viewModel.retryEnableOverlay()) {
+            HomeCommand.RequestNotificationPermission -> requestNotificationPermission()
+            else -> Unit
+        }
     }
 
     fun requestOverlayPermission() {
@@ -53,22 +74,16 @@ fun HomeScreen(
         )
     }
 
-    val notificationPermissionLauncher = rememberLauncherForActivityResult(
-        contract = ActivityResultContracts.RequestPermission()
-    ) {
-        viewModel.onNotificationPermissionResult()
-    }
-
-    fun requestNotificationPermission() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            notificationPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
-        } else {
-            viewModel.onNotificationPermissionResult()
+    DisposableEffect(lifecycleOwner) {
+        val observer = LifecycleEventObserver { _, event ->
+            if (event == Lifecycle.Event.ON_RESUME) {
+                viewModel.refresh()
+            }
         }
-    }
-
-    LaunchedEffect(Unit) {
-        viewModel.refresh()
+        lifecycleOwner.lifecycle.addObserver(observer)
+        onDispose {
+            lifecycleOwner.lifecycle.removeObserver(observer)
+        }
     }
 
     Column(
@@ -120,11 +135,10 @@ fun HomeScreen(
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
             }
-            PrimaryIconButton(
-                iconRes = R.drawable.ic_launch,
-                contentDescription = "Launch overlay",
-                onClick = {
-                    when (viewModel.setOverlayEnabled()) {
+            Switch(
+                checked = state.overlayEnabled,
+                onCheckedChange = { enabled ->
+                    when (viewModel.setOverlayEnabled(enabled)) {
                         HomeCommand.RequestOverlayPermission -> requestOverlayPermission()
                         HomeCommand.RequestNotificationPermission -> requestNotificationPermission()
                         else -> Unit
@@ -139,6 +153,9 @@ private fun overlayStatusText(state: HomeState): String {
     return when {
         !state.overlayPermissionGranted -> "Overlay permission is required"
         !state.notificationPermissionGranted -> "Notification permission is required"
-        else -> "Launch overlay"
+        state.overlayChanging && state.overlayEnabled -> "Stopping overlay..."
+        state.overlayChanging -> "Starting overlay..."
+        state.overlayEnabled -> "Overlay is enabled"
+        else -> "Overlay is disabled"
     }
 }

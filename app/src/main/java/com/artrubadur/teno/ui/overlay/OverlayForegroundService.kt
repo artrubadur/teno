@@ -2,8 +2,10 @@ package com.artrubadur.teno.ui.overlay
 
 import android.Manifest
 import android.app.Service
+import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
+import android.content.IntentFilter
 import android.content.pm.PackageManager
 import android.content.pm.ServiceInfo
 import android.graphics.PixelFormat
@@ -29,17 +31,30 @@ class OverlayForegroundService : Service() {
 
     private lateinit var controller: OverlayController
     private lateinit var notificationFactory: OverlayNotificationFactory
+    private val stateRequestReceiver = object : BroadcastReceiver() {
+        override fun onReceive(context: Context, intent: Intent) {
+            if (intent.action != ACTION_REQUEST_STATE) return
+            publishRunningState(true)
+        }
+    }
     private var windowManager: WindowManager? = null
     private var overlayView: OverlayHostView? = null
 
     override fun onCreate() {
         super.onCreate()
+        ContextCompat.registerReceiver(
+            this,
+            stateRequestReceiver,
+            IntentFilter(ACTION_REQUEST_STATE),
+            ContextCompat.RECEIVER_NOT_EXPORTED
+        )
         notificationFactory = OverlayNotificationFactory(this)
         notificationFactory.ensureChannel()
         controller = OverlayController(scope, application)
 
         showForegroundNotification()
-
+        publishRunningState(true)
+        
         controller.state
             .map { state -> Triple(state.isReady, state.isLoading, state.isWorking) }
             .distinctUntilChanged()
@@ -72,8 +87,15 @@ class OverlayForegroundService : Service() {
     }
 
     override fun onDestroy() {
+        publishRunningState(false)
         removeOverlay()
-        controller.close()
+        if (::controller.isInitialized) {
+            controller.terminateConnection()
+            controller.close()
+        }
+        runCatching {
+            unregisterReceiver(stateRequestReceiver)
+        }
         scope.cancel()
         super.onDestroy()
     }
@@ -148,7 +170,20 @@ class OverlayForegroundService : Service() {
             ?: (getSystemService(WINDOW_SERVICE) as WindowManager).also { windowManager = it }
     }
 
+    private fun publishRunningState(isRunning: Boolean) {
+        sendBroadcast(
+            Intent(ACTION_STATE)
+                .setPackage(packageName)
+                .putExtra(EXTRA_IS_RUNNING, isRunning)
+        )
+    }
+
     companion object {
+        private const val ACTION_REQUEST_STATE =
+            "com.artrubadur.teno.overlay.REQUEST_STATE"
+        const val ACTION_STATE = "com.artrubadur.teno.overlay.STATE"
+        const val EXTRA_IS_RUNNING = "com.artrubadur.teno.overlay.extra.IS_RUNNING"
+
         const val ACTION_START = "com.artrubadur.teno.overlay.START"
         const val ACTION_INPUT = "com.artrubadur.teno.overlay.INPUT"
         const val ACTION_STOP = "com.artrubadur.teno.overlay.STOP"
@@ -161,6 +196,17 @@ class OverlayForegroundService : Service() {
                 action = ACTION_START
             }
             ContextCompat.startForegroundService(context, intent)
+        }
+
+        fun shutdown(context: Context) {
+            context.stopService(Intent(context, OverlayForegroundService::class.java))
+        }
+
+        fun requestRunningState(context: Context) {
+            context.sendBroadcast(
+                Intent(ACTION_REQUEST_STATE)
+                    .setPackage(context.packageName)
+            )
         }
     }
 }
