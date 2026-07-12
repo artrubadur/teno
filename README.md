@@ -1,4 +1,4 @@
-# tonemo
+# Teno
 
 ## License
 

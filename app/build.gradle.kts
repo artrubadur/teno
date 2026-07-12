@@ -6,13 +6,13 @@ plugins {
 }
 
 android {
-    namespace = "com.artrubadur.tonemo"
+    namespace = "com.artrubadur.teno"
     compileSdk {
         version = release(37)
     }
 
     defaultConfig {
-        applicationId = "com.artrubadur.tonemo"
+        applicationId = "com.artrubadur.teno"
         minSdk = 30
         targetSdk = 37
         versionName = "1.0"

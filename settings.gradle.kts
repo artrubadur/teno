@@ -24,5 +24,5 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = "tonemo"
+rootProject.name = "teno"
 include(":app")
