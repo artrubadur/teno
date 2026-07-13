@@ -2,6 +2,7 @@ package com.artrubadur.teno.agent.tools.impl
 
 import android.util.Log
 import com.artrubadur.teno.agent.tools.Tool
+import com.artrubadur.teno.agent.tools.ToolGroup
 import com.artrubadur.teno.agent.tools.ToolRisk
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
@@ -17,6 +18,7 @@ class LogTool : Tool<WriteLogToolArgs> {
 
     override val description =
         "Writes a message to the internal app log"
+    override val group = ToolGroup.SYSTEM
 
     override val risk = ToolRisk.SAFE
 

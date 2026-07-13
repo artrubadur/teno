@@ -3,6 +3,7 @@ package com.artrubadur.teno.agent.tools.impl
 import android.content.Context
 import android.provider.Settings
 import com.artrubadur.teno.agent.tools.Tool
+import com.artrubadur.teno.agent.tools.ToolGroup
 import com.artrubadur.teno.agent.tools.ToolPermission
 import com.artrubadur.teno.agent.tools.ToolRisk
 import kotlinx.serialization.Serializable
@@ -20,6 +21,7 @@ class SetBrightnessTool(
     override val title = "Set brightness"
 
     override val description = "Sets system screen brightness as a value from 0.0 to 1.0"
+    override val group = ToolGroup.SYSTEM
 
     override val risk = ToolRisk.SAFE
 

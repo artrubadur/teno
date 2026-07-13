@@ -2,6 +2,7 @@ package com.artrubadur.teno.agent.tools.impl
 
 import com.artrubadur.teno.agent.tools.NoArgs
 import com.artrubadur.teno.agent.tools.Tool
+import com.artrubadur.teno.agent.tools.ToolGroup
 import com.artrubadur.teno.agent.tools.ToolRisk
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.buildJsonObject
@@ -17,7 +18,7 @@ class GetCurrentTimeTool : Tool<NoArgs> {
 
     override val description =
         "Returns the current date, weekday, time, and timezone"
-
+    override val group = ToolGroup.SYSTEM
     override val risk = ToolRisk.SAFE
 
     override val argsSerializer = NoArgs.serializer()

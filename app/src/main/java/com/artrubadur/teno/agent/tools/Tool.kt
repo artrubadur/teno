@@ -12,6 +12,7 @@ interface Tool<TArgs : Any> {
     val name: String
     val title: String
     val description: String
+    val group: ToolGroup
     val risk: ToolRisk
     val requiredPermissions: Set<ToolPermission>
         get() = emptySet()
@@ -34,10 +35,15 @@ enum class ToolRisk {
     FORBIDDEN
 }
 
+enum class ToolGroup {
+    SYSTEM
+}
+
 fun Tool<*>.toSpec() = ToolSpec(
     name = name,
     title = title,
     description = description,
+    group = group,
     argsSchema = argsSchema,
     requiredPermissions = requiredPermissions,
 )
@@ -46,6 +52,7 @@ data class ToolSpec(
     val name: String,
     val title: String,
     val description: String,
+    val group: ToolGroup,
     val argsSchema: JsonSchema,
     val requiredPermissions: Set<ToolPermission> = emptySet(),
 )
