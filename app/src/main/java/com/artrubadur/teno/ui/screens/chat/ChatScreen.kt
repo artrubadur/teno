@@ -32,14 +32,14 @@ fun ChatScreen(
         state = state,
         onBack = onBack,
         onOpenConnections = onOpenConnections,
-        onLaunchActiveConnection = viewModel::launchActiveConnection,
-        onTerminateConnection = viewModel::terminateConnection,
-        onResetConversation = viewModel::resetConversation,
-        onApproveConfirmation = viewModel::approveConfirmation,
-        onRejectConfirmation = viewModel::rejectConfirmation,
+        onLaunchActiveConnection = viewModel::onLaunchActiveConnection,
+        onTerminateConnection = viewModel::onTerminateConnection,
+        onResetConversation = viewModel::onResetConversation,
+        onApproveConfirmation = viewModel::onApproveConfirmation,
+        onRejectConfirmation = viewModel::onRejectConfirmation,
         onInputChanged = viewModel::onInputChanged,
-        onSendMessage = viewModel::sendMessage,
-        onStopWork = viewModel::stopWork,
+        onSend = viewModel::onSend,
+        onStopWork = viewModel::onStopWork,
     )
 }
 

@@ -23,10 +23,10 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.artrubadur.teno.R
 import com.artrubadur.teno.connection.ConnectionKind
+import com.artrubadur.teno.ui.components.PromptInput
 import com.artrubadur.teno.ui.components.buttons.ErrorIconButton
 import com.artrubadur.teno.ui.components.buttons.PlainIconButton
 import com.artrubadur.teno.ui.screens.chat.components.ActiveConnectionCard
-import com.artrubadur.teno.ui.screens.chat.components.ChatInput
 import com.artrubadur.teno.ui.screens.chat.components.ChatMessage
 import com.artrubadur.teno.ui.screens.chat.components.MessageList
 import com.artrubadur.teno.ui.theme.AppTheme
@@ -43,7 +43,7 @@ fun ChatScreenContent(
     onApproveConfirmation: (Int, String) -> Unit,
     onRejectConfirmation: (Int, String) -> Unit,
     onInputChanged: (String) -> Unit,
-    onSendMessage: () -> Unit,
+    onSend: () -> Unit,
     onStopWork: () -> Unit,
 ) {
     Scaffold(
@@ -118,11 +118,13 @@ fun ChatScreenContent(
                 )
 
 
-                ChatInput(
-                    state = state,
-                    onInputChanged = onInputChanged,
-                    onSendMessage = onSendMessage,
-                    onStopWork = onStopWork
+                PromptInput(
+                    value = state.input,
+                    onValueChange = onInputChanged,
+                    onSend = onSend,
+                    onStopWork = onStopWork,
+                    isWorking = state.isWorking,
+                    canSend = state.canSend
                 )
             }
         }
@@ -153,7 +155,7 @@ private fun HomeScreenPreview() {
             onApproveConfirmation = { _, _ -> },
             onRejectConfirmation = { _, _ -> },
             onInputChanged = {},
-            onSendMessage = {},
+            onSend = {},
             onStopWork = {},
         )
     }
@@ -199,7 +201,7 @@ private fun HomeScreenEnabledPreview() {
             onApproveConfirmation = { _, _ -> },
             onRejectConfirmation = { _, _ -> },
             onInputChanged = {},
-            onSendMessage = {},
+            onSend = {},
             onStopWork = {},
         )
     }

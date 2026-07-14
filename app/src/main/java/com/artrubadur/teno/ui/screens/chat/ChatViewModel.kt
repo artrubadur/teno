@@ -52,11 +52,11 @@ class ChatViewModel(
         }
     }
 
-    fun launchActiveConnection() {
+    fun onLaunchActiveConnection() {
         agentController.send(AgentControllerCommand.LaunchActiveConnection)
     }
 
-    fun terminateConnection() {
+    fun onTerminateConnection() {
         agentController.send(AgentControllerCommand.TerminateConnection)
         _state.update {
             it.copy(
@@ -67,22 +67,22 @@ class ChatViewModel(
         }
     }
 
-    fun resetConversation() {
-        stopWork()
+    fun onResetConversation() {
+        onStopWork()
         activeAssistantMessageIndex = null
         _state.update {
             it.copy(messages = emptyList())
         }
     }
 
-    fun stopWork() {
+    fun onStopWork() {
         agentController.send(AgentControllerCommand.StopWork)
         _state.update {
             it.copy(isWorking = false)
         }
     }
 
-    fun sendMessage() {
+    fun onSend() {
         val current = _state.value
         val prompt = current.input.trim()
 
@@ -114,7 +114,7 @@ class ChatViewModel(
         agentController.send(AgentControllerCommand.SendMessage(prompt))
     }
 
-    fun approveConfirmation(messageIndex: Int, confirmationId: String) {
+    fun onApproveConfirmation(messageIndex: Int, confirmationId: String) {
         respondToConfirmation(
             messageIndex = messageIndex,
             status = ConfirmationStatus.APPROVED,
@@ -122,7 +122,7 @@ class ChatViewModel(
         )
     }
 
-    fun rejectConfirmation(messageIndex: Int, confirmationId: String) {
+    fun onRejectConfirmation(messageIndex: Int, confirmationId: String) {
         respondToConfirmation(
             messageIndex = messageIndex,
             status = ConfirmationStatus.REJECTED,

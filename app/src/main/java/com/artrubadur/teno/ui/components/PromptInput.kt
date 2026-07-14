@@ -1,4 +1,4 @@
-package com.artrubadur.teno.ui.screens.chat.components
+package com.artrubadur.teno.ui.components
 
 import android.content.res.Configuration
 import androidx.compose.foundation.BorderStroke
@@ -33,41 +33,43 @@ import androidx.compose.ui.unit.dp
 import com.artrubadur.teno.R
 import com.artrubadur.teno.ui.components.buttons.OutlinedIconButton
 import com.artrubadur.teno.ui.components.buttons.PrimaryIconButton
-import com.artrubadur.teno.ui.screens.chat.ChatState
 import com.artrubadur.teno.ui.theme.AppTheme
 
 @Composable
-fun ChatInput(
-    state: ChatState,
-    onInputChanged: (String) -> Unit,
-    onSendMessage: () -> Unit,
+fun PromptInput(
+    modifier: Modifier = Modifier,
+    value: String,
+    onValueChange: (String) -> Unit,
+    onSend: () -> Unit,
     onStopWork: () -> Unit,
+    isWorking: Boolean,
+    canSend: Boolean
 ) {
     var multiline by remember { mutableStateOf(false) }
     var inputValue by remember {
         mutableStateOf(
             TextFieldValue(
-                text = state.input,
-                selection = TextRange(state.input.length),
+                text = value,
+                selection = TextRange(value.length),
             )
         )
     }
 
-    LaunchedEffect(state.input) {
-        if (state.input != inputValue.text) {
+    LaunchedEffect(value) {
+        if (value != inputValue.text) {
             inputValue = inputValue.copy(
-                text = state.input,
-                selection = TextRange(state.input.length),
+                text = value,
+                selection = TextRange(value.length),
             )
         }
 
-        if (state.input.isEmpty()) {
+        if (value.isEmpty()) {
             multiline = false
         }
     }
 
     Surface(
-        modifier = Modifier.fillMaxWidth(),
+        modifier = modifier,
         shape = RoundedCornerShape(32.dp),
         color = MaterialTheme.colorScheme.surface,
         border = BorderStroke(
@@ -86,7 +88,7 @@ fun ChatInput(
                     value = inputValue,
                     onValueChange = {
                         inputValue = it
-                        onInputChanged(it.text)
+                        onValueChange(it.text)
                     },
                     modifier = Modifier
                         .weight(1f)
@@ -119,9 +121,9 @@ fun ChatInput(
 
                 if (!multiline) {
                     ChatInputActionButton(
-                        isWorking = state.isWorking,
-                        canSend = state.canSend,
-                        onSendMessage = onSendMessage,
+                        isWorking = isWorking,
+                        canSend = canSend,
+                        onSendMessage = onSend,
                         onStopWork = onStopWork,
                     )
                 }
@@ -134,9 +136,9 @@ fun ChatInput(
                     horizontalArrangement = Arrangement.End,
                 ) {
                     ChatInputActionButton(
-                        isWorking = state.isWorking,
-                        canSend = state.canSend,
-                        onSendMessage = onSendMessage,
+                        isWorking = isWorking,
+                        canSend = canSend,
+                        onSendMessage = onSend,
                         onStopWork = onStopWork,
                     )
                 }
@@ -182,13 +184,15 @@ private fun ChatInputActionButton(
     uiMode = Configuration.UI_MODE_NIGHT_YES,
 )
 @Composable
-private fun ChatInputEmptyPreview() {
+private fun PromptInputEmptyPreview() {
     AppTheme {
-        ChatInput(
-            state = ChatState(),
-            onInputChanged = { _ -> },
-            onSendMessage = {},
-            onStopWork = {}
+        PromptInput(
+            value = "",
+            onValueChange = { _ -> },
+            onSend = {},
+            onStopWork = {},
+            isWorking = false,
+            canSend = false
         )
     }
 }
@@ -202,15 +206,15 @@ private fun ChatInputEmptyPreview() {
     uiMode = Configuration.UI_MODE_NIGHT_YES,
 )
 @Composable
-private fun ChatInputShortPreview() {
+private fun PromptInputShortPreview() {
     AppTheme {
-        ChatInput(
-            state = ChatState(
-                input = "Short input"
-            ),
-            onInputChanged = { _ -> },
-            onSendMessage = {},
-            onStopWork = {}
+        PromptInput(
+            value = "Short input",
+            onValueChange = { _ -> },
+            onSend = {},
+            onStopWork = {},
+            isWorking = false,
+            canSend = true
         )
     }
 }
@@ -224,17 +228,16 @@ private fun ChatInputShortPreview() {
     uiMode = Configuration.UI_MODE_NIGHT_YES,
 )
 @Composable
-private fun ChatInputLongPreview() {
+private fun PromptInputLongPreview() {
     AppTheme {
-        ChatInput(
-            state = ChatState(
-                input = "Long long long long long long long long long " +
-                        "long long long long long long long long input",
-                isReady = true
-            ),
-            onInputChanged = { _ -> },
-            onSendMessage = {},
-            onStopWork = {}
+        PromptInput(
+            value = "Long long long long long long long long long " +
+                    "long long long long long long long long input",
+            onValueChange = { _ -> },
+            onSend = {},
+            onStopWork = {},
+            isWorking = false,
+            canSend = true
         )
     }
 }
@@ -248,15 +251,15 @@ private fun ChatInputLongPreview() {
     uiMode = Configuration.UI_MODE_NIGHT_YES,
 )
 @Composable
-private fun ChatInputWorkingPreview() {
+private fun PromptInputWorkingPreview() {
     AppTheme {
-        ChatInput(
-            state = ChatState(
-                isWorking = true
-            ),
-            onInputChanged = { _ -> },
-            onSendMessage = {},
-            onStopWork = {}
+        PromptInput(
+            value = "",
+            onValueChange = { _ -> },
+            onSend = {},
+            onStopWork = {},
+            isWorking = true,
+            canSend = false
         )
     }
 }
