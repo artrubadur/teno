@@ -24,13 +24,13 @@ import com.artrubadur.teno.ui.theme.AppTheme
 
 @Composable
 internal fun HomeScreenContent(
-    state: HomeState = HomeState(),
-    activeConnectionName: String? = null,
-    activeConnectionKind: ConnectionKind? = null,
-    onOpenChat: () -> Unit = {},
-    onOpenConnections: () -> Unit = {},
-    onOpenTools: () -> Unit = {},
-    onOverlayEnabledChange: (Boolean) -> Unit = {},
+    state: HomeState,
+    activeConnectionName: String?,
+    activeConnectionKind: ConnectionKind?,
+    onOpenChat: () -> Unit,
+    onOpenConnections: () -> Unit,
+    onOpenTools: () -> Unit,
+    onOverlayEnabledChange: (Boolean) -> Unit,
 ) {
     Surface(
         modifier = Modifier.fillMaxSize(),
@@ -80,9 +80,9 @@ internal fun HomeScreenContent(
                         onClick = onOpenTools
                     )
                     OutlinedIconButton(
-                        iconRes = R.drawable.ic_link,
+                        iconRes = R.drawable.ic_computer,
                         contentDescription = "Connections",
-                        onClick = onOpenConnections
+                        onClick = onOpenConnections,
                     )
                 }
             }
@@ -114,7 +114,15 @@ internal fun HomeScreenContent(
 @Composable
 private fun HomeScreenPreview() {
     AppTheme {
-        HomeScreenContent()
+        HomeScreenContent(
+            state = HomeState(),
+            activeConnectionName = null,
+            activeConnectionKind = null,
+            onOpenChat = {},
+            onOpenConnections = {},
+            onOpenTools = {},
+            onOverlayEnabledChange = {},
+        )
     }
 }
 
@@ -138,7 +146,11 @@ private fun HomeScreenEnabledPreview() {
                 overlayEnabled = true
             ),
             activeConnectionName = "Connection Name",
-            activeConnectionKind = ConnectionKind.LOCAL
+            activeConnectionKind = ConnectionKind.LOCAL,
+            onOpenChat = {},
+            onOpenConnections = {},
+            onOpenTools = {},
+            onOverlayEnabledChange = {},
         )
     }
 }

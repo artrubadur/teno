@@ -1,5 +1,7 @@
-package com.artrubadur.teno.ui.screens.connections.dialog
+package com.artrubadur.teno.ui.screens.connections.components.dialog
 
+import android.content.res.Configuration
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -21,25 +23,19 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import com.artrubadur.teno.R
-import com.artrubadur.teno.connection.ConnectionType
 import com.artrubadur.teno.ui.components.buttons.PlainLeadingIconButton
 import com.artrubadur.teno.ui.components.buttons.PrimaryLeadingIconButton
 import com.artrubadur.teno.ui.theme.AppTheme
 
-
 @Composable
-fun ConnectionDetailsDialog(
+fun LocalConnectionDialog(
     initialName: String,
-    initialType: ConnectionType,
     onDismiss: () -> Unit,
-    onConfirm: (String, ConnectionType) -> Unit,
+    onConfirm: (String) -> Unit,
 ) {
-    Dialog(
-        onDismissRequest = onDismiss
-    ) {
+    Dialog(onDismissRequest = onDismiss) {
         DialogContent(
             initialName = initialName,
-            initialType = initialType,
             onDismiss = onDismiss,
             onConfirm = onConfirm,
         )
@@ -49,49 +45,47 @@ fun ConnectionDetailsDialog(
 @Composable
 private fun DialogContent(
     initialName: String,
-    initialType: ConnectionType,
     onDismiss: () -> Unit,
-    onConfirm: (String, ConnectionType) -> Unit,
+    onConfirm: (String) -> Unit,
 ) {
     var name by remember { mutableStateOf(initialName) }
-    var modelType by remember { mutableStateOf(initialType) }
+    var attemptedConfirm by remember { mutableStateOf(false) }
+    val error = when {
+        name.isBlank() -> "Name cannot be empty"
+        else -> null
+    }
+    val confirmEnabled = !attemptedConfirm || error == null
 
     Surface(
-        shape = RoundedCornerShape(24.dp),
         color = MaterialTheme.colorScheme.surface,
-        tonalElevation = 8.dp,
-        modifier = Modifier
-            .fillMaxWidth()
+        contentColor = MaterialTheme.colorScheme.onSurface,
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(16.dp),
+        border = BorderStroke(
+            1.dp,
+            MaterialTheme.colorScheme.outline,
+        ),
     ) {
         Column(
             modifier = Modifier.padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(8.dp)
+            verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            Row(
+            OutlinedTextField(
+                value = name,
+                onValueChange = { name = it },
                 modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(8.dp),
-            ) {
-                OutlinedTextField(
-                    value = name,
-                    onValueChange = { name = it },
-                    modifier = Modifier.weight(1f),
-                    shape = RoundedCornerShape(8.dp),
-                    label = { Text("Name") },
-                    singleLine = true
-                )
+                shape = RoundedCornerShape(8.dp),
+                label = { Text("Name") },
+                isError = attemptedConfirm && error != null,
+                singleLine = true
+            )
 
-//                DropdownMenu(
-//                        options = ConnectionType.entries.map(ConnectionType::name),
-//                selectedOption = modelType.name,
-//                onSelect = { selectedName ->
-//                    selectedName?.let { name ->
-//                        ConnectionType.entries.firstOrNull { it.name == name }?.let { modelType = it }
-//                    }
-//                },
-//                modifier = Modifier.padding(top = 8.dp),
-//                buttonModifier = Modifier
-//                    .size(56.dp),
-//                )
+            if (attemptedConfirm && error != null) {
+                Text(
+                    text = error,
+                    color = MaterialTheme.colorScheme.error,
+                    style = MaterialTheme.typography.bodySmall,
+                )
             }
 
             Row(
@@ -102,10 +96,16 @@ private fun DialogContent(
                 PrimaryLeadingIconButton(
                     iconRes = R.drawable.ic_confirm,
                     text = "Confirm",
-                    onClick = { onConfirm(name.trim(), modelType) },
+                    onClick = {
+                        if (error != null) {
+                            attemptedConfirm = true
+                            return@PrimaryLeadingIconButton
+                        }
+                        onConfirm(name.trim())
+                    },
                     modifier = Modifier.weight(1f),
+                    enabled = confirmEnabled,
                     shape = RoundedCornerShape(8.dp)
-
                 )
 
                 PlainLeadingIconButton(
@@ -120,15 +120,21 @@ private fun DialogContent(
     }
 }
 
-@Preview
+@Preview(
+    name = "Light",
+    uiMode = Configuration.UI_MODE_NIGHT_NO,
+)
+@Preview(
+    name = "Dark",
+    uiMode = Configuration.UI_MODE_NIGHT_YES,
+)
 @Composable
 private fun DialogPreview() {
     AppTheme {
         DialogContent(
-            initialName = "",
-            initialType = ConnectionType.LLM,
+            initialName = "Local",
             onDismiss = {},
-            onConfirm = { _, _ -> },
+            onConfirm = {},
         )
     }
 }

@@ -33,18 +33,18 @@ import com.artrubadur.teno.ui.theme.AppTheme
 
 @Composable
 internal fun ChatScreenContent(
-    snackbarHostState: SnackbarHostState = SnackbarHostState(),
-    state: ChatState = ChatState(),
-    onBack: () -> Unit = {},
-    onOpenConnections: () -> Unit = {},
-    onLaunchActiveConnection: () -> Unit = {},
-    onTerminateConnection: () -> Unit = {},
-    onResetConversation: () -> Unit = {},
-    onApproveConfirmation: (Int, String) -> Unit = { _, _ -> },
-    onRejectConfirmation: (Int, String) -> Unit = { _, _ -> },
-    onInputChanged: (String) -> Unit = {},
-    onSendMessage: () -> Unit = {},
-    onStopWork: () -> Unit = {},
+    snackbarHostState: SnackbarHostState,
+    state: ChatState,
+    onBack: () -> Unit,
+    onOpenConnections: () -> Unit,
+    onLaunchActiveConnection: () -> Unit,
+    onTerminateConnection: () -> Unit,
+    onResetConversation: () -> Unit,
+    onApproveConfirmation: (Int, String) -> Unit,
+    onRejectConfirmation: (Int, String) -> Unit,
+    onInputChanged: (String) -> Unit,
+    onSendMessage: () -> Unit,
+    onStopWork: () -> Unit,
 ) {
     Scaffold(
         snackbarHost = { SnackbarHost(snackbarHostState) },
@@ -142,7 +142,20 @@ internal fun ChatScreenContent(
 @Composable
 private fun HomeScreenPreview() {
     AppTheme {
-        ChatScreenContent()
+        ChatScreenContent(
+            snackbarHostState = SnackbarHostState(),
+            state = ChatState(),
+            onBack = {},
+            onOpenConnections = {},
+            onLaunchActiveConnection = {},
+            onTerminateConnection = {},
+            onResetConversation = {},
+            onApproveConfirmation = { _, _ -> },
+            onRejectConfirmation = { _, _ -> },
+            onInputChanged = {},
+            onSendMessage = {},
+            onStopWork = {},
+        )
     }
 }
 
@@ -160,6 +173,7 @@ private fun HomeScreenPreview() {
 private fun HomeScreenEnabledPreview() {
     AppTheme {
         ChatScreenContent(
+            snackbarHostState = SnackbarHostState(),
             state = ChatState(
                 activeConnectionName = "Connection Name",
                 activeConnectionKind = ConnectionKind.REMOTE,
@@ -176,7 +190,17 @@ private fun HomeScreenEnabledPreview() {
                         isUser = false
                     ),
                 )
-            )
+            ),
+            onBack = {},
+            onOpenConnections = {},
+            onLaunchActiveConnection = {},
+            onTerminateConnection = {},
+            onResetConversation = {},
+            onApproveConfirmation = { _, _ -> },
+            onRejectConfirmation = { _, _ -> },
+            onInputChanged = {},
+            onSendMessage = {},
+            onStopWork = {},
         )
     }
 }

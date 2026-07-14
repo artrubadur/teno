@@ -114,6 +114,38 @@ fun PlainLeadingIconButton(
     }
 }
 
+@Composable
+fun ErrorLeadingIconButton(
+    @DrawableRes iconRes: Int,
+    text: String,
+    contentDescription: String? = text,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+    enabled: Boolean = true,
+    iconModifier: Modifier = Modifier.size(ButtonDefaults.IconSize),
+    textModifier: Modifier = Modifier,
+    shape: Shape = ButtonDefaults.shape,
+    contentPadding: PaddingValues = ButtonDefaults.ContentPadding,
+    interactionSource: MutableInteractionSource? = remember { MutableInteractionSource() },
+) {
+    ErrorButton(
+        onClick = onClick,
+        modifier = modifier,
+        enabled = enabled,
+        shape = shape,
+        contentPadding = contentPadding,
+        interactionSource = interactionSource,
+    ) {
+        LeadingIconButtonContent(
+            iconRes = iconRes,
+            text = text,
+            contentDescription = contentDescription,
+            iconModifier = iconModifier,
+            textModifier = textModifier,
+        )
+    }
+}
+
 
 @Composable
 private fun LeadingIconButtonContent(
@@ -191,7 +223,7 @@ private fun PlainEnabledPreview() {
     AppTheme {
         PlainLeadingIconButton(
             iconRes = R.drawable.ic_add,
-            text = "Outlined",
+            text = "Plain",
             onClick = {},
         )
     }
@@ -203,7 +235,33 @@ private fun PlainDisabledPreview() {
     AppTheme {
         PlainLeadingIconButton(
             iconRes = R.drawable.ic_add,
-            text = "Outlined",
+            text = "Plain",
+            onClick = {},
+            enabled = false,
+        )
+    }
+}
+
+
+@Preview(showBackground = true)
+@Composable
+private fun ErrorEnabledPreview() {
+    AppTheme {
+        ErrorLeadingIconButton(
+            iconRes = R.drawable.ic_add,
+            text = "Error",
+            onClick = {},
+        )
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+private fun ErrorDisabledPreview() {
+    AppTheme {
+        ErrorLeadingIconButton(
+            iconRes = R.drawable.ic_add,
+            text = "Error",
             onClick = {},
             enabled = false,
         )

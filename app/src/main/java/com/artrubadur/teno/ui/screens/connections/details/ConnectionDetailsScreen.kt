@@ -1,7 +1,5 @@
-package com.artrubadur.teno.ui.screens.connections
+package com.artrubadur.teno.ui.screens.connections.details
 
-import androidx.activity.compose.rememberLauncherForActivityResult
-import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.material3.SnackbarDuration
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.Composable
@@ -9,16 +7,19 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
+import com.artrubadur.teno.ui.screens.connections.ConnectionsViewModel
 import org.koin.androidx.compose.koinViewModel
 
 @Composable
-fun ConnectionsScreen(
+fun ConnectionDetailsScreen(
     onBack: () -> Unit = {},
-    onOpenConnection: (String) -> Unit = {},
+    connectionId: String? = null,
     viewModel: ConnectionsViewModel = koinViewModel()
 ) {
+
     val state by viewModel.state.collectAsState()
     val connections by viewModel.connections.collectAsState()
+    val connection = connections.firstOrNull({ it.id == connectionId })
     val snackbarHostState = remember { SnackbarHostState() }
 
     LaunchedEffect(viewModel) {
@@ -30,29 +31,17 @@ fun ConnectionsScreen(
         }
     }
 
-    val importModelLauncher = rememberLauncherForActivityResult(
-        contract = ActivityResultContracts.OpenDocument()
-    ) { uri ->
-        uri ?: return@rememberLauncherForActivityResult
-        viewModel.addLocalDraftData(uri)
-    }
-
-    fun onLocalSelect() {
-        importModelLauncher.launch(arrayOf("*/*"))
-    }
-
-    ConnectionsScreenContent(
-        snackbarHostState = snackbarHostState,
+    ConnectionDetailsScreenContent(
         state = state,
-        connections = connections,
+        snackbarHostState = snackbarHostState,
+        connection = connection,
         onBack = onBack,
-        onOpenConnection = onOpenConnection,
         onToggleActive = viewModel::onToggleActive,
-        onAddConnection = viewModel::openSourceDialog,
+        onEditConnection = viewModel::openEditDialog,
+        onDeleteConnection = viewModel::openDeleteDialog,
         onDismissDialog = viewModel::dismissDialog,
-        onRemoteSelect = viewModel::openRemoteAddDialog,
-        onLocalSelect = ::onLocalSelect,
-        onRemoteConfirm = viewModel::submitRemoteConnection,
         onLocalConfirm = viewModel::submitLocalConnection,
+        onRemoteConfirm = viewModel::submitRemoteConnection,
+        onDeleteConfirm = { viewModel.deleteSelectedConnection(onBack) },
     )
 }

@@ -1,5 +1,6 @@
 package com.artrubadur.teno
 
+import android.net.Uri
 import androidx.compose.animation.AnimatedContentTransitionScope
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
@@ -14,6 +15,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.artrubadur.teno.ui.screens.chat.ChatScreen
 import com.artrubadur.teno.ui.screens.connections.ConnectionsScreen
+import com.artrubadur.teno.ui.screens.connections.details.ConnectionDetailsScreen
 import com.artrubadur.teno.ui.screens.home.HomeScreen
 import com.artrubadur.teno.ui.screens.tools.ToolsScreen
 
@@ -66,7 +68,14 @@ fun App() {
             }
             composable(Route.Connections) {
                 ConnectionsScreen(
-                    onBack = { navController.popBackStack() }
+                    onBack = { navController.popBackStack() },
+                    onOpenConnection = { id -> navController.navigate(Route.connectionDetails(id)) }
+                )
+            }
+            composable(Route.ConnectionDetails) { backStackEntry ->
+                ConnectionDetailsScreen(
+                    onBack = { navController.popBackStack() },
+                    connectionId = backStackEntry.arguments?.getString(Route.ConnectionId),
                 )
             }
             composable(Route.Tools) {
@@ -81,6 +90,10 @@ fun App() {
 private object Route {
     const val Home = "home"
     const val Connections = "connections"
+    const val ConnectionId = "connectionId"
+    const val ConnectionDetails = "connections/{$ConnectionId}"
     const val Chat = "chat"
     const val Tools = "tools"
+
+    fun connectionDetails(id: String) = "connections/${Uri.encode(id)}"
 }

@@ -45,7 +45,7 @@ internal fun ActiveConnectionCard(
         ),
     ) {
         Row(
-            modifier = Modifier.padding(24.dp),
+            modifier = Modifier.padding(16.dp),
             verticalAlignment = Alignment.CenterVertically,
         ) {
             Column(
@@ -81,7 +81,7 @@ internal fun ActiveConnectionCard(
             }
 
             Icon(
-                painter = painterResource(R.drawable.ic_arrow),
+                painter = painterResource(R.drawable.ic_kb_arrow),
                 contentDescription = null,
                 tint = MaterialTheme.colorScheme.onSurfaceVariant,
             )

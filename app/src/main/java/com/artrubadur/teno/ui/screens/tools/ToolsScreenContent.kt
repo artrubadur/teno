@@ -29,10 +29,10 @@ import kotlinx.schema.generator.json.serialization.SerializationClassJsonSchemaG
 
 @Composable
 internal fun ToolsScreenContent(
-    state: ToolsState = ToolsState(),
-    onBack: () -> Unit = {},
-    setToolEnabled: (String, Boolean) -> Unit = { _, _ -> },
-    grantPermission: (ToolPermission) -> Unit = {},
+    state: ToolsState,
+    onBack: () -> Unit,
+    setToolEnabled: (String, Boolean) -> Unit,
+    grantPermission: (ToolPermission) -> Unit,
 ) {
     val groupedTools = state.tools
         .groupBy { it.spec.group }
@@ -70,7 +70,7 @@ internal fun ToolsScreenContent(
 
             LazyColumn(
                 modifier = Modifier.fillMaxWidth(),
-                verticalArrangement = Arrangement.spacedBy(8.dp),
+                verticalArrangement = Arrangement.spacedBy(16.dp),
             ) {
                 items(
                     count = groupedTools.size,
@@ -129,7 +129,10 @@ private fun HomeScreenPreview() {
                     previewToolItem(),
                     previewToolItem(enabled = true),
                 )
-            )
+            ),
+            onBack = {},
+            setToolEnabled = { _, _ -> },
+            grantPermission = {},
         )
     }
 }

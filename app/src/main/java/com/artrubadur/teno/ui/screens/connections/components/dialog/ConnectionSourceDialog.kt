@@ -1,8 +1,11 @@
-package com.artrubadur.teno.ui.screens.connections.dialog
+package com.artrubadur.teno.ui.screens.connections.components.dialog
 
-import androidx.compose.foundation.layout.Arrangement
+import android.content.res.Configuration
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
@@ -21,7 +24,7 @@ import com.artrubadur.teno.ui.theme.AppTheme
 @Composable
 fun ConnectionSourceDialog(
     onLocalSelect: () -> Unit,
-    onExternalSelect: () -> Unit,
+    onRemoteSelect: () -> Unit,
     onDismiss: () -> Unit,
 ) {
     Dialog(
@@ -29,7 +32,7 @@ fun ConnectionSourceDialog(
     ) {
         DialogContent(
             onLocalSelect = onLocalSelect,
-            onExternalSelect = onExternalSelect,
+            onRemoteSelect = onRemoteSelect,
             onDismiss = onDismiss,
         )
     }
@@ -38,21 +41,24 @@ fun ConnectionSourceDialog(
 @Composable
 private fun DialogContent(
     onLocalSelect: () -> Unit,
-    onExternalSelect: () -> Unit,
+    onRemoteSelect: () -> Unit,
     onDismiss: () -> Unit,
 ) {
     Surface(
-        shape = RoundedCornerShape(24.dp),
         color = MaterialTheme.colorScheme.surface,
-        tonalElevation = 8.dp,
-        modifier = Modifier.fillMaxWidth()
+        contentColor = MaterialTheme.colorScheme.onSurface,
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(16.dp),
+        border = BorderStroke(
+            1.dp,
+            MaterialTheme.colorScheme.outline,
+        ),
     ) {
         Column(
             modifier = Modifier.padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
             OutlinedLeadingIconButton(
-                iconRes = R.drawable.ic_storage,
+                iconRes = R.drawable.ic_mobile,
                 text = "Local",
                 contentDescription = "Add remote connection",
                 onClick = onLocalSelect,
@@ -60,14 +66,18 @@ private fun DialogContent(
                 shape = RoundedCornerShape(8.dp)
             )
 
+            Spacer(modifier = Modifier.height(4.dp))
+
             OutlinedLeadingIconButton(
-                iconRes = R.drawable.ic_link,
+                iconRes = R.drawable.ic_cloud,
                 text = "Remote",
                 contentDescription = "Add remote connection",
-                onClick = onExternalSelect,
+                onClick = onRemoteSelect,
                 modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(8.dp)
             )
+
+            Spacer(modifier = Modifier.height(16.dp))
 
             PlainLeadingIconButton(
                 iconRes = R.drawable.ic_close,
@@ -80,13 +90,20 @@ private fun DialogContent(
     }
 }
 
-@Preview
+@Preview(
+    name = "Light",
+    uiMode = Configuration.UI_MODE_NIGHT_NO,
+)
+@Preview(
+    name = "Dark",
+    uiMode = Configuration.UI_MODE_NIGHT_YES,
+)
 @Composable
 private fun DialogPreview() {
     AppTheme {
         DialogContent(
             onLocalSelect = {},
-            onExternalSelect = {},
+            onRemoteSelect = {},
             onDismiss = {}
         )
     }

@@ -99,7 +99,7 @@ internal fun ActiveConnectionCard(
             }
 
             Icon(
-                painter = painterResource(R.drawable.ic_arrow),
+                painter = painterResource(R.drawable.ic_kb_arrow),
                 contentDescription = null,
                 tint = MaterialTheme.colorScheme.onSurfaceVariant,
             )

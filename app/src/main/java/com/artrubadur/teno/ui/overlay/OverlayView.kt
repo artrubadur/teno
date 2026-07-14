@@ -19,6 +19,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -27,6 +28,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.SolidColor
@@ -162,11 +164,14 @@ fun OverlayView(
                         )
                     } else {
                         OutlinedIconButton(
-                            iconRes = R.drawable.ic_send,
+                            iconRes = R.drawable.ic_arrow,
                             contentDescription = "Send",
                             onClick = onSend,
                             modifier = Modifier.size(44.dp),
                             enabled = state.canSend,
+                            iconModifier = Modifier
+                                .size(ButtonDefaults.IconSize)
+                                .rotate(90f)
                         )
                     }
                 }

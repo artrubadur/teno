@@ -70,7 +70,7 @@ internal fun ToolItem(
             )
 
             PlainIconButton(
-                iconRes = R.drawable.ic_arrow,
+                iconRes = R.drawable.ic_kb_arrow,
                 contentDescription = if (expanded) "Collapse tool" else "Expand tool",
                 onClick = { expanded = !expanded },
                 tint = MaterialTheme.colorScheme.onSurfaceVariant,

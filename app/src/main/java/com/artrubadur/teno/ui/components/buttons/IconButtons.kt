@@ -311,3 +311,16 @@ private fun ErrorEnabledPreview() {
         )
     }
 }
+
+@Preview(showBackground = true)
+@Composable
+private fun ErrorDisabledPreview() {
+    AppTheme {
+        ErrorIconButton(
+            iconRes = R.drawable.ic_delete,
+            onClick = {},
+            contentDescription = "",
+            enabled = false
+        )
+    }
+}

@@ -48,7 +48,7 @@ internal fun OverlayCard(
         ),
     ) {
         Column(
-            modifier = Modifier.padding(24.dp),
+            modifier = Modifier.padding(16.dp),
         ) {
             Row(
                 verticalAlignment = Alignment.CenterVertically,
@@ -79,7 +79,7 @@ internal fun OverlayCard(
             }
 
             HorizontalDivider(
-                modifier = Modifier.padding(vertical = 12.dp),
+                modifier = Modifier.padding(vertical = 8.dp),
                 color = MaterialTheme.colorScheme.outlineVariant,
             )
 

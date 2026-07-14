@@ -8,17 +8,11 @@ import com.artrubadur.teno.connection.RemoteConnectionConfig
 data class ConnectionsState(
     val isLoading: Boolean = false,
     val typeFilter: ConnectionType? = null,
-    val cardAction: CardAction? = null,
     val dialogState: ConnectionDialogState = ConnectionDialogState()
 )
 
-enum class CardAction {
-    DELETE,
-    UPDATE,
-}
-
 data class ConnectionDialogState(
-    val dialogStage: DialogStage? = null,
+    val dialog: ConnectionDialogType? = null,
     val updatingId: String? = null,
     val kind: ConnectionKind? = null,
     val type: ConnectionType = ConnectionType.LLM,
@@ -27,8 +21,9 @@ data class ConnectionDialogState(
     val modelUri: Uri? = null,
 )
 
-enum class DialogStage {
+enum class ConnectionDialogType {
     SOURCE,
+    LOCAL,
     REMOTE,
-    DETAILS
+    DELETE,
 }

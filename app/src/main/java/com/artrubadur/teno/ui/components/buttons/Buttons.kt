@@ -65,6 +65,31 @@ fun SecondaryButton(
 }
 
 @Composable
+fun ErrorButton(
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+    enabled: Boolean = true,
+    shape: Shape = ButtonDefaults.shape,
+    contentPadding: PaddingValues = ButtonDefaults.ContentPadding,
+    interactionSource: MutableInteractionSource? = remember { MutableInteractionSource() },
+    content: @Composable () -> Unit,
+) {
+    FilledButtonBase(
+        onClick = onClick,
+        modifier = modifier,
+        enabled = enabled,
+        shape = shape,
+        contentPadding = contentPadding,
+        interactionSource = interactionSource,
+        colors = ButtonDefaults.buttonColors(
+            containerColor = MaterialTheme.colorScheme.errorContainer.copy(alpha = 0.7f),
+            contentColor = MaterialTheme.colorScheme.error,
+        ),
+        content = content,
+    )
+}
+
+@Composable
 fun OutlinedButton(
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
@@ -185,6 +210,26 @@ private fun SecondaryDisabledPreview() {
     AppTheme {
         SecondaryButton(onClick = {}, enabled = false) {
             Text("Secondary")
+        }
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+private fun ErrorEnabledPreview() {
+    AppTheme {
+        ErrorButton(onClick = {}) {
+            Text("Error")
+        }
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+private fun ErrorDisabledPreview() {
+    AppTheme {
+        ErrorButton(onClick = {}, enabled = false) {
+            Text("Error")
         }
     }
 }

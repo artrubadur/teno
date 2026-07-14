@@ -43,23 +43,11 @@ class ConnectionsViewModel(
             .flatMapLatest { typeFilter ->
                 connectionManager.observeConnections(typeFilter)
             }
-            .map { connections ->
-                connections.sortedWith(
-                    compareByDescending<Connection> { it.active }
-                        .thenByDescending { it.addedAt }
-                )
-            }
             .stateIn(
                 scope = viewModelScope,
                 started = SharingStarted.WhileSubscribed(5_000),
                 initialValue = emptyList()
             )
-
-//    fun setTypeFilter(typeFilter: ConnectionType?) {
-//        _state.update {
-//            it.copy(typeFilter = typeFilter)
-//        }
-//    }
 
     fun onToggleActive(connection: Connection) {
         viewModelScope.launch {
@@ -71,60 +59,41 @@ class ConnectionsViewModel(
         }
     }
 
-    fun setCardAction(cardAction: CardAction?) {
+    fun openSourceDialog() {
         _state.update {
-            it.copy(cardAction = cardAction)
+            it.copy(dialogState = ConnectionDialogState(dialog = ConnectionDialogType.SOURCE))
         }
     }
 
-    fun onCardClick(connection: Connection) {
-        when (_state.value.cardAction) {
-            CardAction.DELETE -> onDeleteActionClick(connection)
-            CardAction.UPDATE -> onUpdateActionClick(connection)
-            else -> Unit
-        }
-    }
-
-    private fun onDeleteActionClick(connection: Connection) {
-        viewModelScope.launch {
-            _state.update {
-                it.copy(
-                    cardAction = null,
-                    isLoading = true
+    fun openRemoteAddDialog() {
+        _state.update {
+            it.copy(
+                dialogState = ConnectionDialogState(
+                    dialog = ConnectionDialogType.REMOTE,
+                    kind = ConnectionKind.REMOTE,
                 )
-            }
-            try {
-                connectionManager.deleteConnection(connection.id)
-                _state.update {
-                    it.copy(isLoading = false)
-                }
-            } catch (e: Exception) {
-                _events.tryEmit(e.message ?: "Failed to delete connection")
-                _state.update {
-                    it.copy(isLoading = false)
-                }
-            }
+            )
         }
     }
 
-    private fun onUpdateActionClick(connection: Connection) {
-        _state.update { state ->
-            state.copy(
+    fun openEditDialog(connection: Connection) {
+        _state.update {
+            it.copy(
                 dialogState = when (connection) {
-                    is LocalConnection -> state.dialogState.copy(
+                    is LocalConnection -> ConnectionDialogState(
+                        dialog = ConnectionDialogType.LOCAL,
                         updatingId = connection.id,
-                        dialogStage = DialogStage.DETAILS,
                         kind = ConnectionKind.LOCAL,
-                        name = connection.name,
                         type = connection.type,
+                        name = connection.name,
                     )
 
-                    is RemoteConnection -> state.dialogState.copy(
+                    is RemoteConnection -> ConnectionDialogState(
+                        dialog = ConnectionDialogType.REMOTE,
                         updatingId = connection.id,
-                        dialogStage = DialogStage.REMOTE,
                         kind = ConnectionKind.REMOTE,
-                        name = connection.name,
                         type = connection.type,
+                        name = connection.name,
                         remoteConfig = connection.config,
                     )
                 }
@@ -132,11 +101,15 @@ class ConnectionsViewModel(
         }
     }
 
-    fun setDialogStage(dialogStage: DialogStage?) {
+    fun openDeleteDialog(connection: Connection) {
         _state.update {
             it.copy(
-                dialogState = it.dialogState.copy(
-                    dialogStage = dialogStage
+                dialogState = ConnectionDialogState(
+                    dialog = ConnectionDialogType.DELETE,
+                    updatingId = connection.id,
+                    kind = connection.kind,
+                    type = connection.type,
+                    name = connection.name,
                 )
             )
         }
@@ -145,86 +118,82 @@ class ConnectionsViewModel(
     fun addLocalDraftData(uri: Uri) {
         _state.update {
             it.copy(
-                dialogState = it.dialogState.copy(
+                dialogState = ConnectionDialogState(
+                    dialog = ConnectionDialogType.LOCAL,
                     kind = ConnectionKind.LOCAL,
-                    modelUri = uri
+                    modelUri = uri,
                 )
             )
         }
     }
 
-    fun addRemoteDraftData(remoteConfig: RemoteConnectionConfig): Boolean {
-        if (!remoteConfig.isValid) {
-            _events.tryEmit("Fill in all remote connection fields")
-            return false
-        }
-
+    fun dismissDialog() {
         _state.update {
-            it.copy(
-                dialogState = it.dialogState.copy(
-                    kind = ConnectionKind.REMOTE,
-                    remoteConfig = remoteConfig
-                )
-            )
+            it.copy(dialogState = ConnectionDialogState())
         }
-        return true
     }
 
-    fun addDraftDetailsData(
+    fun submitLocalConnection(name: String) {
+        submitConnection(
+            draft = _state.value.dialogState.copy(
+                name = name,
+                type = ConnectionType.LLM,
+            )
+        )
+    }
+
+    fun submitRemoteConnection(
         name: String,
-        type: ConnectionType
-    ): Boolean {
-        if (name.isEmpty()) {
+        remoteConfig: RemoteConnectionConfig,
+    ) {
+        submitConnection(
+            draft = _state.value.dialogState.copy(
+                name = name,
+                type = ConnectionType.LLM,
+                kind = ConnectionKind.REMOTE,
+                remoteConfig = remoteConfig,
+            )
+        )
+    }
+
+    private fun submitConnection(draft: ConnectionDialogState) {
+        if (draft.name.isBlank()) {
             _events.tryEmit("Connection name cannot be empty")
-            return false
+            return
         }
-
-        _state.update {
-            it.copy(
-                dialogState = it.dialogState.copy(
-                    name = name,
-                    type = type
-                )
-            )
+        if (draft.kind == ConnectionKind.REMOTE && draft.remoteConfig?.isValid != true) {
+            _events.tryEmit("Fill in all remote connection fields")
+            return
         }
-
-        return true
-    }
-
-    fun clearDraftData() {
-        _state.update {
-            it.copy(
-                dialogState = ConnectionDialogState()
-            )
-        }
-    }
-
-    fun updateConnection() {
-        val draft = _state.value.dialogState
 
         viewModelScope.launch {
             _state.update {
                 it.copy(
                     isLoading = true,
-                    dialogState = it.dialogState.copy(dialogStage = null)
+                    dialogState = it.dialogState.copy(dialog = null)
                 )
             }
 
             try {
-                requireNotNull(draft.updatingId) {
-                    "Updating id is required"
-                }
-                requireNotNull(draft.kind) {
-                    "Connection kind is required"
-                }
+                val kind = requireNotNull(draft.kind) { "Connection kind is required" }
 
-                connectionManager.updateConnection(
-                    id = draft.updatingId,
-                    kind = draft.kind,
-                    name = draft.name,
-                    type = draft.type,
-                    remoteConfig = draft.remoteConfig
-                )
+                if (draft.updatingId == null) {
+                    connectionManager.addConnection(
+                        kind = kind,
+                        type = draft.type,
+                        name = draft.name,
+                        uri = draft.modelUri,
+                        remoteConfig = draft.remoteConfig,
+                    )
+                } else {
+                    connectionManager.updateConnection(
+                        id = draft.updatingId,
+                        kind = kind,
+                        name = draft.name,
+                        type = draft.type,
+                        remoteConfig = draft.remoteConfig,
+                    )
+                }
 
                 _state.update {
                     it.copy(
@@ -233,8 +202,7 @@ class ConnectionsViewModel(
                     )
                 }
             } catch (e: Exception) {
-                _events.tryEmit(e.message ?: "Failed to update connection")
-
+                _events.tryEmit(e.message ?: "Failed to save connection")
                 _state.update {
                     it.copy(isLoading = false)
                 }
@@ -242,39 +210,28 @@ class ConnectionsViewModel(
         }
     }
 
-    fun addConnection() {
-        val draft = _state.value.dialogState
+    fun deleteSelectedConnection(onDeleted: () -> Unit = {}) {
+        val id = _state.value.dialogState.updatingId ?: return
 
         viewModelScope.launch {
             _state.update {
                 it.copy(
                     isLoading = true,
-                    dialogState = it.dialogState.copy(dialogStage = null)
+                    dialogState = it.dialogState.copy(dialog = null)
                 )
             }
 
             try {
-                requireNotNull(draft.kind) {
-                    "Select a connection source"
-                }
-
-                connectionManager.addConnection(
-                    kind = draft.kind,
-                    type = draft.type,
-                    name = draft.name,
-                    uri = draft.modelUri,
-                    remoteConfig = draft.remoteConfig,
-                )
-
+                connectionManager.deleteConnection(id)
                 _state.update {
                     it.copy(
                         isLoading = false,
                         dialogState = ConnectionDialogState()
                     )
                 }
+                onDeleted()
             } catch (e: Exception) {
-                _events.tryEmit(e.message ?: "Failed to add connection")
-
+                _events.tryEmit(e.message ?: "Failed to delete connection")
                 _state.update {
                     it.copy(isLoading = false)
                 }
@@ -282,4 +239,3 @@ class ConnectionsViewModel(
         }
     }
 }
-
