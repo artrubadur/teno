@@ -2,6 +2,7 @@ package com.artrubadur.teno.ui.screens.chat
 
 import android.content.res.Configuration
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -9,6 +10,7 @@ import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
@@ -17,8 +19,19 @@ import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.drawWithCache
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Size
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.onSizeChanged
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.artrubadur.teno.R
@@ -46,6 +59,10 @@ fun ChatScreenContent(
     onSend: () -> Unit,
     onStopWork: () -> Unit,
 ) {
+    val shadeColor = MaterialTheme.colorScheme.background
+    val density = LocalDensity.current
+    var promptHeight by remember { mutableStateOf(0.dp) }
+
     Scaffold(
         snackbarHost = { SnackbarHost(snackbarHostState) },
         contentWindowInsets = WindowInsets(0),
@@ -108,24 +125,71 @@ fun ChatScreenContent(
                     modifier = Modifier.height(16.dp)
                 )
 
-                MessageList(
-                    state = state,
-                    onApproveConfirmation = onApproveConfirmation,
-                    onRejectConfirmation = onRejectConfirmation,
+                Box(
                     modifier = Modifier
-                        .fillMaxWidth()
-                        .weight(1f),
-                )
+                        .fillMaxSize()
+                        .imePadding(),
+                ) {
+                    MessageList(
+                        state = state,
+                        onApproveConfirmation = onApproveConfirmation,
+                        onRejectConfirmation = onRejectConfirmation,
+                        modifier = Modifier.fillMaxSize(),
+                        bottomPadding = promptHeight + 12.dp,
+                    )
 
+                    Box(
+                        modifier = Modifier
+                            .align(Alignment.BottomCenter)
+                            .fillMaxWidth()
+                            .drawWithCache {
+                                val fadeBrush = Brush.verticalGradient(
+                                    colors = listOf(
+                                        Color.Transparent,
+                                        shadeColor,
+                                    ),
+                                    startY = 0f,
+                                    endY = 32.dp.toPx(),
+                                )
 
-                PromptInput(
-                    value = state.input,
-                    onValueChange = onInputChanged,
-                    onSend = onSend,
-                    onStopWork = onStopWork,
-                    isWorking = state.isWorking,
-                    canSend = state.canSend
-                )
+                                onDrawBehind {
+                                    drawRect(
+                                        brush = fadeBrush,
+                                        size = Size(
+                                            width = size.width,
+                                            height = 32.dp.toPx(),
+                                        ),
+                                    )
+
+                                    drawRect(
+                                        color = shadeColor,
+                                        topLeft = Offset(
+                                            x = 0f,
+                                            y = 32.dp.toPx(),
+                                        ),
+                                        size = Size(
+                                            width = size.width,
+                                            height = size.height - 32.dp.toPx(),
+                                        ),
+                                    )
+                                }
+                            }
+                    ) {
+                        PromptInput(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .onSizeChanged {
+                                    promptHeight = with(density) { it.height.toDp() }
+                                },
+                            value = state.input,
+                            onValueChange = onInputChanged,
+                            onSend = onSend,
+                            onStopWork = onStopWork,
+                            isWorking = state.isWorking,
+                            canSend = state.canSend,
+                        )
+                    }
+                }
             }
         }
     }
