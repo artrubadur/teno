@@ -54,7 +54,7 @@ class OverlayForegroundService : Service() {
 
         showForegroundNotification()
         publishRunningState(true)
-        
+
         controller.state
             .map { state -> Triple(state.isReady, state.isLoading, state.isWorking) }
             .distinctUntilChanged()
@@ -70,7 +70,11 @@ class OverlayForegroundService : Service() {
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         when (intent?.action) {
-            ACTION_START -> showForegroundNotification()
+            ACTION_START -> {
+                showForegroundNotification()
+                controller.onShowIsland(false)
+            }
+
             ACTION_INPUT -> controller.onOpenInput()
             ACTION_STOP -> controller.stopWork()
             ACTION_LAUNCH -> controller.launchActiveConnection()

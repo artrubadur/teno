@@ -91,23 +91,7 @@ class OverlayController(
 
     fun onOpenInput() {
         if (!_state.value.isOverlayVisible) {
-            _state.update {
-                it.copy(
-                    isOverlayVisible = true,
-                    isIslandVisible = false,
-                    focusInput = false,
-                )
-            }
-
-            scope.launch {
-                yield()
-                _state.update {
-                    it.copy(
-                        isIslandVisible = true,
-                        focusInput = true,
-                    )
-                }
-            }
+            onShowIsland(true)
             return
         }
 
@@ -117,6 +101,26 @@ class OverlayController(
                 isIslandVisible = true,
                 focusInput = true,
             )
+        }
+    }
+
+    fun onShowIsland(focus: Boolean) {
+        _state.update {
+            it.copy(
+                isOverlayVisible = true,
+                isIslandVisible = false,
+                focusInput = false,
+            )
+        }
+
+        scope.launch {
+            yield()
+            _state.update {
+                it.copy(
+                    isIslandVisible = true,
+                    focusInput = focus,
+                )
+            }
         }
     }
 
