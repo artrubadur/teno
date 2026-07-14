@@ -3,7 +3,7 @@ package com.artrubadur.teno.agent.orchestration
 import com.artrubadur.teno.connection.runtime.llm.AgentInstructions
 import com.artrubadur.teno.connection.runtime.llm.LlmOptions
 
-internal object AgentDefaults {
+object AgentDefaults {
     val instructions = AgentInstructions(
         identity = listOf(
             "You are a local Android app agent.",

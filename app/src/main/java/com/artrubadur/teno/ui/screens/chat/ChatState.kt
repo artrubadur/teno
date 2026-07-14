@@ -24,7 +24,7 @@ data class ChatState(
         get() = messages.isEmpty()
 }
 
-internal fun ChatState.appendAssistantLine(
+fun ChatState.appendAssistantLine(
     messageIndex: Int,
     line: String
 ): ChatState {
@@ -40,7 +40,7 @@ internal fun ChatState.appendAssistantLine(
     return copy(messages = updatedMessages)
 }
 
-internal fun ChatState.setMessageConfirmation(
+fun ChatState.setMessageConfirmation(
     messageIndex: Int,
     confirmation: ConfirmationRequest
 ): ChatState {
@@ -57,7 +57,7 @@ internal fun ChatState.setMessageConfirmation(
     return copy(messages = updatedMessages)
 }
 
-internal fun ChatState.resolveConfirmation(
+fun ChatState.resolveConfirmation(
     messageIndex: Int,
     status: ConfirmationStatus
 ): ChatState {
@@ -76,7 +76,7 @@ internal fun ChatState.resolveConfirmation(
     return copy(messages = updatedMessages)
 }
 
-internal fun ChatState.removeEmptyMessage(
+fun ChatState.removeEmptyMessage(
     messageIndex: Int
 ): ChatState {
     val actualIndex = messages.indexOfFirst { it.index == messageIndex }

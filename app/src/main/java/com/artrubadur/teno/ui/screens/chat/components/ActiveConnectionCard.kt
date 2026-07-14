@@ -31,7 +31,7 @@ import com.artrubadur.teno.ui.screens.chat.ChatState
 import com.artrubadur.teno.ui.theme.AppTheme
 
 @Composable
-internal fun ActiveConnectionCard(
+fun ActiveConnectionCard(
     state: ChatState,
     onOpenConnections: () -> Unit,
     onLaunchActiveConnection: () -> Unit,

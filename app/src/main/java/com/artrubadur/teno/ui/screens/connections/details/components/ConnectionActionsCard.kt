@@ -23,7 +23,7 @@ import com.artrubadur.teno.R
 import com.artrubadur.teno.ui.theme.AppTheme
 
 @Composable
-internal fun ConnectionActionsCard(
+fun ConnectionActionsCard(
     onEditClick: () -> Unit,
     onDeleteClick: () -> Unit,
     modifier: Modifier = Modifier,

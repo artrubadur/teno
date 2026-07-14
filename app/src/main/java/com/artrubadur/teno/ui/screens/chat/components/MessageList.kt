@@ -22,7 +22,7 @@ import com.artrubadur.teno.ui.screens.chat.ChatState
 import com.artrubadur.teno.ui.theme.AppTheme
 
 @Composable
-internal fun MessageList(
+fun MessageList(
     state: ChatState,
     onApproveConfirmation: (Int, String) -> Unit,
     onRejectConfirmation: (Int, String) -> Unit,

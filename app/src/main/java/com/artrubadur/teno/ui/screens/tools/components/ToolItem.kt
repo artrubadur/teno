@@ -39,7 +39,7 @@ import com.artrubadur.teno.ui.theme.AppTheme
 import kotlinx.schema.generator.json.serialization.SerializationClassJsonSchemaGenerator
 
 @Composable
-internal fun ToolItem(
+fun ToolItem(
     tool: ToolItemState,
     initialExpanded: Boolean = false,
     onEnabledChange: (Boolean) -> Unit,

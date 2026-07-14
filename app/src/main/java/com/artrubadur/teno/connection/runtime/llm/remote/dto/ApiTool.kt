@@ -4,13 +4,13 @@ import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.JsonElement
 
 @Serializable
-internal data class ApiTool(
+data class ApiTool(
     val type: String = "function",
     val function: ApiFunction
 )
 
 @Serializable
-internal data class ApiFunction(
+data class ApiFunction(
     val name: String,
     val description: String? = null,
     val parameters: JsonElement

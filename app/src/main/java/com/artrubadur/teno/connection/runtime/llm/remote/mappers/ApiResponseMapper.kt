@@ -8,7 +8,7 @@ import com.artrubadur.teno.connection.runtime.llm.remote.dto.ApiToolCall
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.jsonObject
 
-internal fun ApiResponse.toLlmResponse(): LlmResponse {
+fun ApiResponse.toLlmResponse(): LlmResponse {
     val choice = choices.firstOrNull()
         ?: throw LlmException.InvalidResponse(
             message = "Model response does not contain any choices.",

@@ -13,7 +13,7 @@ import com.artrubadur.teno.connection.runtime.llm.remote.dto.ApiRequest
 import com.artrubadur.teno.connection.runtime.llm.remote.dto.ApiTool
 import com.artrubadur.teno.connection.runtime.llm.remote.dto.ApiToolCall
 
-internal fun LlmRequest.toApiRequest(model: String): ApiRequest =
+fun LlmRequest.toApiRequest(model: String): ApiRequest =
     ApiRequest(
         model = model,
         messages = listOf(instructions.toSystemMessage()) +

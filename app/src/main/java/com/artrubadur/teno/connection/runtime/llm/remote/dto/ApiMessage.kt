@@ -4,7 +4,7 @@ import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
 @Serializable
-internal data class ApiMessage(
+data class ApiMessage(
     val role: String,
     val content: String? = null,
     @SerialName("tool_calls")

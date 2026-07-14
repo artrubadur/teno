@@ -28,7 +28,7 @@ import com.artrubadur.teno.ui.theme.AppTheme
 import kotlinx.schema.generator.json.serialization.SerializationClassJsonSchemaGenerator
 
 @Composable
-internal fun ToolsScreenContent(
+fun ToolsScreenContent(
     state: ToolsState,
     onBack: () -> Unit,
     setToolEnabled: (String, Boolean) -> Unit,

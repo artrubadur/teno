@@ -32,7 +32,7 @@ import com.artrubadur.teno.ui.screens.chat.components.MessageList
 import com.artrubadur.teno.ui.theme.AppTheme
 
 @Composable
-internal fun ChatScreenContent(
+fun ChatScreenContent(
     snackbarHostState: SnackbarHostState,
     state: ChatState,
     onBack: () -> Unit,

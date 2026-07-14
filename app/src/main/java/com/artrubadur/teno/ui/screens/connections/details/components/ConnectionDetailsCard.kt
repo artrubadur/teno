@@ -32,7 +32,7 @@ import com.artrubadur.teno.ui.components.Switch
 import com.artrubadur.teno.ui.theme.AppTheme
 
 @Composable
-internal fun ConnectionDetailsCard(
+fun ConnectionDetailsCard(
     connection: Connection,
     onToggleActive: (Connection) -> Unit,
 ) {

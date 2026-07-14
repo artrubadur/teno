@@ -10,7 +10,7 @@ import com.artrubadur.teno.ui.screens.connections.components.dialog.LocalConnect
 import com.artrubadur.teno.ui.screens.connections.components.dialog.RemoteConnectionDialog
 
 @Composable
-internal fun ConnectionDialog(
+fun ConnectionDialog(
     state: ConnectionsState,
     onLocalSelect: () -> Unit,
     onRemoteSelect: () -> Unit,

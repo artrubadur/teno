@@ -11,7 +11,7 @@ import androidx.compose.ui.unit.dp
 import com.artrubadur.teno.connection.Connection
 
 @Composable
-internal fun ConnectionList(
+fun ConnectionList(
     modifier: Modifier,
     connections: List<Connection> = listOf(),
     onOpenConnection: (String) -> Unit = {},

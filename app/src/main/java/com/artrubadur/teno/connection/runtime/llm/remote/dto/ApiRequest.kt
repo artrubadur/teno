@@ -4,7 +4,7 @@ import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
 @Serializable
-internal data class ApiRequest(
+data class ApiRequest(
     val model: String,
     val messages: List<ApiMessage>,
     val tools: List<ApiTool>? = null,

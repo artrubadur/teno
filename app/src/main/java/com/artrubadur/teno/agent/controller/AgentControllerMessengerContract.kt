@@ -2,7 +2,7 @@ package com.artrubadur.teno.agent.controller
 
 import kotlinx.serialization.json.Json
 
-internal object AgentControllerMessengerContract {
+object AgentControllerMessengerContract {
     const val MSG_REGISTER = 1
     const val MSG_UNREGISTER = 2
     const val MSG_COMMAND = 3

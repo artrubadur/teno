@@ -22,7 +22,7 @@ import com.artrubadur.teno.ui.screens.tools.ToolPermissionState
 import com.artrubadur.teno.ui.theme.AppTheme
 
 @Composable
-internal fun PermissionItem(
+fun PermissionItem(
     permission: ToolPermissionState,
     onGrantPermission: (ToolPermission) -> Unit,
 ) {

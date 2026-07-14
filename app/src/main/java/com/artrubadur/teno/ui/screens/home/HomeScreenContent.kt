@@ -23,7 +23,7 @@ import com.artrubadur.teno.ui.screens.home.components.OverlayCard
 import com.artrubadur.teno.ui.theme.AppTheme
 
 @Composable
-internal fun HomeScreenContent(
+fun HomeScreenContent(
     state: HomeState,
     activeConnectionName: String?,
     activeConnectionKind: ConnectionKind?,

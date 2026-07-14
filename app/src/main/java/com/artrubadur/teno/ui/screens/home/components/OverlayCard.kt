@@ -31,7 +31,7 @@ import com.artrubadur.teno.ui.screens.home.HomeState
 import com.artrubadur.teno.ui.theme.AppTheme
 
 @Composable
-internal fun OverlayCard(
+fun OverlayCard(
     state: HomeState,
     onOverlayEnabledChange: (Boolean) -> Unit,
 ) {
