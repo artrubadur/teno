@@ -49,6 +49,8 @@ class OverlayHostView(
                     onInputChanged = controller::onInputChanged,
                     onSend = controller::onSend,
                     onStop = controller::stopWork,
+                    onApproveConfirmation = controller::approveConfirmation,
+                    onRejectConfirmation = controller::rejectConfirmation,
                     onOutsideClick = controller::onOutsideClick,
                     onIslandHidden = controller::onIslandHidden,
                 )

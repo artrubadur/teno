@@ -1,5 +1,6 @@
 package com.artrubadur.teno.agent.controller
 
+import android.os.SystemClock
 import com.artrubadur.teno.agent.orchestration.AgentEvent
 import com.artrubadur.teno.connection.ConnectionKind
 import kotlinx.serialization.Serializable
@@ -37,12 +38,23 @@ sealed interface AgentControllerCommand {
 
 @Serializable
 sealed interface AgentControllerEvent {
-    @Serializable
-    data class StateChanged(val state: AgentControllerState) : AgentControllerEvent
+    val time: Long
 
     @Serializable
-    data class Message(val message: String) : AgentControllerEvent
+    data class StateChanged(
+        val state: AgentControllerState,
+        override val time: Long = SystemClock.elapsedRealtime(),
+    ) : AgentControllerEvent
 
     @Serializable
-    data class Agent(val event: AgentEvent) : AgentControllerEvent
+    data class Message(
+        val message: String,
+        override val time: Long = SystemClock.elapsedRealtime(),
+    ) : AgentControllerEvent
+
+    @Serializable
+    data class Agent(
+        val event: AgentEvent,
+        override val time: Long = SystemClock.elapsedRealtime(),
+    ) : AgentControllerEvent
 }

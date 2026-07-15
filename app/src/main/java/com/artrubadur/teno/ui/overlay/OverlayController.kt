@@ -5,9 +5,7 @@ import com.artrubadur.teno.agent.controller.AgentControllerClient
 import com.artrubadur.teno.agent.controller.AgentControllerCommand
 import com.artrubadur.teno.agent.controller.AgentControllerEvent
 import com.artrubadur.teno.agent.controller.AgentControllerState
-import com.artrubadur.teno.agent.orchestration.AgentEvent
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -25,8 +23,6 @@ class OverlayController(
 
     private val _state = MutableStateFlow(OverlayState())
     val state: StateFlow<OverlayState> = _state.asStateFlow()
-
-    private val _events = MutableSharedFlow<String>(extraBufferCapacity = 1)
 
     init {
         agentController.state
@@ -69,6 +65,7 @@ class OverlayController(
                 isOverlayVisible = true,
                 isIslandVisible = true,
                 focusInput = false,
+                controllerEvents = emptyList(),
             )
         }
 
@@ -83,6 +80,14 @@ class OverlayController(
                 isWorking = false,
             )
         }
+    }
+
+    fun approveConfirmation(confirmationId: String) {
+        agentController.send(AgentControllerCommand.ApproveConfirmation(confirmationId))
+    }
+
+    fun rejectConfirmation(confirmationId: String) {
+        agentController.send(AgentControllerCommand.RejectConfirmation(confirmationId))
     }
 
     fun close() {
@@ -170,27 +175,10 @@ class OverlayController(
     }
 
     private fun handleControllerEvent(event: AgentControllerEvent) {
-        when (event) {
-            is AgentControllerEvent.Agent -> emitEvent(event.event.toOverlayLine())
-            is AgentControllerEvent.Message -> emitEvent(event.message)
-            is AgentControllerEvent.StateChanged -> Unit
+        if (event is AgentControllerEvent.StateChanged) {
+            return
         }
-    }
 
-    private fun emitEvent(message: String) {
-        _state.update { it.copy(latestEvent = message) }
-        _events.tryEmit(message)
-    }
-
-    private fun AgentEvent.toOverlayLine(): String {
-        return when (this) {
-            is AgentEvent.FinalAnswer -> message
-            is AgentEvent.ToolStarted -> "${call.tool}: started"
-            is AgentEvent.ToolExecuted -> "${result.tool}: done"
-            is AgentEvent.ToolFailed -> "${result.tool}: failed"
-            is AgentEvent.ToolBlocked -> "${result.tool}: blocked"
-            is AgentEvent.ConfirmationRequired -> "Confirmation required: $title"
-            is AgentEvent.Failed -> "Agent failed: $reason"
-        }
+        _state.update { it.copy(controllerEvents = it.controllerEvents + event) }
     }
 }

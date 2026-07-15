@@ -1,6 +1,5 @@
 package com.artrubadur.teno.agent.orchestration
 
-import android.util.Log
 import com.artrubadur.teno.agent.policy.ConfirmationManager
 import com.artrubadur.teno.agent.tools.BrokerResult
 import com.artrubadur.teno.agent.tools.ToolBroker
@@ -42,7 +41,6 @@ class AgentOrchestrator(
                 userRequest = userMessage,
                 tools = toolBroker.listToolSpecs()
             )
-            Log.d("AgentOrchestrator", toolBroker.listToolSpecs().map { it.name }.toString())
             runAgentLoop(session)
         }
     }

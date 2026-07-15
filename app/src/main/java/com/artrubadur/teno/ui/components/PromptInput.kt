@@ -38,6 +38,7 @@ import com.artrubadur.teno.ui.theme.AppTheme
 @Composable
 fun PromptInput(
     modifier: Modifier = Modifier,
+    inputFieldModifier: Modifier = Modifier,
     value: String,
     onValueChange: (String) -> Unit,
     onSend: () -> Unit,
@@ -70,7 +71,7 @@ fun PromptInput(
 
     Surface(
         modifier = modifier,
-        shape = RoundedCornerShape(32.dp),
+        shape = RoundedCornerShape(28.dp),
         color = MaterialTheme.colorScheme.surface,
         border = BorderStroke(
             1.dp,
@@ -90,9 +91,9 @@ fun PromptInput(
                         inputValue = it
                         onValueChange(it.text)
                     },
-                    modifier = Modifier
+                    modifier = inputFieldModifier
                         .weight(1f)
-                        .padding(8.dp),
+                        .padding(horizontal = 8.dp, vertical = if (multiline) 8.dp else 0.dp),
                     minLines = 1,
                     maxLines = 5,
                     textStyle = LocalTextStyle.current.copy(
@@ -159,14 +160,14 @@ private fun ChatInputActionButton(
             iconRes = R.drawable.ic_stop,
             contentDescription = "Stop work",
             onClick = onStopWork,
-            modifier = Modifier.size(48.dp)
+            modifier = Modifier.size(40.dp)
         )
     } else {
         PrimaryIconButton(
             iconRes = R.drawable.ic_arrow,
             contentDescription = "Send message",
             onClick = onSendMessage,
-            modifier = Modifier.size(48.dp),
+            modifier = Modifier.size(40.dp),
             enabled = canSend,
             iconModifier = Modifier
                 .size(ButtonDefaults.IconSize)
