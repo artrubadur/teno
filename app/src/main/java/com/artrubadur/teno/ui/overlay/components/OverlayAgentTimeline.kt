@@ -35,7 +35,6 @@ import com.artrubadur.teno.agent.orchestration.AgentEvent
 import com.artrubadur.teno.agent.tools.ToolCall
 import com.artrubadur.teno.agent.tools.ToolResult
 import com.artrubadur.teno.ui.components.AgentTimeline
-import com.artrubadur.teno.ui.components.eventlist.EventEntry
 import com.artrubadur.teno.ui.components.eventlist.hasLiveTimer
 import com.artrubadur.teno.ui.components.eventlist.toEventEntries
 import com.artrubadur.teno.ui.theme.AppTheme
@@ -54,9 +53,10 @@ fun OverlayAgentTimeline(
 ) {
     val entries = remember(events) { events.toEventEntries() }
     val hasEvents = entries.isNotEmpty()
-    val finalAnswer = entries.asReversed()
-        .mapNotNull { (it as? EventEntry.Single)?.event as? AgentEvent.FinalAnswer }
-        .firstOrNull()
+    val finalAnswer = events.asReversed()
+        .firstNotNullOfOrNull { (it as? AgentControllerEvent.Agent)?.event as? AgentEvent.FinalAnswer }
+    val serviceMessage =
+        events.asReversed().firstNotNullOfOrNull { (it as? AgentControllerEvent.Message)?.message }
     var now by remember { mutableLongStateOf(SystemClock.elapsedRealtime()) }
     var expanded by remember { mutableStateOf(false) }
 
@@ -118,9 +118,14 @@ fun OverlayAgentTimeline(
                     )
                 } else {
                     Text(
-                        text = if (isWorking) "Agent is working..." else finalAnswer?.message.orEmpty(),
+                        text = when {
+                            isWorking -> "Agent is working..."
+                            finalAnswer != null -> finalAnswer.message
+                            serviceMessage != null -> serviceMessage
+                            else -> "Agent was interrupted"
+                        },
                         modifier = if (hasEvents) Modifier.padding(top = 12.dp) else Modifier,
-                        color = if (isWorking) {
+                        color = if (isWorking || serviceMessage != null) {
                             MaterialTheme.colorScheme.onSurfaceVariant
                         } else {
                             MaterialTheme.colorScheme.onSurface
