@@ -34,7 +34,7 @@ import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import com.artrubadur.teno.ui.components.PromptInput
 import com.artrubadur.teno.ui.overlay.components.AuraOverlay
-import com.artrubadur.teno.ui.overlay.components.EventList
+import com.artrubadur.teno.ui.overlay.components.OverlayAgentTimeline
 import com.artrubadur.teno.ui.theme.AppTheme
 
 @Composable
@@ -97,7 +97,7 @@ fun OverlayView(
             verticalArrangement = Arrangement.spacedBy(12.dp),
         ) {
             if (state.isWorking || state.controllerEvents.isNotEmpty()) {
-                EventList(
+                OverlayAgentTimeline(
                     events = state.controllerEvents,
                     isWorking = state.isWorking,
                     onApproveConfirmation = onApproveConfirmation,

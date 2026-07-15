@@ -5,7 +5,6 @@ import android.os.SystemClock
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.detectVerticalDragGestures
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
@@ -14,7 +13,6 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
@@ -36,14 +34,10 @@ import com.artrubadur.teno.agent.controller.AgentControllerEvent
 import com.artrubadur.teno.agent.orchestration.AgentEvent
 import com.artrubadur.teno.agent.tools.ToolCall
 import com.artrubadur.teno.agent.tools.ToolResult
-import com.artrubadur.teno.ui.overlay.components.eventlist.ErrorMessageRow
-import com.artrubadur.teno.ui.overlay.components.eventlist.EventEntry
-import com.artrubadur.teno.ui.overlay.components.eventlist.SingleEventRow
-import com.artrubadur.teno.ui.overlay.components.eventlist.ToolCallRow
-import com.artrubadur.teno.ui.overlay.components.eventlist.WorkDurationRow
-import com.artrubadur.teno.ui.overlay.components.eventlist.hasLiveTimer
-import com.artrubadur.teno.ui.overlay.components.eventlist.toEventEntries
-import com.artrubadur.teno.ui.overlay.components.eventlist.workDurationUntil
+import com.artrubadur.teno.ui.components.AgentTimeline
+import com.artrubadur.teno.ui.components.eventlist.EventEntry
+import com.artrubadur.teno.ui.components.eventlist.hasLiveTimer
+import com.artrubadur.teno.ui.components.eventlist.toEventEntries
 import com.artrubadur.teno.ui.theme.AppTheme
 import kotlinx.coroutines.delay
 import kotlinx.serialization.json.buildJsonObject
@@ -51,7 +45,7 @@ import kotlinx.serialization.json.put
 import kotlin.time.Duration.Companion.seconds
 
 @Composable
-fun EventList(
+fun OverlayAgentTimeline(
     events: List<AgentControllerEvent>,
     isWorking: Boolean,
     onApproveConfirmation: (String) -> Unit,
@@ -113,29 +107,15 @@ fun EventList(
                 }
 
                 if (expanded && hasEvents) {
-                    LazyColumn(
+                    AgentTimeline(
+                        events = events,
+                        now = now,
+                        onApproveConfirmation = onApproveConfirmation,
+                        onRejectConfirmation = onRejectConfirmation,
                         modifier = Modifier
                             .fillMaxWidth()
                             .padding(top = 12.dp),
-                        verticalArrangement = Arrangement.spacedBy(8.dp)
-                    ) {
-                        entries.forEachIndexed { index, entry ->
-                            item(key = entry.key) {
-                                EventEntryRow(
-                                    entry = entry,
-                                    now = now,
-                                    onApproveConfirmation = onApproveConfirmation,
-                                    onRejectConfirmation = onRejectConfirmation,
-                                )
-                            }
-
-                            entry.workDurationUntil(entries.getOrNull(index + 1))?.let { duration ->
-                                item(key = "${entry.key}-work") {
-                                    WorkDurationRow(duration = duration, now = now)
-                                }
-                            }
-                        }
-                    }
+                    )
                 } else {
                     Text(
                         text = if (isWorking) "Agent is working..." else finalAnswer?.message.orEmpty(),
@@ -153,25 +133,6 @@ fun EventList(
     }
 }
 
-@Composable
-private fun EventEntryRow(
-    entry: EventEntry,
-    now: Long,
-    onApproveConfirmation: (String) -> Unit,
-    onRejectConfirmation: (String) -> Unit,
-) {
-    when (entry) {
-        is EventEntry.Message -> ErrorMessageRow(entry.message)
-        is EventEntry.Single -> SingleEventRow(entry.event)
-        is EventEntry.Tool -> ToolCallRow(
-            entry = entry,
-            now = now,
-            onApproveConfirmation = onApproveConfirmation,
-            onRejectConfirmation = onRejectConfirmation,
-        )
-    }
-}
-
 
 @Preview(
     name = "Light",
@@ -182,9 +143,9 @@ private fun EventEntryRow(
     uiMode = Configuration.UI_MODE_NIGHT_YES,
 )
 @Composable
-private fun EventListPreview() {
+private fun OverlayAgentTimelinePreview() {
     AppTheme {
-        EventList(
+        OverlayAgentTimeline(
             events = listOf(
                 AgentControllerEvent.Agent(
                     AgentEvent.ToolStarted(

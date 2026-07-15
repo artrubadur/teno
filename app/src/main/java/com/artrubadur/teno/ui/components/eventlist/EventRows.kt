@@ -1,4 +1,4 @@
-package com.artrubadur.teno.ui.overlay.components.eventlist
+package com.artrubadur.teno.ui.components.eventlist
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
@@ -39,7 +39,7 @@ fun WorkDurationRow(
                 "Worked for ${String.format(Locale.US, "%.1fs", elapsedSeconds)}"
             },
             color = MaterialTheme.colorScheme.onSurfaceVariant,
-            style = MaterialTheme.typography.bodySmall,
+            style = MaterialTheme.typography.bodyMedium,
         )
     }
 }
@@ -59,7 +59,7 @@ private fun MessageRow(
 ) {
     Text(
         color = MaterialTheme.colorScheme.onSurface,
-        style = MaterialTheme.typography.bodySmall,
+        style = MaterialTheme.typography.bodyMedium,
         text = message
     )
 }
@@ -79,7 +79,7 @@ fun ErrorMessageRow(message: String) {
 
         Text(
             color = MaterialTheme.colorScheme.error,
-            style = MaterialTheme.typography.bodySmall,
+            style = MaterialTheme.typography.bodyMedium,
             text = message
         )
 

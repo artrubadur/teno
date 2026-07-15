@@ -57,13 +57,12 @@ fun MessageList(
                         message = message,
                         onApproveConfirmation = onApproveConfirmation,
                         onRejectConfirmation = onRejectConfirmation,
-                        isWorking = state.isWorking
                     )
                 }
             }
         }
 
-        if (false) {
+        if (!state.isActivated || !state.isReady || state.isDialogEmpty) {
             Box(
                 modifier = Modifier
                     .fillMaxSize()

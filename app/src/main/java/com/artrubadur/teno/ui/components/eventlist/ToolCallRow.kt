@@ -1,4 +1,4 @@
-package com.artrubadur.teno.ui.overlay.components.eventlist
+package com.artrubadur.teno.ui.components.eventlist
 
 import androidx.annotation.DrawableRes
 import androidx.compose.animation.AnimatedVisibility

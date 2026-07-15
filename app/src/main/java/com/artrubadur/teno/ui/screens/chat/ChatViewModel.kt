@@ -9,8 +9,6 @@ import com.artrubadur.teno.agent.controller.AgentControllerEvent
 import com.artrubadur.teno.agent.controller.AgentControllerState
 import com.artrubadur.teno.agent.orchestration.AgentEvent
 import com.artrubadur.teno.ui.screens.chat.components.ChatMessage
-import com.artrubadur.teno.ui.screens.chat.components.ConfirmationRequest
-import com.artrubadur.teno.ui.screens.chat.components.ConfirmationStatus
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharedFlow
@@ -117,7 +115,6 @@ class ChatViewModel(
     fun onApproveConfirmation(messageIndex: Int, confirmationId: String) {
         respondToConfirmation(
             messageIndex = messageIndex,
-            status = ConfirmationStatus.APPROVED,
             command = AgentControllerCommand.ApproveConfirmation(confirmationId)
         )
     }
@@ -125,42 +122,25 @@ class ChatViewModel(
     fun onRejectConfirmation(messageIndex: Int, confirmationId: String) {
         respondToConfirmation(
             messageIndex = messageIndex,
-            status = ConfirmationStatus.REJECTED,
             command = AgentControllerCommand.RejectConfirmation(confirmationId)
         )
     }
 
     private fun respondToConfirmation(
         messageIndex: Int,
-        status: ConfirmationStatus,
         command: AgentControllerCommand
     ) {
         val current = _state.value
         if (current.isWorking) return
 
         activeAssistantMessageIndex = messageIndex
-        _state.update {
-            it.resolveConfirmation(
-                messageIndex = messageIndex,
-                status = status
-            ).copy(isWorking = true)
-        }
+        _state.update { it.copy(isWorking = true) }
         agentController.send(command)
     }
 
     private fun applyAgentState(agentState: AgentControllerState) {
-        val messageIndex = activeAssistantMessageIndex
-        val shouldRemoveEmptyMessage =
-            _state.value.isWorking && !agentState.isWorking && messageIndex != null
-
         _state.update {
-            val updated = if (shouldRemoveEmptyMessage) {
-                it.removeEmptyMessage(messageIndex)
-            } else {
-                it
-            }
-
-            updated.copy(
+            it.copy(
                 activeConnectionName = agentState.activeConnectionName,
                 activeConnectionKind = agentState.activeConnectionKind,
                 isReady = agentState.isReady,
@@ -168,54 +148,43 @@ class ChatViewModel(
                 isWorking = agentState.isWorking,
             )
         }
-
-        if (!agentState.isWorking) {
-            activeAssistantMessageIndex = null
-        }
     }
 
     private fun handleControllerEvent(event: AgentControllerEvent) {
         when (event) {
-            is AgentControllerEvent.Agent -> collectAgentEvent(event.event)
-            is AgentControllerEvent.Message -> _events.tryEmit(event.message)
+            is AgentControllerEvent.Agent -> collectAgentEvent(event)
+            is AgentControllerEvent.Message -> collectServiceMessage(event)
             is AgentControllerEvent.StateChanged -> Unit
         }
     }
 
-    private fun collectAgentEvent(event: AgentEvent) {
-        val assistantMessageIndex = activeAssistantMessageIndex ?: return
-        _state.update { state ->
-            val withLine = state.appendAssistantLine(
-                messageIndex = assistantMessageIndex,
-                line = event.toMessageLine()
-            )
-
-            when (event) {
-                is AgentEvent.ConfirmationRequired -> {
-                    withLine.setMessageConfirmation(
-                        messageIndex = assistantMessageIndex,
-                        confirmation = ConfirmationRequest(
-                            id = event.confirmationId,
-                            title = event.title,
-                            description = event.description
-                        )
-                    )
-                }
-
-                else -> withLine
-            }
+    private fun collectServiceMessage(event: AgentControllerEvent.Message) {
+        val assistantMessageIndex = activeAssistantMessageIndex
+        if (assistantMessageIndex == null) {
+            _events.tryEmit(event.message)
+            return
         }
+
+        _state.update { state ->
+            state.appendAssistantEvent(
+                messageIndex = assistantMessageIndex,
+                event = event,
+            )
+        }
+        activeAssistantMessageIndex = null
     }
 
-    private fun AgentEvent.toMessageLine(): String {
-        return when (this) {
-            is AgentEvent.FinalAnswer -> message
-            is AgentEvent.ToolStarted -> "#${call.id} '${call.tool}' tool call: ${call.arguments}"
-            is AgentEvent.ToolExecuted -> "#${result.toolCallId} '${result.tool}' tool executed: ${result.result}"
-            is AgentEvent.ToolFailed -> "#${result.toolCallId} '${result.tool}' tool failed: ${result.result}"
-            is AgentEvent.ToolBlocked -> "#${result.toolCallId} '${result.tool}' tool blocked: ${result.result}"
-            is AgentEvent.ConfirmationRequired -> "#${call.id} '${call.tool}' confirmation required: $title\n$description"
-            is AgentEvent.Failed -> "Agent failed: $reason"
+    private fun collectAgentEvent(event: AgentControllerEvent.Agent) {
+        val assistantMessageIndex = activeAssistantMessageIndex ?: return
+        _state.update { state ->
+            state.appendAssistantEvent(
+                messageIndex = assistantMessageIndex,
+                event = event,
+            )
+        }
+
+        if (event.event is AgentEvent.FinalAnswer || event.event is AgentEvent.Failed) {
+            activeAssistantMessageIndex = null
         }
     }
 

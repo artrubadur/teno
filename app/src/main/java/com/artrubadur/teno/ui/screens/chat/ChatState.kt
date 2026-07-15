@@ -1,9 +1,8 @@
 package com.artrubadur.teno.ui.screens.chat
 
+import com.artrubadur.teno.agent.controller.AgentControllerEvent
 import com.artrubadur.teno.connection.ConnectionKind
 import com.artrubadur.teno.ui.screens.chat.components.ChatMessage
-import com.artrubadur.teno.ui.screens.chat.components.ConfirmationRequest
-import com.artrubadur.teno.ui.screens.chat.components.ConfirmationStatus
 
 data class ChatState(
     val activeConnectionName: String? = null,
@@ -24,25 +23,9 @@ data class ChatState(
         get() = messages.isEmpty()
 }
 
-fun ChatState.appendAssistantLine(
+fun ChatState.appendAssistantEvent(
     messageIndex: Int,
-    line: String
-): ChatState {
-    val actualIndex = messages.indexOfFirst { it.index == messageIndex }
-    if (actualIndex == -1) return this
-
-    val updatedMessages = messages.toMutableList()
-    val message = updatedMessages[actualIndex]
-
-    val separator = if (message.text.isBlank()) "" else "\n"
-    updatedMessages[actualIndex] = message.copy(text = message.text + separator + line)
-
-    return copy(messages = updatedMessages)
-}
-
-fun ChatState.setMessageConfirmation(
-    messageIndex: Int,
-    confirmation: ConfirmationRequest
+    event: AgentControllerEvent,
 ): ChatState {
     val actualIndex = messages.indexOfFirst { it.index == messageIndex }
     if (actualIndex == -1) return this
@@ -51,44 +34,8 @@ fun ChatState.setMessageConfirmation(
     val message = updatedMessages[actualIndex]
 
     updatedMessages[actualIndex] = message.copy(
-        confirmation = confirmation
+        events = message.events + event
     )
-
-    return copy(messages = updatedMessages)
-}
-
-fun ChatState.resolveConfirmation(
-    messageIndex: Int,
-    status: ConfirmationStatus
-): ChatState {
-    val actualIndex = messages.indexOfFirst { it.index == messageIndex }
-    if (actualIndex == -1) return this
-
-    val updatedMessages = messages.toMutableList()
-    val message = updatedMessages[actualIndex]
-
-    val confirmation = message.confirmation ?: return this
-
-    updatedMessages[actualIndex] = message.copy(
-        confirmation = confirmation.copy(status = status)
-    )
-
-    return copy(messages = updatedMessages)
-}
-
-fun ChatState.removeEmptyMessage(
-    messageIndex: Int
-): ChatState {
-    val actualIndex = messages.indexOfFirst { it.index == messageIndex }
-    if (actualIndex == -1) return this
-
-    val updatedMessages = messages.toMutableList()
-    val message = updatedMessages[actualIndex]
-    if (message.text.isNotBlank()) {
-        return this
-    }
-
-    updatedMessages.removeAt(actualIndex)
 
     return copy(messages = updatedMessages)
 }
