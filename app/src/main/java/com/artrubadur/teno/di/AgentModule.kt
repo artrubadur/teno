@@ -8,10 +8,12 @@ import com.artrubadur.teno.agent.tools.ToolBroker
 import com.artrubadur.teno.agent.tools.ToolManager
 import com.artrubadur.teno.agent.tools.ToolRegistry
 import com.artrubadur.teno.agent.tools.impl.GetBrightnessTool
+import com.artrubadur.teno.agent.tools.impl.GetClipboardTool
 import com.artrubadur.teno.agent.tools.impl.GetCurrentTimeTool
 import com.artrubadur.teno.agent.tools.impl.GetVolumeTool
 import com.artrubadur.teno.agent.tools.impl.LogTool
 import com.artrubadur.teno.agent.tools.impl.SetBrightnessTool
+import com.artrubadur.teno.agent.tools.impl.SetClipboardTool
 import com.artrubadur.teno.agent.tools.impl.SetVolumeTool
 import com.artrubadur.teno.agent.tools.impl.ToggleFlashlightTool
 import org.koin.android.ext.koin.androidContext
@@ -26,6 +28,8 @@ val agentModule = module {
     factory { GetVolumeTool(androidContext()) } bind Tool::class
     factory { SetVolumeTool(androidContext()) } bind Tool::class
     factory { ToggleFlashlightTool(androidContext()) } bind Tool::class
+    factory { GetClipboardTool(androidContext()) } bind Tool::class
+    factory { SetClipboardTool(androidContext()) } bind Tool::class
 
     single {
         ToolRegistry(
