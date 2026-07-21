@@ -4,6 +4,7 @@ import android.content.Context
 import android.media.AudioManager
 import com.artrubadur.teno.agent.tools.Tool
 import com.artrubadur.teno.agent.tools.ToolGroup
+import com.artrubadur.teno.agent.tools.ToolPermission
 import com.artrubadur.teno.agent.tools.ToolRisk
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.JsonObject
@@ -25,6 +26,8 @@ class SetVolumeTool(
     override val group = ToolGroup.SYSTEM
 
     override val risk = ToolRisk.SAFE
+
+    override val requiredPermissions = setOf(ToolPermission.MODIFY_AUDIO_SETTINGS)
 
     override val argsSerializer = SetVolumeToolArgs.serializer()
 

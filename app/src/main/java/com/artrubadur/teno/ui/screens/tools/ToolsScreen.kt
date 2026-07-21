@@ -11,6 +11,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
+import com.artrubadur.teno.agent.tools.PermissionGrantType
 import org.koin.compose.viewmodel.koinViewModel
 
 @Composable
@@ -22,15 +23,41 @@ fun ToolsScreen(
     val lifecycleOwner = LocalLifecycleOwner.current
     val state by viewModel.state.collectAsState()
 
-    val permissionLauncher = rememberLauncherForActivityResult(
-        contract = ActivityResultContracts.StartActivityForResult()
-    ) {
-        viewModel.onPermissionResult()
-    }
+    val intentPermissionLauncher =
+        rememberLauncherForActivityResult(
+            ActivityResultContracts.StartActivityForResult()
+        ) {
+            viewModel.onPermissionResult()
+        }
+
+    val runtimePermissionLauncher =
+        rememberLauncherForActivityResult(
+            ActivityResultContracts.RequestPermission()
+        ) {
+            viewModel.onPermissionResult()
+        }
 
     LaunchedEffect(viewModel) {
         viewModel.permissions.collect { permission ->
-            permissionLauncher.launch(permission.grantIntent(context))
+
+            when (permission.grantType) {
+
+                PermissionGrantType.INTENT -> {
+                    permission.grantIntent(context)?.let {
+                        intentPermissionLauncher.launch(it)
+                    }
+                }
+
+                PermissionGrantType.RUNTIME -> {
+                    permission.manifestPermission()?.let {
+                        runtimePermissionLauncher.launch(it)
+                    }
+                }
+
+                PermissionGrantType.NONE -> {
+                    viewModel.onPermissionResult()
+                }
+            }
         }
     }
 
