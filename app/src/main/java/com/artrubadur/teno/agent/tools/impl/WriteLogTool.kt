@@ -10,7 +10,7 @@ import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.put
 
-class LogTool : Tool<WriteLogToolArgs> {
+class LogTool : Tool<LogTool.Args> {
 
     override val name = "write_log"
 
@@ -22,9 +22,9 @@ class LogTool : Tool<WriteLogToolArgs> {
 
     override val risk = ToolRisk.SAFE
 
-    override val argsSerializer = WriteLogToolArgs.serializer()
+    override val argsSerializer = Args.serializer()
 
-    override suspend fun executeTyped(args: WriteLogToolArgs): JsonObject {
+    override suspend fun executeTyped(args: Args): JsonObject {
         when (args.level) {
             LogLevel.DEBUG -> Log.d("TenoToolCall", args.message)
             LogLevel.INFO -> Log.i("TenoToolCall", args.message)
@@ -36,25 +36,26 @@ class LogTool : Tool<WriteLogToolArgs> {
             put("ok", true)
         }
     }
+
+    @Serializable
+    data class Args(
+        val message: String,
+        val level: LogLevel = LogLevel.DEBUG
+    )
+
+    @Serializable
+    enum class LogLevel {
+        @SerialName("debug")
+        DEBUG,
+
+        @SerialName("info")
+        INFO,
+
+        @SerialName("warning")
+        WARNING,
+
+        @SerialName("error")
+        ERROR
+    }
 }
 
-@Serializable
-data class WriteLogToolArgs(
-    val message: String,
-    val level: LogLevel = LogLevel.DEBUG
-)
-
-@Serializable
-enum class LogLevel {
-    @SerialName("debug")
-    DEBUG,
-
-    @SerialName("info")
-    INFO,
-
-    @SerialName("warning")
-    WARNING,
-
-    @SerialName("error")
-    ERROR
-}

@@ -14,7 +14,7 @@ import kotlin.math.roundToInt
 
 class SetVolumeTool(
     private val context: Context
-) : Tool<SetVolumeToolArgs> {
+) : Tool<SetVolumeTool.Args> {
 
     override val name = "set_volume"
 
@@ -29,10 +29,10 @@ class SetVolumeTool(
 
     override val requiredPermissions = setOf(ToolPermission.MODIFY_AUDIO_SETTINGS)
 
-    override val argsSerializer = SetVolumeToolArgs.serializer()
+    override val argsSerializer = Args.serializer()
 
     override suspend fun executeTyped(
-        args: SetVolumeToolArgs
+        args: Args
     ): JsonObject {
         require(args.value in 0f..1f) {
             "value must be between 0.0 and 1.0"
@@ -59,9 +59,9 @@ class SetVolumeTool(
             put("ok", true)
         }
     }
-}
 
-@Serializable
-data class SetVolumeToolArgs(
-    val value: Float
-)
+    @Serializable
+    data class Args(
+        val value: Float
+    )
+}

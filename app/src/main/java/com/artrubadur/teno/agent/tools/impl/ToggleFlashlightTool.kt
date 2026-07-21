@@ -15,7 +15,7 @@ import kotlinx.serialization.json.put
 
 class ToggleFlashlightTool(
     private val context: Context
-) : Tool<ToggleFlashlightToolArgs> {
+) : Tool<ToggleFlashlightTool.Args> {
 
     override val name = "toggle_flashlight"
 
@@ -31,10 +31,10 @@ class ToggleFlashlightTool(
     override val requiredPermissions =
         setOf(ToolPermission.CAMERA)
 
-    override val argsSerializer = ToggleFlashlightToolArgs.serializer()
+    override val argsSerializer = Args.serializer()
 
     override suspend fun executeTyped(
-        args: ToggleFlashlightToolArgs
+        args: Args
     ): JsonObject {
         val cameraManager =
             context.getSystemService(
@@ -71,9 +71,9 @@ class ToggleFlashlightTool(
             ) == true
         }
     }
-}
 
-@Serializable
-data class ToggleFlashlightToolArgs(
-    val enabled: Boolean
-)
+    @Serializable
+    data class Args(
+        val enabled: Boolean
+    )
+}

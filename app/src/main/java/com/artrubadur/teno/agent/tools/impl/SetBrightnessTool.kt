@@ -14,7 +14,7 @@ import kotlin.math.roundToInt
 
 class SetBrightnessTool(
     private val context: Context
-) : Tool<SetBrightnessToolArgs> {
+) : Tool<SetBrightnessTool.Args> {
 
     override val name = "set_brightness"
 
@@ -27,9 +27,9 @@ class SetBrightnessTool(
 
     override val requiredPermissions = setOf(ToolPermission.WRITE_SETTINGS)
 
-    override val argsSerializer = SetBrightnessToolArgs.serializer()
+    override val argsSerializer = Args.serializer()
 
-    override suspend fun executeTyped(args: SetBrightnessToolArgs): JsonObject {
+    override suspend fun executeTyped(args: Args): JsonObject {
         require(args.value in 0f..1f) { "value must be between 0.0 and 1.0" }
 
         val value = (args.value * MAX_BRIGHTNESS).roundToInt().coerceIn(0, MAX_BRIGHTNESS)
@@ -47,9 +47,10 @@ class SetBrightnessTool(
     private companion object {
         const val MAX_BRIGHTNESS = 255
     }
+
+    @Serializable
+    data class Args(
+        val value: Float,
+    )
 }
 
-@Serializable
-data class SetBrightnessToolArgs(
-    val value: Float,
-)
