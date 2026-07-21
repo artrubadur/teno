@@ -9,8 +9,10 @@ import com.artrubadur.teno.agent.tools.ToolManager
 import com.artrubadur.teno.agent.tools.ToolRegistry
 import com.artrubadur.teno.agent.tools.impl.GetBrightnessTool
 import com.artrubadur.teno.agent.tools.impl.GetCurrentTimeTool
+import com.artrubadur.teno.agent.tools.impl.GetVolumeTool
 import com.artrubadur.teno.agent.tools.impl.LogTool
 import com.artrubadur.teno.agent.tools.impl.SetBrightnessTool
+import com.artrubadur.teno.agent.tools.impl.SetVolumeTool
 import org.koin.android.ext.koin.androidContext
 import org.koin.dsl.bind
 import org.koin.dsl.module
@@ -20,6 +22,8 @@ val agentModule = module {
     factory { GetCurrentTimeTool() } bind Tool::class
     factory { GetBrightnessTool(androidContext()) } bind Tool::class
     factory { SetBrightnessTool(androidContext()) } bind Tool::class
+    factory { GetVolumeTool(androidContext()) } bind Tool::class
+    factory { SetVolumeTool(androidContext()) } bind Tool::class
 
     single {
         ToolRegistry(
