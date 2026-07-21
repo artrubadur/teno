@@ -31,7 +31,6 @@ class SetBrightnessTool(
 
     override suspend fun executeTyped(args: SetBrightnessToolArgs): JsonObject {
         require(args.value in 0f..1f) { "value must be between 0.0 and 1.0" }
-        require(ToolPermission.WRITE_SETTINGS.isGranted(context)) { "permission is required" }
 
         val value = (args.value * MAX_BRIGHTNESS).roundToInt().coerceIn(0, MAX_BRIGHTNESS)
         Settings.System.putInt(

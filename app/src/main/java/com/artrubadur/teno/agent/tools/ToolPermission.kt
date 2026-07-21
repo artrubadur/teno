@@ -1,8 +1,11 @@
 package com.artrubadur.teno.agent.tools
 
+import android.Manifest
 import android.content.Context
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.provider.Settings
+import androidx.core.content.ContextCompat
 import androidx.core.net.toUri
 
 enum class ToolPermission(
@@ -16,6 +19,12 @@ enum class ToolPermission(
         grantType = PermissionGrantType.INTENT
     ),
 
+    CAMERA(
+        title = "Camera access",
+        description = "Allows to take pictures, record video, toggle the device flashlight",
+        grantType = PermissionGrantType.RUNTIME
+    ),
+
     MODIFY_AUDIO_SETTINGS(
         title = "Modify audio settings",
         description = "Allows changing system audio settings such as volume",
@@ -26,6 +35,12 @@ enum class ToolPermission(
         return when (this) {
             WRITE_SETTINGS ->
                 Settings.System.canWrite(context)
+
+            CAMERA ->
+                ContextCompat.checkSelfPermission(
+                    context,
+                    Manifest.permission.CAMERA
+                ) == PackageManager.PERMISSION_GRANTED
 
             MODIFY_AUDIO_SETTINGS ->
                 true
@@ -45,6 +60,7 @@ enum class ToolPermission(
 
     fun manifestPermission(): String? {
         return when (this) {
+            CAMERA -> Manifest.permission.CAMERA
             else -> null
         }
     }

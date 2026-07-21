@@ -13,6 +13,7 @@ import com.artrubadur.teno.agent.tools.impl.GetVolumeTool
 import com.artrubadur.teno.agent.tools.impl.LogTool
 import com.artrubadur.teno.agent.tools.impl.SetBrightnessTool
 import com.artrubadur.teno.agent.tools.impl.SetVolumeTool
+import com.artrubadur.teno.agent.tools.impl.ToggleFlashlightTool
 import org.koin.android.ext.koin.androidContext
 import org.koin.dsl.bind
 import org.koin.dsl.module
@@ -24,6 +25,7 @@ val agentModule = module {
     factory { SetBrightnessTool(androidContext()) } bind Tool::class
     factory { GetVolumeTool(androidContext()) } bind Tool::class
     factory { SetVolumeTool(androidContext()) } bind Tool::class
+    factory { ToggleFlashlightTool(androidContext()) } bind Tool::class
 
     single {
         ToolRegistry(
