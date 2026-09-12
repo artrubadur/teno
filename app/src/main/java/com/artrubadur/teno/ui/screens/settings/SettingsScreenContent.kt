@@ -19,10 +19,12 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.artrubadur.teno.R
+import com.artrubadur.teno.connection.runtime.llm.local.LiteRtBackendOption
 import com.artrubadur.teno.ui.components.ScreenHeader
 import com.artrubadur.teno.ui.components.SectionLabel
 import com.artrubadur.teno.ui.components.buttons.ErrorIconButton
 import com.artrubadur.teno.ui.components.buttons.OutlinedIconButton
+import com.artrubadur.teno.ui.screens.settings.components.BackendSelector
 import com.artrubadur.teno.ui.screens.settings.components.SettingsMenuItem
 import com.artrubadur.teno.ui.screens.settings.components.SettingsTextField
 import com.artrubadur.teno.ui.theme.AppTheme
@@ -40,6 +42,7 @@ fun SettingsScreenContent(
     onTopKChange: (String) -> Unit,
     onTopPChange: (String) -> Unit,
     onMaxTokensChange: (String) -> Unit,
+    onLiteRtBackendChange: (LiteRtBackendOption) -> Unit,
 ) {
     Scaffold(contentWindowInsets = WindowInsets(0)) { innerPadding ->
         Column(
@@ -131,6 +134,19 @@ fun SettingsScreenContent(
                         keyboardType = KeyboardType.Number,
                     )
                 }
+
+                Column(
+                    verticalArrangement = Arrangement.spacedBy(8.dp),
+                ) {
+                    SectionLabel(text = "BACKEND")
+                    BackendSelector(
+                        selected = state.liteRtBackend,
+                        npuSupported = state.npuSupported,
+                        supportedSoCs = state.supportedNpuSoCs,
+                        onSelected = onLiteRtBackendChange,
+                    )
+                }
+
             }
         }
     }
@@ -168,6 +184,7 @@ private fun SettingsScreenContentPreview() {
                 onTopKChange = {},
                 onTopPChange = {},
                 onMaxTokensChange = {},
+                onLiteRtBackendChange = {},
             )
         }
     }

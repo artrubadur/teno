@@ -27,5 +27,6 @@ fun SettingsScreen(
         onTopKChange = viewModel::setTopK,
         onTopPChange = viewModel::setTopP,
         onMaxTokensChange = viewModel::setMaxTokens,
+        onLiteRtBackendChange = viewModel::setLiteRtBackend,
     )
 }

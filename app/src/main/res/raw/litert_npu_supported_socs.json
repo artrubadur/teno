@@ -1,0 +1,77 @@
+[
+  {
+    "vendor": "Google",
+    "code": "Tensor_G6",
+    "name": "Tensor G6"
+  },
+  {
+    "vendor": "Google",
+    "code": "Tensor_G5",
+    "name": "Tensor G5"
+  },
+  {
+    "vendor": "Qualcomm",
+    "code": "SM8850",
+    "name": "Snapdragon 8 Elite Gen 5"
+  },
+  {
+    "vendor": "Qualcomm",
+    "code": "SM8750",
+    "name": "Snapdragon 8 Elite"
+  },
+  {
+    "vendor": "Qualcomm",
+    "code": "SM8650",
+    "name": "Snapdragon 8 Gen 3"
+  },
+  {
+    "vendor": "Qualcomm",
+    "code": "SM8550",
+    "name": "Snapdragon 8 Gen 2"
+  },
+  {
+    "vendor": "Qualcomm",
+    "code": "SM8475",
+    "name": "Snapdragon 8+ Gen 1"
+  },
+  {
+    "vendor": "Qualcomm",
+    "code": "SM8450",
+    "name": "Snapdragon 8 Gen 1"
+  },
+  {
+    "vendor": "MediaTek",
+    "code": "MT6878",
+    "name": "Dimensity 7300"
+  },
+  {
+    "vendor": "MediaTek",
+    "code": "MT6897",
+    "name": "Dimensity 8300"
+  },
+  {
+    "vendor": "MediaTek",
+    "code": "MT6983",
+    "name": "Dimensity 9000"
+  },
+  {
+    "vendor": "MediaTek",
+    "code": "MT6985",
+    "name": "Dimensity 9200"
+  },
+  {
+    "vendor": "MediaTek",
+    "code": "MT6989",
+    "name": "Dimensity 9300"
+  },
+  {
+    "vendor": "MediaTek",
+    "code": "MT6991",
+    "name": "Dimensity 9400"
+  },
+  {
+    "vendor": "MediaTek",
+    "code": "MT6990",
+    "name": "Dimensity 9500"
+  }
+]

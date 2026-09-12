@@ -13,7 +13,8 @@ val connectionModule = module {
     single {
         LiteRtLlmRuntime(
             appContext = get(),
-            modelStore = get()
+            modelStore = get(),
+            settingsStore = get(),
         )
     }
 

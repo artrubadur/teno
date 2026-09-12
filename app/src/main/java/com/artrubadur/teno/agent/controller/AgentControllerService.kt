@@ -13,6 +13,7 @@ import com.artrubadur.teno.agent.orchestration.AgentOrchestrator
 import com.artrubadur.teno.connection.Connection
 import com.artrubadur.teno.connection.ConnectionManager
 import com.artrubadur.teno.connection.ConnectionType
+import com.artrubadur.teno.connection.runtime.llm.LlmException
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -140,7 +141,7 @@ class AgentControllerService : Service(), KoinComponent {
                 throw t
             } catch (t: Throwable) {
                 updateState { it.copy(isLoading = false, isReady = false) }
-                emitMessage("Failed to launch connection: ${t.message}: ${t.cause?.message}")
+                emitMessage("Failed to launch connection: ${t.launchFailureMessage()}")
             } finally {
                 launchJob = null
             }
@@ -260,5 +261,14 @@ class AgentControllerService : Service(), KoinComponent {
         } catch (_: RemoteException) {
             false
         }
+    }
+
+    private fun Throwable.launchFailureMessage(): String {
+        if (this is LlmException.LoadingFailed) {
+            return message ?: "Failed to load LLM model."
+        }
+        return listOfNotNull(message, cause?.message)
+            .joinToString(separator = ": ")
+            .ifBlank { "Unknown error" }
     }
 }

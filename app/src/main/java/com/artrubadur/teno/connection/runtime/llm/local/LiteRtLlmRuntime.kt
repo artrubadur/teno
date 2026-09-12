@@ -12,6 +12,7 @@ import com.artrubadur.teno.connection.runtime.llm.LlmMessage
 import com.artrubadur.teno.connection.runtime.llm.LlmRequest
 import com.artrubadur.teno.connection.runtime.llm.LlmResponse
 import com.artrubadur.teno.connection.runtime.llm.LlmRuntime
+import com.artrubadur.teno.data.agent.AgentSettingsStore
 import com.artrubadur.teno.data.model.ModelStore
 import com.google.ai.edge.litertlm.Content
 import com.google.ai.edge.litertlm.Contents
@@ -45,7 +46,7 @@ import kotlin.coroutines.cancellation.CancellationException
 class LiteRtLlmRuntime(
     private val appContext: Context,
     private val modelStore: ModelStore,
-    private val defaultBackend: LiteRtBackend = LiteRtBackend.Cpu,
+    private val settingsStore: AgentSettingsStore,
     private val dispatcher: CoroutineDispatcher = Dispatchers.IO,
     private val logSeverity: LogSeverity = LogSeverity.ERROR,
 ) : LlmRuntime {
@@ -80,12 +81,14 @@ class LiteRtLlmRuntime(
                 stopGeneration()
                 cleanup()
 
+                val selectedBackend = settingsStore.getSettings().liteRtBackend
                 try {
                     Engine.setNativeMinLogSeverity(logSeverity)
 
                     val engineConfig = EngineConfig(
                         modelPath = resolvedModelPath,
-                        backend = defaultBackend.toLiteRtBackend(appContext),
+                        backend = selectedBackend.toBackend()
+                            .toLiteRtBackend(appContext),
                     )
 
                     val newEngine = Engine(engineConfig)
@@ -97,7 +100,11 @@ class LiteRtLlmRuntime(
                 } catch (t: Throwable) {
                     ready.set(false)
                     cleanup()
-                    throw LlmException.LoadingFailed(connection.config.fileName, t)
+                    throw LlmException.LoadingFailed(
+                        path = connection.config.fileName,
+                        backend = selectedBackend,
+                        cause = t,
+                    )
                 }
             }
         }

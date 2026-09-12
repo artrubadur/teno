@@ -15,6 +15,7 @@ import com.artrubadur.teno.agent.orchestration.AgentDefaults
 import com.artrubadur.teno.agent.orchestration.AgentOptions
 import com.artrubadur.teno.connection.runtime.llm.AgentInstructions
 import com.artrubadur.teno.connection.runtime.llm.LlmOptions
+import com.artrubadur.teno.connection.runtime.llm.local.LiteRtBackendOption
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
@@ -70,6 +71,12 @@ class AgentSettingsStore(
     suspend fun setMaxTokens(value: Int) {
         dataStore.edit { preferences ->
             preferences[MAX_TOKENS] = value
+        }
+    }
+
+    suspend fun setLiteRtBackend(value: LiteRtBackendOption) {
+        dataStore.edit { preferences ->
+            preferences[LITERT_BACKEND] = value.name
         }
     }
 
@@ -131,7 +138,8 @@ class AgentSettingsStore(
                 topK = this[TOP_K] ?: AgentDefaults.llmOptions.topK,
                 topP = this[TOP_P] ?: AgentDefaults.llmOptions.topP,
                 maxTokens = this[MAX_TOKENS] ?: AgentDefaults.llmOptions.maxTokens,
-            )
+            ),
+            liteRtBackend = LiteRtBackendOption.fromStored(this[LITERT_BACKEND]),
         )
     }
 
@@ -181,6 +189,7 @@ class AgentSettingsStore(
         val TOP_K = intPreferencesKey("top_k")
         val TOP_P = doublePreferencesKey("top_p")
         val MAX_TOKENS = intPreferencesKey("max_tokens")
+        val LITERT_BACKEND = stringPreferencesKey("litert_backend")
     }
 }
 
@@ -189,6 +198,7 @@ data class AgentSettings(
     val rules: List<AgentInstructionEntry>,
     val agentOptions: AgentOptions,
     val llmOptions: LlmOptions,
+    val liteRtBackend: LiteRtBackendOption,
 ) {
     val instructions: AgentInstructions
         get() = AgentInstructions(
