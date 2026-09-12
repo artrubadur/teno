@@ -17,7 +17,6 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Surface
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -37,8 +36,8 @@ import androidx.compose.ui.unit.dp
 import com.artrubadur.teno.R
 import com.artrubadur.teno.connection.ConnectionKind
 import com.artrubadur.teno.ui.components.PromptInput
+import com.artrubadur.teno.ui.components.ScreenHeader
 import com.artrubadur.teno.ui.components.buttons.ErrorIconButton
-import com.artrubadur.teno.ui.components.buttons.PlainIconButton
 import com.artrubadur.teno.ui.screens.chat.components.ActiveConnectionCard
 import com.artrubadur.teno.ui.screens.chat.components.ChatMessage
 import com.artrubadur.teno.ui.screens.chat.components.MessageList
@@ -77,24 +76,7 @@ fun ChatScreenContent(
                     .padding(innerPadding)
                     .padding(24.dp),
             ) {
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.SpaceBetween
-                ) {
-                    Text(
-                        text = "Chat",
-                        color = MaterialTheme.colorScheme.onBackground,
-                        style = MaterialTheme.typography.headlineLarge
-                    )
-
-                    PlainIconButton(
-                        iconRes = R.drawable.ic_arrow,
-                        contentDescription = "Back",
-                        onClick = onBack,
-                        tint = MaterialTheme.colorScheme.onBackground
-                    )
-                }
+                ScreenHeader(title = "Chat", onBack = onBack)
 
                 Spacer(
                     modifier = Modifier.height(16.dp)

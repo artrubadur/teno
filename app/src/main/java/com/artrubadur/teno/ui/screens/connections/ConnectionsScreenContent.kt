@@ -4,7 +4,6 @@ import android.content.res.Configuration
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -21,7 +20,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import com.artrubadur.teno.R
 import com.artrubadur.teno.connection.Connection
 import com.artrubadur.teno.connection.ConnectionType
 import com.artrubadur.teno.connection.LocalConnection
@@ -29,8 +27,7 @@ import com.artrubadur.teno.connection.LocalConnectionConfig
 import com.artrubadur.teno.connection.ModelType
 import com.artrubadur.teno.connection.RemoteConnection
 import com.artrubadur.teno.connection.RemoteConnectionConfig
-import com.artrubadur.teno.ui.components.buttons.PlainIconButton
-import com.artrubadur.teno.ui.components.buttons.PrimaryIconButton
+import com.artrubadur.teno.ui.components.ScreenHeader
 import com.artrubadur.teno.ui.screens.connections.components.ConnectionDialog
 import com.artrubadur.teno.ui.screens.connections.components.ConnectionList
 import com.artrubadur.teno.ui.theme.AppTheme
@@ -61,34 +58,13 @@ internal fun ConnectionsScreenContent(
                 .padding(24.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.SpaceBetween
-            ) {
-                Text(
-                    text = "Connections",
-                    color = MaterialTheme.colorScheme.onBackground,
-                    style = MaterialTheme.typography.headlineLarge,
-                    modifier = Modifier.weight(1f)
-                )
-
-                Row {
-                    PrimaryIconButton(
-                        iconRes = R.drawable.ic_add,
-                        contentDescription = "Add connection",
-                        onClick = onAddConnection,
-                        enabled = !state.isLoading,
-                    )
-
-                    PlainIconButton(
-                        iconRes = R.drawable.ic_arrow,
-                        contentDescription = "Back",
-                        onClick = onBack,
-                        tint = MaterialTheme.colorScheme.onBackground
-                    )
-                }
-            }
+            ScreenHeader(
+                title = "Connections",
+                onBack = onBack,
+                onAdd = onAddConnection,
+                addEnabled = !state.isLoading,
+                addContentDescription = "Add connection",
+            )
 
             when {
                 state.isLoading -> {

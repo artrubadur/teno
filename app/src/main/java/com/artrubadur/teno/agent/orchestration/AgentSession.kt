@@ -3,13 +3,18 @@ package com.artrubadur.teno.agent.orchestration
 import com.artrubadur.teno.agent.tools.ToolCall
 import com.artrubadur.teno.agent.tools.ToolResult
 import com.artrubadur.teno.agent.tools.ToolSpec
+import com.artrubadur.teno.connection.runtime.llm.AgentInstructions
 import com.artrubadur.teno.connection.runtime.llm.LlmMessage
+import com.artrubadur.teno.connection.runtime.llm.LlmOptions
 import com.artrubadur.teno.connection.runtime.llm.LlmRequest
 
 class AgentSession(
     val id: String,
     val userRequest: String,
     val tools: List<ToolSpec>,
+    val instructions: AgentInstructions,
+    val agentOptions: AgentOptions,
+    val llmOptions: LlmOptions,
 ) {
     var stepCount: Int = 0
         private set
@@ -39,10 +44,10 @@ class AgentSession(
     fun toLlmRequest(): LlmRequest {
         return LlmRequest(
             sessionId = id,
-            instructions = AgentDefaults.instructions,
+            instructions = instructions,
             messages = messages,
             tools = tools,
-            options = AgentDefaults.options.llmOptions
+            options = llmOptions,
         )
     }
 }

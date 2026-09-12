@@ -7,6 +7,7 @@ import com.artrubadur.teno.agent.tools.ToolResult
 import com.artrubadur.teno.connection.Connection
 import com.artrubadur.teno.connection.runtime.llm.LlmResponse
 import com.artrubadur.teno.connection.runtime.llm.LlmRuntime
+import com.artrubadur.teno.data.agent.AgentSettingsStore
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.FlowCollector
 import kotlinx.coroutines.flow.flow
@@ -18,6 +19,7 @@ class AgentOrchestrator(
     private val llmRuntime: LlmRuntime,
     private val toolBroker: ToolBroker,
     private val confirmationManager: ConfirmationManager,
+    private val settingsStore: AgentSettingsStore,
 ) {
     val isReady: Boolean
         get() = llmRuntime.isReady
@@ -36,10 +38,14 @@ class AgentOrchestrator(
 
     fun sendMessage(userMessage: String): Flow<AgentEvent> {
         return flow {
+            val settings = settingsStore.getSettings()
             val session = AgentSession(
                 id = UUID.randomUUID().toString(),
                 userRequest = userMessage,
-                tools = toolBroker.listToolSpecs()
+                tools = toolBroker.listToolSpecs(),
+                instructions = settings.instructions,
+                agentOptions = settings.agentOptions,
+                llmOptions = settings.llmOptions,
             )
             runAgentLoop(session)
         }
@@ -108,7 +114,7 @@ class AgentOrchestrator(
     }
 
     private suspend fun FlowCollector<AgentEvent>.runAgentLoop(session: AgentSession) {
-        while (session.stepCount < AgentDefaults.options.maxSteps) {
+        while (session.agentOptions.unlimitedMaxSteps || session.stepCount < session.agentOptions.maxSteps) {
             when (val response = llmRuntime.generate(session.toLlmRequest())) {
                 is LlmResponse.Final -> {
                     emit(AgentEvent.FinalAnswer(response.content))

@@ -29,7 +29,7 @@ fun HomeScreenContent(
     activeConnectionKind: ConnectionKind?,
     onOpenChat: () -> Unit,
     onOpenConnections: () -> Unit,
-    onOpenTools: () -> Unit,
+    onOpenSettings: () -> Unit,
     onOverlayEnabledChange: (Boolean) -> Unit,
 ) {
     Surface(
@@ -75,9 +75,9 @@ fun HomeScreenContent(
                         onClick = onOpenChat
                     )
                     OutlinedIconButton(
-                        iconRes = R.drawable.ic_tools,
-                        contentDescription = "Tools",
-                        onClick = onOpenTools
+                        iconRes = R.drawable.ic_settings,
+                        contentDescription = "Settings",
+                        onClick = onOpenSettings
                     )
                     OutlinedIconButton(
                         iconRes = R.drawable.ic_computer,
@@ -120,7 +120,7 @@ private fun HomeScreenPreview() {
             activeConnectionKind = null,
             onOpenChat = {},
             onOpenConnections = {},
-            onOpenTools = {},
+            onOpenSettings = {},
             onOverlayEnabledChange = {},
         )
     }
@@ -149,7 +149,7 @@ private fun HomeScreenEnabledPreview() {
             activeConnectionKind = ConnectionKind.LOCAL,
             onOpenChat = {},
             onOpenConnections = {},
-            onOpenTools = {},
+            onOpenSettings = {},
             onOverlayEnabledChange = {},
         )
     }

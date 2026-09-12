@@ -28,6 +28,7 @@ import com.artrubadur.teno.connection.ConnectionKind
 import com.artrubadur.teno.connection.ConnectionType
 import com.artrubadur.teno.connection.RemoteConnection
 import com.artrubadur.teno.connection.RemoteConnectionConfig
+import com.artrubadur.teno.ui.components.SectionLabel
 import com.artrubadur.teno.ui.components.Switch
 import com.artrubadur.teno.ui.theme.AppTheme
 
@@ -39,11 +40,7 @@ fun ConnectionDetailsCard(
     Column(
         verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
-        Text(
-            text = "DETAILS",
-            style = MaterialTheme.typography.labelMedium,
-            color = MaterialTheme.colorScheme.primary,
-        )
+        SectionLabel(text = "DETAILS")
 
         Card(
             modifier = Modifier.fillMaxWidth(),

@@ -21,7 +21,7 @@ import org.koin.compose.viewmodel.koinViewModel
 fun HomeScreen(
     onOpenChat: () -> Unit = {},
     onOpenConnections: () -> Unit = {},
-    onOpenTools: () -> Unit = {},
+    onOpenSettings: () -> Unit = {},
     viewModel: HomeViewModel = koinViewModel(),
 ) {
     val context = LocalContext.current
@@ -86,7 +86,7 @@ fun HomeScreen(
         activeConnectionName = activeConnection?.name,
         activeConnectionKind = activeConnection?.kind,
         onOpenChat = onOpenChat,
-        onOpenTools = onOpenTools,
+        onOpenSettings = onOpenSettings,
         onOpenConnections = onOpenConnections,
         onOverlayEnabledChange = ::onOverlayEnabledChange
     )

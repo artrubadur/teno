@@ -2,6 +2,7 @@ package com.artrubadur.teno.di
 
 import androidx.room.Room
 import com.artrubadur.teno.connection.ConnectionManager
+import com.artrubadur.teno.data.agent.AgentSettingsStore
 import com.artrubadur.teno.data.connection.ConnectionStore
 import com.artrubadur.teno.data.database.AppDatabase
 import com.artrubadur.teno.data.model.ModelRepository
@@ -29,4 +30,5 @@ val databaseModule = module {
 
     single { ConnectionManager(get(), get()) }
     single { ToolSettingsStore(androidContext()) }
+    single { AgentSettingsStore(androidContext()) }
 }

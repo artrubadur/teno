@@ -11,7 +11,6 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
@@ -20,6 +19,7 @@ import com.artrubadur.teno.agent.tools.NoArgs
 import com.artrubadur.teno.agent.tools.ToolGroup
 import com.artrubadur.teno.agent.tools.ToolPermission
 import com.artrubadur.teno.agent.tools.ToolSpec
+import com.artrubadur.teno.ui.components.SectionLabel
 import com.artrubadur.teno.ui.screens.tools.ToolItemState
 import com.artrubadur.teno.ui.screens.tools.ToolPermissionState
 import com.artrubadur.teno.ui.theme.AppTheme
@@ -35,11 +35,7 @@ internal fun ToolGroupCard(
     Column(
         verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
-        Text(
-            text = group.name,
-            style = MaterialTheme.typography.labelMedium,
-            color = MaterialTheme.colorScheme.primary,
-        )
+        SectionLabel(text = group.name)
 
         Card(
             modifier = Modifier.fillMaxWidth(),

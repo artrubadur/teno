@@ -4,7 +4,6 @@ import android.content.res.Configuration
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -19,15 +18,13 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import com.artrubadur.teno.R
 import com.artrubadur.teno.connection.Connection
 import com.artrubadur.teno.connection.ConnectionType
 import com.artrubadur.teno.connection.RemoteConnection
 import com.artrubadur.teno.connection.RemoteConnectionConfig
-import com.artrubadur.teno.ui.components.buttons.PlainIconButton
+import com.artrubadur.teno.ui.components.ScreenHeader
 import com.artrubadur.teno.ui.screens.connections.ConnectionsState
 import com.artrubadur.teno.ui.screens.connections.components.ConnectionDialog
 import com.artrubadur.teno.ui.screens.connections.details.components.ConnectionActionsCard
@@ -60,27 +57,10 @@ internal fun ConnectionDetailsScreenContent(
                 .padding(24.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.SpaceBetween
-            ) {
-                Text(
-                    text = connection?.name ?: "Connection",
-                    color = MaterialTheme.colorScheme.onBackground,
-                    style = MaterialTheme.typography.headlineLarge,
-                    modifier = Modifier.weight(1f),
-                    overflow = TextOverflow.Ellipsis,
-                    maxLines = 1,
-                )
-
-                PlainIconButton(
-                    iconRes = R.drawable.ic_arrow,
-                    contentDescription = "Back",
-                    onClick = onBack,
-                    tint = MaterialTheme.colorScheme.onBackground
-                )
-            }
+            ScreenHeader(
+                title = connection?.name ?: "Connection",
+                onBack = onBack,
+            )
 
             when {
                 state.isLoading -> {

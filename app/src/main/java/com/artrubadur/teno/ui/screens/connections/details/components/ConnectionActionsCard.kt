@@ -20,6 +20,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.artrubadur.teno.R
+import com.artrubadur.teno.ui.components.SectionLabel
 import com.artrubadur.teno.ui.theme.AppTheme
 
 @Composable
@@ -32,11 +33,7 @@ fun ConnectionActionsCard(
         modifier = modifier,
         verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
-        Text(
-            text = "ACTIONS",
-            style = MaterialTheme.typography.labelMedium,
-            color = MaterialTheme.colorScheme.primary,
-        )
+        SectionLabel(text = "ACTIONS")
 
         ActionCard(
             iconRes = R.drawable.ic_edit,

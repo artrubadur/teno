@@ -13,10 +13,13 @@ import androidx.compose.ui.Modifier
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import com.artrubadur.teno.data.agent.AgentInstructionKind
 import com.artrubadur.teno.ui.screens.chat.ChatScreen
 import com.artrubadur.teno.ui.screens.connections.ConnectionsScreen
 import com.artrubadur.teno.ui.screens.connections.details.ConnectionDetailsScreen
 import com.artrubadur.teno.ui.screens.home.HomeScreen
+import com.artrubadur.teno.ui.screens.settings.SettingsScreen
+import com.artrubadur.teno.ui.screens.settings.instructions.AgentInstructionsScreen
 import com.artrubadur.teno.ui.screens.tools.ToolsScreen
 
 @Composable
@@ -63,7 +66,7 @@ fun App() {
                 HomeScreen(
                     onOpenChat = { navController.navigate(Route.Chat) },
                     onOpenConnections = { navController.navigate(Route.Connections) },
-                    onOpenTools = { navController.navigate(Route.Tools) }
+                    onOpenSettings = { navController.navigate(Route.Settings) }
                 )
             }
             composable(Route.Connections) {
@@ -83,6 +86,26 @@ fun App() {
                     onBack = { navController.popBackStack() }
                 )
             }
+            composable(Route.Settings) {
+                SettingsScreen(
+                    onBack = { navController.popBackStack() },
+                    onOpenTools = { navController.navigate(Route.Tools) },
+                    onOpenIdentity = { navController.navigate(Route.SettingsIdentity) },
+                    onOpenRules = { navController.navigate(Route.SettingsRules) },
+                )
+            }
+            composable(Route.SettingsIdentity) {
+                AgentInstructionsScreen(
+                    kind = AgentInstructionKind.IDENTITY,
+                    onBack = { navController.popBackStack() },
+                )
+            }
+            composable(Route.SettingsRules) {
+                AgentInstructionsScreen(
+                    kind = AgentInstructionKind.RULES,
+                    onBack = { navController.popBackStack() },
+                )
+            }
         }
     }
 }
@@ -93,7 +116,10 @@ private object Route {
     const val ConnectionId = "connectionId"
     const val ConnectionDetails = "connections/{$ConnectionId}"
     const val Chat = "chat"
-    const val Tools = "tools"
+    const val Settings = "settings"
+    const val Tools = "settings/tools"
+    const val SettingsIdentity = "settings/identity"
+    const val SettingsRules = "settings/rules"
 
     fun connectionDetails(id: String) = "connections/${Uri.encode(id)}"
 }

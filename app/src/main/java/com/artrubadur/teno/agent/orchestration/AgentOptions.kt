@@ -38,10 +38,11 @@ object AgentDefaults {
         )
     )
 
-    val options = AgentOptions()
+    val agentOptions = AgentOptions()
+    val llmOptions = LlmOptions()
 }
 
 data class AgentOptions(
     val maxSteps: Int = 5,
-    val llmOptions: LlmOptions = LlmOptions()
+    val unlimitedMaxSteps: Boolean = false,
 )

@@ -3,6 +3,7 @@ package com.artrubadur.teno.di
 import com.artrubadur.teno.ui.screens.chat.ChatViewModel
 import com.artrubadur.teno.ui.screens.connections.ConnectionsViewModel
 import com.artrubadur.teno.ui.screens.home.HomeViewModel
+import com.artrubadur.teno.ui.screens.settings.SettingsViewModel
 import com.artrubadur.teno.ui.screens.tools.ToolsViewModel
 import org.koin.android.ext.koin.androidApplication
 import org.koin.core.module.dsl.viewModel
@@ -23,6 +24,11 @@ val appModule = module {
     viewModel {
         ToolsViewModel(
             androidApplication(),
+            get()
+        )
+    }
+    viewModel {
+        SettingsViewModel(
             get()
         )
     }

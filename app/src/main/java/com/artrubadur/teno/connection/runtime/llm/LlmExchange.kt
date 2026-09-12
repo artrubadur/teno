@@ -9,15 +9,19 @@ data class AgentInstructions(
     val rules: List<String>
 ) {
     fun render(): String = buildString {
-        appendLine("SYSTEM:")
-        identity.forEach { identity ->
-            appendLine(identity)
+        if (identity.isNotEmpty()) {
+            appendLine("SYSTEM:")
+            identity.forEach { identity ->
+                appendLine(identity)
+            }
         }
 
-        appendLine()
-        appendLine("RULES:")
-        rules.forEach { rule ->
-            appendLine("- $rule")
+        if (rules.isNotEmpty()) {
+            if (isNotEmpty()) appendLine()
+            appendLine("RULES:")
+            rules.forEach { rule ->
+                appendLine("- $rule")
+            }
         }
     }
 }

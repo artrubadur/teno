@@ -42,8 +42,7 @@ enum class ToolPermission(
                     Manifest.permission.CAMERA
                 ) == PackageManager.PERMISSION_GRANTED
 
-            MODIFY_AUDIO_SETTINGS ->
-                true
+            else -> true
         }
     }
 

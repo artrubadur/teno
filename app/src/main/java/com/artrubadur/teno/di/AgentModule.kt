@@ -41,6 +41,6 @@ val agentModule = module {
     single { ConfirmationManager() }
     single { SafetyPolicy() }
     single { ToolBroker(get(), get(), get()) }
-    single { AgentOrchestrator(get(), get(), get()) }
+    single { AgentOrchestrator(get(), get(), get(), get()) }
 }
 
