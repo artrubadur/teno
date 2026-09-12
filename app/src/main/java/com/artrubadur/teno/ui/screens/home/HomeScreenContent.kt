@@ -1,9 +1,11 @@
 package com.artrubadur.teno.ui.screens.home
 
 import android.content.res.Configuration
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -13,6 +15,9 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalUriHandler
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.artrubadur.teno.R
@@ -32,6 +37,8 @@ fun HomeScreenContent(
     onOpenSettings: () -> Unit,
     onOverlayEnabledChange: (Boolean) -> Unit,
 ) {
+    val uriHandler = LocalUriHandler.current
+
     Surface(
         modifier = Modifier.fillMaxSize(),
         color = MaterialTheme.colorScheme.background,
@@ -97,6 +104,30 @@ fun HomeScreenContent(
                 state = state,
                 onOverlayEnabledChange = onOverlayEnabledChange,
             )
+
+            Spacer(modifier = Modifier.weight(1f))
+
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.Center,
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                Text(
+                    text = "\u00A9 2026 Sergey Suchkov \u00B7 Teno \u00B7 GPL-3.0 \u00B7 ",
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    style = MaterialTheme.typography.bodySmall,
+                    textAlign = TextAlign.Center,
+                )
+                Text(
+                    text = "GitHub",
+                    modifier = Modifier.clickable {
+                        uriHandler.openUri("https://github.com/artrubadur/teno")
+                    },
+                    color = MaterialTheme.colorScheme.primary,
+                    style = MaterialTheme.typography.bodySmall,
+                    textDecoration = TextDecoration.Underline,
+                )
+            }
         }
     }
 }
