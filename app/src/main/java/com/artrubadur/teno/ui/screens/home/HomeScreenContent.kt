@@ -57,7 +57,7 @@ fun HomeScreenContent(
                 Column {
                     Row {
                         Text(
-                            text = "Temo",
+                            text = "Teno",
                             color = MaterialTheme.colorScheme.onBackground,
                             style = MaterialTheme.typography.headlineLarge
                         )
