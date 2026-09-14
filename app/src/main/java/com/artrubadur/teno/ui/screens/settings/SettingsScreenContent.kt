@@ -66,8 +66,17 @@ fun SettingsScreenContent(
                 ) {
                     SectionLabel(text = "AGENT")
                     SettingsMenuItem(text = "Tools", onClick = onOpenTools)
-                    SettingsMenuItem(text = "Identity", onClick = onOpenIdentity)
-                    SettingsMenuItem(text = "Rules", onClick = onOpenRules)
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    ) {
+                        Box(modifier = Modifier.weight(1f)) {
+                            SettingsMenuItem(text = "Identity", onClick = onOpenIdentity)
+                        }
+                        Box(modifier = Modifier.weight(1f)) {
+                            SettingsMenuItem(text = "Rules", onClick = onOpenRules)
+                        }
+                    }
                     Row(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.spacedBy(12.dp),
