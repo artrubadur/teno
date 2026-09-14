@@ -14,11 +14,11 @@ import com.artrubadur.teno.agent.tools.impl.GetCurrentTimeTool
 import com.artrubadur.teno.agent.tools.impl.GetScreenNodeTool
 import com.artrubadur.teno.agent.tools.impl.GetScreenTreeTool
 import com.artrubadur.teno.agent.tools.impl.GetVolumeTool
-import com.artrubadur.teno.agent.tools.impl.LogTool
 import com.artrubadur.teno.agent.tools.impl.SetBrightnessTool
 import com.artrubadur.teno.agent.tools.impl.SetClipboardTool
 import com.artrubadur.teno.agent.tools.impl.SetVolumeTool
 import com.artrubadur.teno.agent.tools.impl.ToggleFlashlightTool
+import com.artrubadur.teno.agent.tools.impl.WriteDebugLogTool
 import com.artrubadur.teno.agent.tools.integrations.ScreenNodeClicker
 import com.artrubadur.teno.agent.tools.integrations.ScreenNodeStore
 import com.artrubadur.teno.agent.tools.integrations.ScreenTreeReader
@@ -31,7 +31,7 @@ val agentModule = module {
     single { ScreenTreeReader(androidContext()) }
     single { ScreenNodeClicker(get()) }
 
-    factory { LogTool() } bind Tool::class
+    factory { WriteDebugLogTool() } bind Tool::class
     factory { GetCurrentTimeTool() } bind Tool::class
     factory { GetBrightnessTool(androidContext()) } bind Tool::class
     factory { SetBrightnessTool(androidContext()) } bind Tool::class

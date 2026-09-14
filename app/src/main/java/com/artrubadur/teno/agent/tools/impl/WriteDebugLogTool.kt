@@ -10,15 +10,16 @@ import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.put
 
-class LogTool : Tool<LogTool.Args> {
+class WriteDebugLogTool : Tool<WriteDebugLogTool.Args> {
 
-    override val name = "write_log"
+    override val name = "write_debug_log"
 
-    override val title = "Write log"
+    override val title = "Write debug log"
 
     override val description =
-        "Writes a message to the internal app log"
-    override val group = ToolGroup.SYSTEM
+        "Writes a diagnostic entry to the app's developer log. " +
+                "Use only when the user explicitly requests a log entry."
+    override val group = ToolGroup.DIAGNOSTICS
 
     override val risk = ToolRisk.SAFE
 
