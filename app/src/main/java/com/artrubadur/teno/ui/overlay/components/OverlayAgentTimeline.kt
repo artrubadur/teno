@@ -52,23 +52,18 @@ fun OverlayAgentTimeline(
     modifier: Modifier = Modifier,
 ) {
     val entries = remember(events) { events.toEventEntries() }
-    val hasEvents = entries.isNotEmpty()
     val finalAnswer = events.asReversed()
         .firstNotNullOfOrNull { (it as? AgentControllerEvent.Agent)?.event as? AgentEvent.FinalAnswer }
     val serviceMessage =
         events.asReversed().firstNotNullOfOrNull { (it as? AgentControllerEvent.Message)?.message }
     var now by remember { mutableLongStateOf(SystemClock.elapsedRealtime()) }
-    var expanded by remember { mutableStateOf(false) }
+    var expanded by remember(events) { mutableStateOf(false) }
 
     LaunchedEffect(entries.hasLiveTimer()) {
         while (entries.hasLiveTimer()) {
             now = SystemClock.elapsedRealtime()
             delay(1.seconds)
         }
-    }
-
-    LaunchedEffect(events.isEmpty()) {
-        if (events.isEmpty()) expanded = false
     }
 
     BoxWithConstraints(modifier = modifier.fillMaxWidth()) {
@@ -86,7 +81,7 @@ fun OverlayAgentTimeline(
                 horizontalAlignment = Alignment.CenterHorizontally,
                 modifier = Modifier.padding(16.dp)
             ) {
-                if (hasEvents) {
+                if (entries.size > 1) {
                     Box(
                         modifier = Modifier
                             .width(64.dp)
@@ -106,7 +101,7 @@ fun OverlayAgentTimeline(
                     )
                 }
 
-                if (expanded && hasEvents) {
+                if (expanded && entries.size > 1) {
                     AgentTimeline(
                         events = events,
                         now = now,
@@ -124,7 +119,7 @@ fun OverlayAgentTimeline(
                             serviceMessage != null -> serviceMessage
                             else -> "Agent was interrupted"
                         },
-                        modifier = if (hasEvents) Modifier.padding(top = 12.dp) else Modifier,
+                        modifier = if (entries.size > 1) Modifier.padding(top = 12.dp) else Modifier,
                         color = if (isWorking || serviceMessage != null) {
                             MaterialTheme.colorScheme.onSurfaceVariant
                         } else {

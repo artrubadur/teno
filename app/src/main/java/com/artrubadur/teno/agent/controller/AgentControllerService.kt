@@ -149,7 +149,7 @@ class AgentControllerService : Service(), KoinComponent {
     }
 
     private fun terminateConnection() {
-        stopWork()
+        stopWork(resetLoading = false)
         agentOrchestrator.terminateConnection()
         updateState {
             it.copy(
@@ -179,7 +179,6 @@ class AgentControllerService : Service(), KoinComponent {
                     emitEvent(AgentControllerEvent.Agent(event))
                 }
             } catch (t: CancellationException) {
-                emitMessage("Stopped")
                 throw t
             } catch (t: Throwable) {
                 emitMessage("Work failed: ${t.message}: ${t.cause?.message}")
@@ -220,13 +219,22 @@ class AgentControllerService : Service(), KoinComponent {
         }
     }
 
-    private fun stopWork() {
+    private fun stopWork(resetLoading: Boolean = true) {
+        val hadWork = workJob != null
         launchJob?.cancel()
         launchJob = null
         workJob?.cancel()
         workJob = null
         agentOrchestrator.stopWork()
-        updateState { it.copy(isLoading = false, isWorking = false) }
+        if (hadWork) {
+            emitMessage("Stopped")
+        }
+        updateState {
+            it.copy(
+                isLoading = if (resetLoading) false else it.isLoading,
+                isWorking = false,
+            )
+        }
     }
 
     private fun updateState(reducer: (AgentControllerState) -> AgentControllerState) {

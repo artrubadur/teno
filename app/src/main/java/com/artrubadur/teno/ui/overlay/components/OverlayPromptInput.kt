@@ -1,14 +1,18 @@
-package com.artrubadur.teno.ui.components
+package com.artrubadur.teno.ui.overlay.components
 
 import android.content.res.Configuration
+import androidx.compose.animation.core.animateDpAsState
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material3.ButtonDefaults
@@ -26,6 +30,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.rotate
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.input.TextFieldValue
@@ -37,19 +42,69 @@ import com.artrubadur.teno.ui.components.buttons.PrimaryIconButton
 import com.artrubadur.teno.ui.theme.AppTheme
 
 @Composable
-fun PromptInput(
+fun OverlayPromptInput(
     modifier: Modifier = Modifier,
     inputFieldModifier: Modifier = Modifier,
     value: String,
     onValueChange: (String) -> Unit,
     onSend: () -> Unit,
     onStopWork: () -> Unit,
-    onLaunchActiveConnection: (() -> Unit)? = null,
+    onLaunchActiveConnection: () -> Unit,
     isWorking: Boolean,
-    isReady: Boolean = true,
-    isLoading: Boolean = false,
+    isReady: Boolean,
+    isLoading: Boolean,
     canSend: Boolean,
-    isActivated: Boolean = false,
+    isActivated: Boolean,
+) {
+    val shape = RoundedCornerShape(28.dp)
+
+    BoxWithConstraints(
+        modifier = modifier.fillMaxWidth(),
+        contentAlignment = Alignment.BottomEnd,
+    ) {
+        val expandedWidth = maxWidth
+        val width by animateDpAsState(
+            targetValue = if (isWorking) 56.dp else expandedWidth,
+            animationSpec = tween(durationMillis = 1000),
+            label = "overlay_prompt_width",
+        )
+        val showInput = !isWorking && width > 180.dp
+
+        OverlayPromptInputContent(
+            value = value,
+            onValueChange = onValueChange,
+            onSend = onSend,
+            onStopWork = onStopWork,
+            onLaunchActiveConnection = onLaunchActiveConnection,
+            isWorking = isWorking,
+            isReady = isReady,
+            isLoading = isLoading,
+            canSend = canSend,
+            isActivated = isActivated,
+            showInput = showInput,
+            modifier = Modifier
+                .width(width)
+                .shadow(elevation = 8.dp, shape = shape),
+            inputFieldModifier = inputFieldModifier,
+        )
+    }
+}
+
+@Composable
+private fun OverlayPromptInputContent(
+    value: String,
+    onValueChange: (String) -> Unit,
+    onSend: () -> Unit,
+    onStopWork: () -> Unit,
+    onLaunchActiveConnection: () -> Unit,
+    isWorking: Boolean,
+    isReady: Boolean,
+    isLoading: Boolean,
+    canSend: Boolean,
+    isActivated: Boolean,
+    showInput: Boolean,
+    modifier: Modifier = Modifier,
+    inputFieldModifier: Modifier = Modifier,
 ) {
     var multiline by remember { mutableStateOf(false) }
     var inputValue by remember {
@@ -88,45 +143,48 @@ fun PromptInput(
         ) {
             Row(
                 modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.End,
                 verticalAlignment = Alignment.CenterVertically,
             ) {
-                BasicTextField(
-                    value = inputValue,
-                    onValueChange = {
-                        inputValue = it
-                        onValueChange(it.text)
-                    },
-                    modifier = inputFieldModifier
-                        .weight(1f)
-                        .padding(horizontal = 8.dp, vertical = if (multiline) 8.dp else 0.dp),
-                    minLines = 1,
-                    maxLines = 5,
-                    textStyle = LocalTextStyle.current.copy(
-                        color = MaterialTheme.colorScheme.onSurface,
-                    ),
-                    cursorBrush = SolidColor(MaterialTheme.colorScheme.primary),
-                    onTextLayout = {
-                        if (it.lineCount > 1) {
-                            multiline = true
-                        }
-                    },
-                    decorationBox = { inner ->
-                        Box(
-                            modifier = Modifier.fillMaxWidth(),
-                        ) {
-                            if (inputValue.text.isEmpty()) {
-                                Text(
-                                    text = "Ask Teno",
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                )
+                if (showInput) {
+                    BasicTextField(
+                        value = inputValue,
+                        onValueChange = {
+                            inputValue = it
+                            onValueChange(it.text)
+                        },
+                        modifier = inputFieldModifier
+                            .weight(1f)
+                            .padding(horizontal = 8.dp, vertical = if (multiline) 8.dp else 0.dp),
+                        minLines = 1,
+                        maxLines = 5,
+                        textStyle = LocalTextStyle.current.copy(
+                            color = MaterialTheme.colorScheme.onSurface,
+                        ),
+                        cursorBrush = SolidColor(MaterialTheme.colorScheme.primary),
+                        onTextLayout = {
+                            if (it.lineCount > 1) {
+                                multiline = true
                             }
-                            inner()
-                        }
-                    },
-                )
+                        },
+                        decorationBox = { inner ->
+                            Box(
+                                modifier = Modifier.fillMaxWidth(),
+                            ) {
+                                if (inputValue.text.isEmpty()) {
+                                    Text(
+                                        text = "Ask Teno",
+                                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                    )
+                                }
+                                inner()
+                            }
+                        },
+                    )
+                }
 
-                if (!multiline) {
-                    ChatInputActionButton(
+                if (!showInput || !multiline) {
+                    OverlayPromptActionButton(
                         isWorking = isWorking,
                         isReady = isReady,
                         isLoading = isLoading,
@@ -139,13 +197,13 @@ fun PromptInput(
                 }
             }
 
-            if (multiline) {
+            if (showInput && multiline) {
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.End,
                 ) {
-                    ChatInputActionButton(
+                    OverlayPromptActionButton(
                         isWorking = isWorking,
                         isReady = isReady,
                         isLoading = isLoading,
@@ -162,7 +220,7 @@ fun PromptInput(
 }
 
 @Composable
-private fun ChatInputActionButton(
+private fun OverlayPromptActionButton(
     isWorking: Boolean,
     isReady: Boolean,
     isLoading: Boolean,
@@ -170,7 +228,7 @@ private fun ChatInputActionButton(
     isActivated: Boolean,
     onSendMessage: () -> Unit,
     onStopWork: () -> Unit,
-    onLaunchActiveConnection: (() -> Unit)?,
+    onLaunchActiveConnection: () -> Unit,
 ) {
     when {
         isWorking -> OutlinedIconButton(
@@ -180,10 +238,9 @@ private fun ChatInputActionButton(
             modifier = Modifier.size(40.dp)
         )
 
-        !isReady && isLoading && onLaunchActiveConnection != null ->
-            CircularProgressIndicator(modifier = Modifier.size(40.dp))
+        isLoading -> CircularProgressIndicator(modifier = Modifier.size(40.dp))
 
-        !isReady && onLaunchActiveConnection != null -> PrimaryIconButton(
+        !isReady -> PrimaryIconButton(
             iconRes = R.drawable.ic_launch,
             contentDescription = "Launch model",
             onClick = onLaunchActiveConnection,
@@ -213,82 +270,41 @@ private fun ChatInputActionButton(
     uiMode = Configuration.UI_MODE_NIGHT_YES,
 )
 @Composable
-private fun PromptInputEmptyPreview() {
+private fun OverlayPromptInputPreview() {
     AppTheme {
-        PromptInput(
+        OverlayPromptInput(
+            value = "Open settings",
+            onValueChange = {},
+            onSend = {},
+            onStopWork = {},
+            onLaunchActiveConnection = {},
+            isWorking = false,
+            isReady = true,
+            isLoading = false,
+            canSend = true,
+            isActivated = true,
+        )
+    }
+}
+
+@Preview(
+    name = "Working",
+    uiMode = Configuration.UI_MODE_NIGHT_NO,
+)
+@Composable
+private fun OverlayPromptInputWorkingPreview() {
+    AppTheme {
+        OverlayPromptInput(
             value = "",
-            onValueChange = { _ -> },
+            onValueChange = {},
             onSend = {},
             onStopWork = {},
-            isWorking = false,
-            canSend = false
-        )
-    }
-}
-
-@Preview(
-    name = "Light",
-    uiMode = Configuration.UI_MODE_NIGHT_NO,
-)
-@Preview(
-    name = "Dark",
-    uiMode = Configuration.UI_MODE_NIGHT_YES,
-)
-@Composable
-private fun PromptInputShortPreview() {
-    AppTheme {
-        PromptInput(
-            value = "Short input",
-            onValueChange = { _ -> },
-            onSend = {},
-            onStopWork = {},
-            isWorking = false,
-            canSend = true
-        )
-    }
-}
-
-@Preview(
-    name = "Light",
-    uiMode = Configuration.UI_MODE_NIGHT_NO,
-)
-@Preview(
-    name = "Dark",
-    uiMode = Configuration.UI_MODE_NIGHT_YES,
-)
-@Composable
-private fun PromptInputLongPreview() {
-    AppTheme {
-        PromptInput(
-            value = "Long long long long long long long long long " +
-                    "long long long long long long long long input",
-            onValueChange = { _ -> },
-            onSend = {},
-            onStopWork = {},
-            isWorking = false,
-            canSend = true
-        )
-    }
-}
-
-@Preview(
-    name = "Light",
-    uiMode = Configuration.UI_MODE_NIGHT_NO,
-)
-@Preview(
-    name = "Dark",
-    uiMode = Configuration.UI_MODE_NIGHT_YES,
-)
-@Composable
-private fun PromptInputWorkingPreview() {
-    AppTheme {
-        PromptInput(
-            value = "",
-            onValueChange = { _ -> },
-            onSend = {},
-            onStopWork = {},
+            onLaunchActiveConnection = {},
             isWorking = true,
-            canSend = false
+            isReady = true,
+            isLoading = false,
+            canSend = false,
+            isActivated = true,
         )
     }
 }

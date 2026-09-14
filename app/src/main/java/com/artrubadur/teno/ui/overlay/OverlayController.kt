@@ -12,11 +12,9 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.update
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.yield
 
 class OverlayController(
-    private val scope: CoroutineScope,
+    scope: CoroutineScope,
     application: Application,
 ) {
     private val agentController = AgentControllerClient(application)
@@ -40,17 +38,17 @@ class OverlayController(
 
     fun launchActiveConnection() {
         agentController.send(AgentControllerCommand.LaunchActiveConnection)
+        _state.update {
+            if (it.activeConnectionName == null || it.isReady) {
+                it
+            } else {
+                it.copy(isLoading = true, isReady = false)
+            }
+        }
     }
 
     fun terminateConnection() {
         agentController.send(AgentControllerCommand.TerminateConnection)
-        _state.update {
-            it.copy(
-                isReady = false,
-                isWorking = false,
-                isLoading = false,
-            )
-        }
     }
 
     fun onSend() {
@@ -64,6 +62,7 @@ class OverlayController(
                 input = "",
                 isOverlayVisible = true,
                 isIslandVisible = true,
+                isWorking = true,
                 focusInput = false,
                 controllerEvents = emptyList(),
             )
@@ -113,37 +112,20 @@ class OverlayController(
         _state.update {
             it.copy(
                 isOverlayVisible = true,
-                isIslandVisible = false,
-                focusInput = false,
+                isIslandVisible = true,
+                focusInput = focus,
             )
-        }
-
-        scope.launch {
-            yield()
-            _state.update {
-                it.copy(
-                    isIslandVisible = true,
-                    focusInput = focus,
-                )
-            }
         }
     }
 
     fun onOutsideClick() {
-        if (_state.value.isWorking) {
-            _state.update {
-                it.copy(
-                    isIslandVisible = !it.isIslandVisible,
-                    focusInput = false
-                )
-            }
-        } else {
-            _state.update {
-                it.copy(
-                    isIslandVisible = false,
-                    focusInput = false
-                )
-            }
+        if (_state.value.isWorking) return
+
+        _state.update {
+            it.copy(
+                isIslandVisible = false,
+                focusInput = false,
+            )
         }
     }
 

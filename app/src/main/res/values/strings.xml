@@ -1,6 +1,11 @@
 <resources>
     <string name="app_name">Teno</string>
     <string name="notification_action_input">Open input</string>
+    <string name="notification_action_input_short">Input</string>
+    <string name="notification_action_stop">Stop</string>
+    <string name="notification_action_launch_agent">Launch agent</string>
+    <string name="notification_action_terminate_agent">Terminate agent</string>
+    <string name="notification_action_close">Close</string>
     <string name="notification_action_lifecycle">Assistant action</string>
     <string name="notification_action_shutdown">Stop service</string>
 </resources>

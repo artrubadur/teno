@@ -6,7 +6,6 @@ import android.app.NotificationManager
 import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
-import android.widget.RemoteViews
 import androidx.core.app.NotificationCompat
 import com.artrubadur.teno.MainActivity
 import com.artrubadur.teno.R
@@ -27,63 +26,26 @@ class OverlayNotificationFactory(
     }
 
     fun create(state: OverlayState): Notification {
-        val views = RemoteViews(context.packageName, R.layout.notification_overlay_controls).apply {
-            setImageViewResource(
-                R.id.overlay_notification_action_button,
-                when {
-                    state.isWorking -> R.drawable.ic_stop
-                    else -> R.drawable.ic_keyboard
-                }
+        val workAction = if (state.isWorking) {
+            notificationAction(
+                titleRes = R.string.notification_action_stop,
+                intent = serviceIntent(OverlayForegroundService.ACTION_STOP, 1)
             )
-            setImageViewResource(
-                R.id.overlay_notification_lifecycle_button,
-                when {
-                    state.isLoading -> R.drawable.ic_hourglass
-                    state.isReady -> R.drawable.ic_stop
-                    else -> R.drawable.ic_launch
-                }
+        } else {
+            notificationAction(
+                titleRes = R.string.notification_action_input_short,
+                intent = serviceIntent(OverlayForegroundService.ACTION_INPUT, 2)
             )
-
-            setContentDescription(
-                R.id.overlay_notification_action_button,
-                when {
-                    state.isWorking -> "Stop agent"
-                    else -> "Open input"
-                }
+        }
+        val lifecycleAction = if (state.isLoading || state.isReady) {
+            notificationAction(
+                titleRes = R.string.notification_action_terminate_agent,
+                intent = serviceIntent(OverlayForegroundService.ACTION_TERMINATE, 3)
             )
-            setContentDescription(
-                R.id.overlay_notification_lifecycle_button,
-                when {
-                    state.isLoading -> "Agent is loading"
-                    state.isReady -> "Terminate agent"
-                    else -> "Launch agent"
-                }
-            )
-
-            setOnClickPendingIntent(
-                R.id.overlay_notification_action_button,
-                when {
-                    state.isWorking -> serviceIntent(OverlayForegroundService.ACTION_STOP, 1)
-                    else -> serviceIntent(OverlayForegroundService.ACTION_INPUT, 2)
-                }
-
-            )
-            setOnClickPendingIntent(
-                R.id.overlay_notification_lifecycle_button,
-                when {
-                    state.isReady -> serviceIntent(OverlayForegroundService.ACTION_TERMINATE, 3)
-                    else -> serviceIntent(OverlayForegroundService.ACTION_LAUNCH, 4)
-                }
-            )
-            setOnClickPendingIntent(
-                R.id.overlay_notification_shutdown_button,
-                serviceIntent(OverlayForegroundService.ACTION_SHUTDOWN, 5)
-            )
-
-            setBoolean(
-                R.id.overlay_notification_lifecycle_button,
-                "setEnabled",
-                !state.isLoading
+        } else {
+            notificationAction(
+                titleRes = R.string.notification_action_launch_agent,
+                intent = serviceIntent(OverlayForegroundService.ACTION_LAUNCH, 4)
             )
         }
 
@@ -95,12 +57,28 @@ class OverlayNotificationFactory(
             .setLocalOnly(true)
             .setOnlyAlertOnce(true)
             .setSilent(true)
-            .setCustomContentView(views)
-            .setCustomBigContentView(views)
-            .setStyle(NotificationCompat.DecoratedCustomViewStyle())
             .setContentIntent(activityIntent())
             .setDeleteIntent(serviceIntent(OverlayForegroundService.ACTION_START, 7))
+            .addAction(workAction)
+            .addAction(lifecycleAction)
+            .addAction(
+                notificationAction(
+                    titleRes = R.string.notification_action_close,
+                    intent = serviceIntent(OverlayForegroundService.ACTION_SHUTDOWN, 5)
+                )
+            )
             .build()
+    }
+
+    private fun notificationAction(
+        titleRes: Int,
+        intent: PendingIntent,
+    ): NotificationCompat.Action {
+        return NotificationCompat.Action.Builder(
+            0,
+            context.getString(titleRes),
+            intent
+        ).build()
     }
 
     private fun serviceIntent(action: String, requestCode: Int): PendingIntent {
