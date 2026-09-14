@@ -37,7 +37,6 @@ import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.artrubadur.teno.R
-import com.artrubadur.teno.ui.components.buttons.OutlinedIconButton
 import com.artrubadur.teno.ui.components.buttons.PrimaryIconButton
 import com.artrubadur.teno.ui.theme.AppTheme
 
@@ -48,7 +47,6 @@ fun OverlayPromptInput(
     value: String,
     onValueChange: (String) -> Unit,
     onSend: () -> Unit,
-    onStopWork: () -> Unit,
     onLaunchActiveConnection: () -> Unit,
     isWorking: Boolean,
     isReady: Boolean,
@@ -74,7 +72,6 @@ fun OverlayPromptInput(
             value = value,
             onValueChange = onValueChange,
             onSend = onSend,
-            onStopWork = onStopWork,
             onLaunchActiveConnection = onLaunchActiveConnection,
             isWorking = isWorking,
             isReady = isReady,
@@ -95,7 +92,6 @@ private fun OverlayPromptInputContent(
     value: String,
     onValueChange: (String) -> Unit,
     onSend: () -> Unit,
-    onStopWork: () -> Unit,
     onLaunchActiveConnection: () -> Unit,
     isWorking: Boolean,
     isReady: Boolean,
@@ -191,7 +187,6 @@ private fun OverlayPromptInputContent(
                         canSend = canSend,
                         isActivated = isActivated,
                         onSendMessage = onSend,
-                        onStopWork = onStopWork,
                         onLaunchActiveConnection = onLaunchActiveConnection,
                     )
                 }
@@ -210,7 +205,6 @@ private fun OverlayPromptInputContent(
                         canSend = canSend,
                         isActivated = isActivated,
                         onSendMessage = onSend,
-                        onStopWork = onStopWork,
                         onLaunchActiveConnection = onLaunchActiveConnection,
                     )
                 }
@@ -227,18 +221,15 @@ private fun OverlayPromptActionButton(
     canSend: Boolean,
     isActivated: Boolean,
     onSendMessage: () -> Unit,
-    onStopWork: () -> Unit,
     onLaunchActiveConnection: () -> Unit,
 ) {
     when {
-        isWorking -> OutlinedIconButton(
-            iconRes = R.drawable.ic_stop,
-            contentDescription = "Stop work",
-            onClick = onStopWork,
-            modifier = Modifier.size(40.dp)
-        )
-
-        isLoading -> CircularProgressIndicator(modifier = Modifier.size(40.dp))
+        isWorking || isLoading -> Box(
+            modifier = Modifier.size(40.dp),
+            contentAlignment = Alignment.Center,
+        ) {
+            CircularProgressIndicator(modifier = Modifier.size(32.dp))
+        }
 
         !isReady -> PrimaryIconButton(
             iconRes = R.drawable.ic_launch,
@@ -276,7 +267,6 @@ private fun OverlayPromptInputPreview() {
             value = "Open settings",
             onValueChange = {},
             onSend = {},
-            onStopWork = {},
             onLaunchActiveConnection = {},
             isWorking = false,
             isReady = true,
@@ -298,7 +288,6 @@ private fun OverlayPromptInputWorkingPreview() {
             value = "",
             onValueChange = {},
             onSend = {},
-            onStopWork = {},
             onLaunchActiveConnection = {},
             isWorking = true,
             isReady = true,

@@ -45,10 +45,25 @@
             android:process=":agent" />
 
         <service
+            android:name=".agent.tools.integrations.ScreenAccessibilityService"
+            android:exported="true"
+            android:permission="android.permission.BIND_ACCESSIBILITY_SERVICE"
+            android:process=":agent"
+            tools:ignore="AccessibilityPolicy">
+            <intent-filter>
+                <action android:name="android.accessibilityservice.AccessibilityService" />
+            </intent-filter>
+
+            <meta-data
+                android:name="android.accessibilityservice"
+                android:resource="@xml/agent_accessibility_service" />
+        </service>
+
+        <service
             android:name=".ui.overlay.OverlayForegroundService"
             android:exported="false"
             android:foregroundServiceType="dataSync"
-            android:process=":overlay"
+            android:process=":agent"
             android:stopWithTask="false" />
 
         <uses-native-library

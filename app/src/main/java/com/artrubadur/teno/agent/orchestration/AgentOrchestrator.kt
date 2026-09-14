@@ -4,6 +4,7 @@ import com.artrubadur.teno.agent.policy.ConfirmationManager
 import com.artrubadur.teno.agent.tools.BrokerResult
 import com.artrubadur.teno.agent.tools.ToolBroker
 import com.artrubadur.teno.agent.tools.ToolResult
+import com.artrubadur.teno.agent.tools.integrations.ScreenNodeStore
 import com.artrubadur.teno.connection.Connection
 import com.artrubadur.teno.connection.runtime.llm.LlmResponse
 import com.artrubadur.teno.connection.runtime.llm.LlmRuntime
@@ -20,6 +21,7 @@ class AgentOrchestrator(
     private val toolBroker: ToolBroker,
     private val confirmationManager: ConfirmationManager,
     private val settingsStore: AgentSettingsStore,
+    private val screenNodeStore: ScreenNodeStore,
 ) {
     val isReady: Boolean
         get() = llmRuntime.isReady
@@ -38,6 +40,7 @@ class AgentOrchestrator(
 
     fun sendMessage(userMessage: String): Flow<AgentEvent> {
         return flow {
+            screenNodeStore.clear()
             val settings = settingsStore.getSettings()
             val session = AgentSession(
                 id = UUID.randomUUID().toString(),

@@ -1,12 +1,16 @@
 package com.artrubadur.teno.agent.tools
 
 import android.Manifest
+import android.accessibilityservice.AccessibilityServiceInfo
+import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.provider.Settings
+import android.view.accessibility.AccessibilityManager
 import androidx.core.content.ContextCompat
 import androidx.core.net.toUri
+import com.artrubadur.teno.agent.tools.integrations.ScreenAccessibilityService
 
 enum class ToolPermission(
     val title: String,
@@ -15,20 +19,26 @@ enum class ToolPermission(
 ) {
     WRITE_SETTINGS(
         title = "Write system settings",
-        description = "Allows changing system settings such as screen brightness",
+        description = "Allows the agent to change device settings",
         grantType = PermissionGrantType.INTENT
     ),
 
     CAMERA(
         title = "Camera access",
-        description = "Allows to take pictures, record video, toggle the device flashlight",
+        description = "Allows the agent to use the camera and flashlight",
         grantType = PermissionGrantType.RUNTIME
     ),
 
     MODIFY_AUDIO_SETTINGS(
         title = "Modify audio settings",
-        description = "Allows changing system audio settings such as volume",
+        description = "Allows the agent to control device audio",
         grantType = PermissionGrantType.NONE
+    ),
+
+    ACCESSIBILITY_SERVICE(
+        title = "Accessibility service",
+        description = "Allows the agent to read on-screen content and interact with visible controls",
+        grantType = PermissionGrantType.INTENT
     );
 
     fun isGranted(context: Context): Boolean {
@@ -42,6 +52,9 @@ enum class ToolPermission(
                     Manifest.permission.CAMERA
                 ) == PackageManager.PERMISSION_GRANTED
 
+            ACCESSIBILITY_SERVICE ->
+                isAccessibilityServiceEnabled(context)
+
             else -> true
         }
     }
@@ -53,6 +66,8 @@ enum class ToolPermission(
                 "package:${context.packageName}".toUri()
             )
 
+            ACCESSIBILITY_SERVICE -> Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS)
+
             else -> null
         }
     }
@@ -62,6 +77,24 @@ enum class ToolPermission(
             CAMERA -> Manifest.permission.CAMERA
             else -> null
         }
+    }
+
+    private fun isAccessibilityServiceEnabled(context: Context): Boolean {
+        val manager =
+            context.getSystemService(Context.ACCESSIBILITY_SERVICE) as AccessibilityManager
+
+        val expected = ComponentName(
+            context,
+            ScreenAccessibilityService::class.java
+        )
+
+        return manager
+            .getEnabledAccessibilityServiceList(AccessibilityServiceInfo.FEEDBACK_ALL_MASK)
+            .any { info ->
+                val service = info.resolveInfo.serviceInfo
+                service.packageName == expected.packageName &&
+                        service.name == expected.className
+            }
     }
 }
 

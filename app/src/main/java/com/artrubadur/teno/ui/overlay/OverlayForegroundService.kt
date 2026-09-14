@@ -18,6 +18,7 @@ import androidx.core.app.NotificationManagerCompat
 import androidx.core.app.ServiceCompat
 import androidx.core.content.ContextCompat
 import com.artrubadur.teno.agent.controller.AgentControllerEvent
+import com.artrubadur.teno.agent.tools.integrations.ScreenAccessibilityBridge
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -38,8 +39,11 @@ class OverlayForegroundService : Service() {
             publishRunningState(true)
         }
     }
-    private var windowManager: WindowManager? = null
-    private var overlayView: OverlayHostView? = null
+    private var applicationWindowManager: WindowManager? = null
+    private var accessibilityWindowManager: WindowManager? = null
+    private var applicationOverlayView: OverlayHostView? = null
+    private var accessibilityOverlayView: OverlayHostView? = null
+    private val accessibilityServiceListener = ::syncAccessibilityOverlay
 
     override fun onCreate() {
         super.onCreate()
@@ -52,6 +56,7 @@ class OverlayForegroundService : Service() {
         notificationFactory = OverlayNotificationFactory(this)
         notificationFactory.ensureChannel()
         controller = OverlayController(scope, application)
+        ScreenAccessibilityBridge.addListener(accessibilityServiceListener)
 
         showForegroundNotification()
         publishRunningState(true)
@@ -73,6 +78,12 @@ class OverlayForegroundService : Service() {
             .map { state -> state.isOverlayVisible }
             .distinctUntilChanged()
             .onEach(::syncOverlay)
+            .launchIn(scope)
+
+        controller.state
+            .map { state -> state.isWorking }
+            .distinctUntilChanged()
+            .onEach(::syncOverlayMode)
             .launchIn(scope)
     }
 
@@ -100,6 +111,7 @@ class OverlayForegroundService : Service() {
 
     override fun onDestroy() {
         publishRunningState(false)
+        ScreenAccessibilityBridge.removeListener(accessibilityServiceListener)
         removeOverlay()
         if (::controller.isInitialized) {
             controller.terminateConnection()
@@ -141,45 +153,113 @@ class OverlayForegroundService : Service() {
 
     private fun syncOverlay(isOverlayVisible: Boolean) {
         if (isOverlayVisible && Settings.canDrawOverlays(this)) {
-            showOverlayIfNeeded()
+            showApplicationOverlayIfNeeded()
+            showAccessibilityOverlayIfNeeded()
+            syncOverlayMode(controller.state.value.isWorking)
         } else {
             removeOverlay()
         }
     }
 
-    private fun showOverlayIfNeeded() {
-        if (overlayView != null) return
+    private fun showApplicationOverlayIfNeeded() {
+        if (applicationOverlayView != null) return
 
         val view = OverlayHostView(this, controller)
         val params = WindowManager.LayoutParams(
             WindowManager.LayoutParams.MATCH_PARENT,
             WindowManager.LayoutParams.MATCH_PARENT,
-            WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY,
-            WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN or
-                    WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS,
+            overlayWindowType(accessibilityServiceAvailable = false),
+            overlayFlags(passThrough = false),
             PixelFormat.TRANSLUCENT
         ).apply {
             gravity = Gravity.TOP or Gravity.START
             softInputMode = WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_VISIBLE
         }
 
-        getWindowManager().addView(view, params)
+        val windowManager = getSystemService(WINDOW_SERVICE) as WindowManager
+        windowManager.addView(view, params)
+        applicationWindowManager = windowManager
         view.onAttachedToWindowManager()
-        overlayView = view
+        applicationOverlayView = view
+    }
+
+    private fun showAccessibilityOverlayIfNeeded() {
+        if (accessibilityOverlayView != null) return
+        val service = ScreenAccessibilityBridge.service ?: return
+
+        val view = OverlayHostView(this, controller, workingOnly = true).apply {
+            visibility = android.view.View.INVISIBLE
+        }
+        val params = WindowManager.LayoutParams(
+            WindowManager.LayoutParams.MATCH_PARENT,
+            WindowManager.LayoutParams.MATCH_PARENT,
+            overlayWindowType(accessibilityServiceAvailable = true),
+            overlayFlags(passThrough = true),
+            PixelFormat.TRANSLUCENT
+        ).apply {
+            gravity = Gravity.TOP or Gravity.START
+        }
+
+        val windowManager = service.getSystemService(WINDOW_SERVICE) as WindowManager
+        windowManager.addView(view, params)
+        accessibilityWindowManager = windowManager
+        view.onAttachedToWindowManager()
+        accessibilityOverlayView = view
+    }
+
+    private fun syncAccessibilityOverlay() {
+        if (ScreenAccessibilityBridge.service == null) {
+            removeAccessibilityOverlay()
+        } else if (controller.state.value.isOverlayVisible) {
+            showAccessibilityOverlayIfNeeded()
+        }
+        syncOverlayMode(controller.state.value.isWorking)
+    }
+
+    private fun syncOverlayMode(isWorking: Boolean) {
+        val useAccessibilityOverlay = isWorking && accessibilityOverlayView != null
+        if (useAccessibilityOverlay) {
+            accessibilityOverlayView?.visibility = android.view.View.VISIBLE
+            applicationOverlayView?.visibility = android.view.View.INVISIBLE
+        } else {
+            applicationOverlayView?.visibility = android.view.View.VISIBLE
+            accessibilityOverlayView?.visibility = android.view.View.INVISIBLE
+        }
+
+        val view = applicationOverlayView ?: return
+        val params = view.layoutParams as? WindowManager.LayoutParams ?: return
+        val flags = overlayFlags(passThrough = isWorking && !useAccessibilityOverlay)
+        if (params.flags == flags) return
+
+        params.flags = flags
+        runCatching {
+            applicationWindowManager?.updateViewLayout(view, params)
+        }
     }
 
     private fun removeOverlay() {
-        val view = overlayView ?: return
-        runCatching {
-            windowManager?.removeView(view)
-        }
-        view.onDetachedFromWindowManager()
-        overlayView = null
+        removeApplicationOverlay()
+        removeAccessibilityOverlay()
     }
 
-    private fun getWindowManager(): WindowManager {
-        return windowManager
-            ?: (getSystemService(WINDOW_SERVICE) as WindowManager).also { windowManager = it }
+    private fun removeApplicationOverlay() {
+        val view = applicationOverlayView ?: return
+        runCatching {
+            applicationWindowManager?.removeView(view)
+        }
+        view.onDetachedFromWindowManager()
+        applicationOverlayView = null
+        applicationWindowManager = null
+    }
+
+    private fun removeAccessibilityOverlay() {
+        val view = accessibilityOverlayView ?: return
+        runCatching {
+            accessibilityWindowManager?.removeView(view)
+        }
+        view.onDetachedFromWindowManager()
+        accessibilityOverlayView = null
+        accessibilityWindowManager = null
     }
 
     private fun publishRunningState(isRunning: Boolean) {
@@ -221,6 +301,24 @@ class OverlayForegroundService : Service() {
             )
         }
     }
+}
+
+internal fun overlayWindowType(accessibilityServiceAvailable: Boolean): Int =
+    if (accessibilityServiceAvailable) {
+        WindowManager.LayoutParams.TYPE_ACCESSIBILITY_OVERLAY
+    } else {
+        WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY
+    }
+
+internal fun overlayFlags(passThrough: Boolean): Int {
+    var flags = WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN or
+            WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS
+    if (passThrough) {
+        flags = flags or
+                WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE or
+                WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE
+    }
+    return flags
 }
 
 private data class NotificationState(

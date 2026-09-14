@@ -20,6 +20,7 @@ import com.artrubadur.teno.ui.theme.AppTheme
 class OverlayHostView(
     context: Context,
     controller: OverlayController,
+    workingOnly: Boolean = false,
 ) : FrameLayout(context), LifecycleOwner, SavedStateRegistryOwner {
 
     private val lifecycleRegistry = LifecycleRegistry(this)
@@ -44,17 +45,20 @@ class OverlayHostView(
         composeView.setContent {
             val state by controller.state.collectAsState()
             AppTheme {
-                OverlayView(
-                    state = state,
-                    onInputChanged = controller::onInputChanged,
-                    onSend = controller::onSend,
-                    onStop = controller::stopWork,
-                    onLaunchActiveConnection = controller::launchActiveConnection,
-                    onApproveConfirmation = controller::approveConfirmation,
-                    onRejectConfirmation = controller::rejectConfirmation,
-                    onOutsideClick = controller::onOutsideClick,
-                    onIslandHidden = controller::onIslandHidden,
-                )
+                if (workingOnly) {
+                    OverlayWorkingView(state)
+                } else {
+                    OverlayView(
+                        state = state,
+                        onInputChanged = controller::onInputChanged,
+                        onSend = controller::onSend,
+                        onLaunchActiveConnection = controller::launchActiveConnection,
+                        onApproveConfirmation = controller::approveConfirmation,
+                        onRejectConfirmation = controller::rejectConfirmation,
+                        onOutsideClick = controller::onOutsideClick,
+                        onIslandHidden = controller::onIslandHidden,
+                    )
+                }
             }
         }
 

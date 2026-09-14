@@ -17,6 +17,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.imePadding
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -42,7 +43,6 @@ fun OverlayView(
     state: OverlayState,
     onInputChanged: (String) -> Unit,
     onSend: () -> Unit,
-    onStop: () -> Unit,
     onLaunchActiveConnection: () -> Unit,
     onApproveConfirmation: (String) -> Unit,
     onRejectConfirmation: (String) -> Unit,
@@ -122,7 +122,6 @@ fun OverlayView(
                     modifier = Modifier.fillMaxWidth(),
                     inputFieldModifier = Modifier.focusRequester(focusRequester),
                     onSend = onSend,
-                    onStopWork = onStop,
                     onLaunchActiveConnection = onLaunchActiveConnection,
                     isWorking = state.isWorking,
                     isReady = state.isReady,
@@ -131,6 +130,39 @@ fun OverlayView(
                     isActivated = state.isActivated,
                 )
             }
+        }
+    }
+}
+
+@Composable
+fun OverlayWorkingView(state: OverlayState) {
+    Box(modifier = Modifier.fillMaxSize()) {
+        Column(
+            modifier = Modifier
+                .align(Alignment.BottomCenter)
+                .fillMaxWidth()
+                .imePadding()
+                .navigationBarsPadding()
+                .padding(24.dp),
+            verticalArrangement = Arrangement.spacedBy(12.dp),
+        ) {
+            OverlayTimelineIsland(
+                state = state,
+                onApproveConfirmation = {},
+                onRejectConfirmation = {},
+            )
+
+            OverlayPromptInput(
+                value = state.input,
+                onValueChange = {},
+                onSend = {},
+                onLaunchActiveConnection = {},
+                isWorking = state.isWorking,
+                isReady = state.isReady,
+                isLoading = state.isLoading,
+                canSend = state.canSend,
+                isActivated = state.isActivated,
+            )
         }
     }
 }
@@ -207,7 +239,6 @@ private fun OverlayViewOpenIslandPreview() {
             ),
             onInputChanged = { _ -> },
             onSend = {},
-            onStop = {},
             onLaunchActiveConnection = {},
             onApproveConfirmation = {},
             onRejectConfirmation = {},
@@ -238,7 +269,6 @@ private fun OverlayViewWorkingPreview() {
             ),
             onInputChanged = { _ -> },
             onSend = {},
-            onStop = {},
             onLaunchActiveConnection = {},
             onApproveConfirmation = {},
             onRejectConfirmation = {},

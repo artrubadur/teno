@@ -93,7 +93,8 @@ class ToolBroker(
                     toolCallId = call.id,
                     tool = call.tool,
                     result = buildJsonObject {
-                        put("message", "Failed: ${e.message ?: ""}")
+                        put("ok", false)
+                        put("message", e.message ?: "Unknown error")
                     }
                 )
             )
