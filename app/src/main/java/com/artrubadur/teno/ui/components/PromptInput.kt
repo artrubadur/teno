@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.LocalTextStyle
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
@@ -43,8 +44,12 @@ fun PromptInput(
     onValueChange: (String) -> Unit,
     onSend: () -> Unit,
     onStopWork: () -> Unit,
+    onLaunchActiveConnection: (() -> Unit)? = null,
     isWorking: Boolean,
-    canSend: Boolean
+    isReady: Boolean = true,
+    isLoading: Boolean = false,
+    canSend: Boolean,
+    isActivated: Boolean = false,
 ) {
     var multiline by remember { mutableStateOf(false) }
     var inputValue by remember {
@@ -123,9 +128,13 @@ fun PromptInput(
                 if (!multiline) {
                     ChatInputActionButton(
                         isWorking = isWorking,
+                        isReady = isReady,
+                        isLoading = isLoading,
                         canSend = canSend,
+                        canLaunchActiveConnection = isActivated,
                         onSendMessage = onSend,
                         onStopWork = onStopWork,
+                        onLaunchActiveConnection = onLaunchActiveConnection,
                     )
                 }
             }
@@ -138,9 +147,13 @@ fun PromptInput(
                 ) {
                     ChatInputActionButton(
                         isWorking = isWorking,
+                        isReady = isReady,
+                        isLoading = isLoading,
                         canSend = canSend,
+                        canLaunchActiveConnection = isActivated,
                         onSendMessage = onSend,
                         onStopWork = onStopWork,
+                        onLaunchActiveConnection = onLaunchActiveConnection,
                     )
                 }
             }
@@ -151,9 +164,13 @@ fun PromptInput(
 @Composable
 private fun ChatInputActionButton(
     isWorking: Boolean,
+    isReady: Boolean,
+    isLoading: Boolean,
     canSend: Boolean,
+    canLaunchActiveConnection: Boolean,
     onSendMessage: () -> Unit,
     onStopWork: () -> Unit,
+    onLaunchActiveConnection: (() -> Unit)?,
 ) {
     if (isWorking) {
         OutlinedIconButton(
@@ -162,6 +179,18 @@ private fun ChatInputActionButton(
             onClick = onStopWork,
             modifier = Modifier.size(40.dp)
         )
+    } else if (!isReady && onLaunchActiveConnection != null) {
+        if (isLoading) {
+            CircularProgressIndicator(modifier = Modifier.size(40.dp))
+        } else {
+            PrimaryIconButton(
+                iconRes = R.drawable.ic_launch,
+                contentDescription = "Launch model",
+                onClick = onLaunchActiveConnection,
+                modifier = Modifier.size(40.dp),
+                enabled = canLaunchActiveConnection,
+            )
+        }
     } else {
         PrimaryIconButton(
             iconRes = R.drawable.ic_arrow,

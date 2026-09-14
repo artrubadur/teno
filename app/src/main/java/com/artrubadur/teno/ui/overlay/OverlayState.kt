@@ -16,4 +16,7 @@ data class OverlayState(
 ) {
     val canSend: Boolean
         get() = input.isNotBlank() && isReady && !isWorking && !isLoading
+
+    val isActivated: Boolean
+        get() = activeConnectionName != null
 }

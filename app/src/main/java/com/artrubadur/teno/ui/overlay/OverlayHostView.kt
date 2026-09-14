@@ -49,6 +49,7 @@ class OverlayHostView(
                     onInputChanged = controller::onInputChanged,
                     onSend = controller::onSend,
                     onStop = controller::stopWork,
+                    onLaunchActiveConnection = controller::launchActiveConnection,
                     onApproveConfirmation = controller::approveConfirmation,
                     onRejectConfirmation = controller::rejectConfirmation,
                     onOutsideClick = controller::onOutsideClick,

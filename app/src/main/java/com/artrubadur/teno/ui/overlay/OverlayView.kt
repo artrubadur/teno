@@ -43,6 +43,7 @@ fun OverlayView(
     onInputChanged: (String) -> Unit,
     onSend: () -> Unit,
     onStop: () -> Unit,
+    onLaunchActiveConnection: () -> Unit,
     onApproveConfirmation: (String) -> Unit,
     onRejectConfirmation: (String) -> Unit,
     onOutsideClick: () -> Unit,
@@ -117,8 +118,12 @@ fun OverlayView(
                 inputFieldModifier = Modifier.focusRequester(focusRequester),
                 onSend = onSend,
                 onStopWork = onStop,
+                onLaunchActiveConnection = onLaunchActiveConnection,
                 isWorking = state.isWorking,
+                isReady = state.isReady,
+                isLoading = state.isLoading,
                 canSend = state.canSend,
+                isActivated = state.isActivated,
             )
         }
     }
@@ -147,6 +152,7 @@ private fun OverlayViewOpenIslandPreview() {
             onInputChanged = { _ -> },
             onSend = {},
             onStop = {},
+            onLaunchActiveConnection = {},
             onApproveConfirmation = {},
             onRejectConfirmation = {},
             onOutsideClick = {},
@@ -177,6 +183,7 @@ private fun OverlayViewWorkingPreview() {
             onInputChanged = { _ -> },
             onSend = {},
             onStop = {},
+            onLaunchActiveConnection = {},
             onApproveConfirmation = {},
             onRejectConfirmation = {},
             onOutsideClick = {},
