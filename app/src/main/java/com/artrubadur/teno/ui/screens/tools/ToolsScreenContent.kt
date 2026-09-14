@@ -32,7 +32,13 @@ fun ToolsScreenContent(
     val groupedTools = state.tools
         .groupBy { it.spec.group }
         .toList()
-        .sortedBy { (group, _) -> group.ordinal }
+        .sortedBy { (group, _) ->
+            when (group) {
+                ToolGroup.SCREEN -> 0
+                ToolGroup.SYSTEM -> 1
+                ToolGroup.DIAGNOSTICS -> 2
+            }
+        }
 
     Scaffold(
         contentWindowInsets = WindowInsets(0)
