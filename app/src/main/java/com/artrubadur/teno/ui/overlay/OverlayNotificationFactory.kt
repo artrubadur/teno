@@ -9,6 +9,9 @@ import android.content.Intent
 import androidx.core.app.NotificationCompat
 import com.artrubadur.teno.MainActivity
 import com.artrubadur.teno.R
+import com.artrubadur.teno.agent.controller.AgentControllerEvent
+import com.artrubadur.teno.agent.orchestration.AgentEvent
+import java.util.Locale
 
 class OverlayNotificationFactory(
     private val context: Context,
@@ -51,6 +54,8 @@ class OverlayNotificationFactory(
 
         return NotificationCompat.Builder(context, CHANNEL_ID)
             .setSmallIcon(R.drawable.ic_keyboard)
+            .setContentTitle("")
+            .setContentText(agentStatus(state))
             .setOngoing(true)
             .setAutoCancel(false)
             .setCategory(NotificationCompat.CATEGORY_SERVICE)
@@ -69,6 +74,48 @@ class OverlayNotificationFactory(
             )
             .build()
     }
+
+    private fun agentStatus(state: OverlayState): String {
+        val events = state.controllerEvents
+        val terminal = events.asReversed().firstNotNullOfOrNull { event ->
+            when (event) {
+                is AgentControllerEvent.Message if event.message == "Stopped" -> "Stopped"
+                is AgentControllerEvent.Message -> "Error"
+                is AgentControllerEvent.Agent if event.event is AgentEvent.FinalAnswer -> "Done"
+                is AgentControllerEvent.Agent if event.event is AgentEvent.Failed -> "Error"
+                else -> null
+            }
+        }
+        if (terminal != null && !state.isWorking) return terminal
+
+        val tool = events.asReversed().firstNotNullOfOrNull { event ->
+            (event as? AgentControllerEvent.Agent)
+                ?.event
+                ?.toolName()
+        }
+        if (tool != null) return "Calling ${tool.toStatusName()}"
+
+        return when {
+            state.isWorking -> "Working"
+            state.isReady -> "Idle"
+            else -> "Inactive"
+        }
+    }
+
+    private fun AgentEvent.toolName(): String? = when (this) {
+        is AgentEvent.ToolStarted -> call.tool
+        is AgentEvent.ToolExecuted -> result.tool
+        is AgentEvent.ToolFailed -> result.tool
+        is AgentEvent.ToolBlocked -> result.tool
+        is AgentEvent.ConfirmationRequired -> call.tool
+        else -> null
+    }
+
+    private fun String.toStatusName(): String =
+        replace('_', ' ')
+            .replaceFirstChar { char ->
+                if (char.isLowerCase()) char.titlecase(Locale.US) else char.toString()
+            }
 
     private fun notificationAction(
         titleRes: Int,

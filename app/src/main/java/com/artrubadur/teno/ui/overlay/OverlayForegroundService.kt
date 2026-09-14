@@ -17,6 +17,7 @@ import android.view.WindowManager
 import androidx.core.app.NotificationManagerCompat
 import androidx.core.app.ServiceCompat
 import androidx.core.content.ContextCompat
+import com.artrubadur.teno.agent.controller.AgentControllerEvent
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -56,7 +57,14 @@ class OverlayForegroundService : Service() {
         publishRunningState(true)
 
         controller.state
-            .map { state -> Triple(state.isReady, state.isLoading, state.isWorking) }
+            .map { state ->
+                NotificationState(
+                    isReady = state.isReady,
+                    isLoading = state.isLoading,
+                    isWorking = state.isWorking,
+                    controllerEvents = state.controllerEvents,
+                )
+            }
             .distinctUntilChanged()
             .onEach { updateNotification(controller.state.value) }
             .launchIn(scope)
@@ -214,3 +222,10 @@ class OverlayForegroundService : Service() {
         }
     }
 }
+
+private data class NotificationState(
+    val isReady: Boolean,
+    val isLoading: Boolean,
+    val isWorking: Boolean,
+    val controllerEvents: List<AgentControllerEvent>,
+)

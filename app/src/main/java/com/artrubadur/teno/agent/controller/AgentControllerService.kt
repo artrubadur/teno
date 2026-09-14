@@ -123,7 +123,7 @@ class AgentControllerService : Service(), KoinComponent {
     private fun launchActiveConnection() {
         val connection = activeConnection
         if (connection == null) {
-            emitMessage("No active connection.")
+            emitMessage("No active connection")
             return
         }
 
@@ -164,7 +164,7 @@ class AgentControllerService : Service(), KoinComponent {
         val text = prompt.trim()
 
         if (activeConnection == null) {
-            emitMessage("No active connection.")
+            emitMessage("No active connection")
             return
         }
 
