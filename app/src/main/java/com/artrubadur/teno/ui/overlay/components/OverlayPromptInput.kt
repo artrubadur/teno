@@ -65,7 +65,7 @@ fun OverlayPromptInput(
         val expandedWidth = maxWidth
         val width by animateDpAsState(
             targetValue = if (isWorking) 56.dp else expandedWidth,
-            animationSpec = tween(durationMillis = 1000),
+            animationSpec = tween(durationMillis = 250),
             label = "overlay_prompt_width",
         )
         val showInput = !isWorking && width > 180.dp

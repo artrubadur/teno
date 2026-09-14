@@ -155,7 +155,7 @@ private fun OverlayTimelineIsland(
 
     val scale by animateFloatAsState(
         targetValue = if (!state.isWorking && visibleEvents.isNotEmpty()) 1f else 0f,
-        animationSpec = tween(durationMillis = 1000),
+        animationSpec = tween(durationMillis = 250),
         label = "overlay_timeline_scale",
         finishedListener = { value ->
             if (value == 0f && state.isWorking) {
