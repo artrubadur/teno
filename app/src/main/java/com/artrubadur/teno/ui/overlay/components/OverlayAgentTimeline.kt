@@ -41,7 +41,7 @@ import com.artrubadur.teno.ui.theme.AppTheme
 import kotlinx.coroutines.delay
 import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.put
-import kotlin.time.Duration.Companion.seconds
+import kotlin.time.Duration.Companion.milliseconds
 
 @Composable
 fun OverlayAgentTimeline(
@@ -62,7 +62,7 @@ fun OverlayAgentTimeline(
     LaunchedEffect(entries.hasLiveTimer()) {
         while (entries.hasLiveTimer()) {
             now = SystemClock.elapsedRealtime()
-            delay(1.seconds)
+            delay(100.milliseconds)
         }
     }
 

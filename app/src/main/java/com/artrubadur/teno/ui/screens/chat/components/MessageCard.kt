@@ -27,7 +27,7 @@ import com.artrubadur.teno.ui.components.eventlist.hasLiveTimer
 import com.artrubadur.teno.ui.components.eventlist.toEventEntries
 import com.artrubadur.teno.ui.theme.AppTheme
 import kotlinx.coroutines.delay
-import kotlin.time.Duration.Companion.seconds
+import kotlin.time.Duration.Companion.milliseconds
 
 @Composable
 fun MessageCard(
@@ -57,7 +57,7 @@ fun MessageCard(
     LaunchedEffect(hasLiveTimer) {
         while (hasLiveTimer) {
             now = SystemClock.elapsedRealtime()
-            delay(1.seconds)
+            delay(100.milliseconds)
         }
     }
 

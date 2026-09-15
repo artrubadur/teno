@@ -50,6 +50,7 @@ class AgentOrchestrator(
                 agentOptions = settings.agentOptions,
                 llmOptions = settings.llmOptions,
             )
+            emit(AgentEvent.WorkStarted)
             runAgentLoop(session)
         }
     }

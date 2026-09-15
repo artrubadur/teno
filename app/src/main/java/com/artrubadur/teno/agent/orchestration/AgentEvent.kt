@@ -7,6 +7,9 @@ import kotlinx.serialization.Serializable
 @Serializable
 sealed interface AgentEvent {
     @Serializable
+    data object WorkStarted : AgentEvent
+
+    @Serializable
     data class FinalAnswer(
         val message: String
     ) : AgentEvent
