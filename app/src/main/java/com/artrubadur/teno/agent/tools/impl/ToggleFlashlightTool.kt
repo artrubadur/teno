@@ -28,6 +28,8 @@ class ToggleFlashlightTool(
 
     override val risk = ToolRisk.SAFE
 
+    override val enabled = true
+
     override val requiredPermissions =
         setOf(ToolPermission.CAMERA)
 

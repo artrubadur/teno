@@ -23,6 +23,8 @@ class WriteDebugLogTool : Tool<WriteDebugLogTool.Args> {
 
     override val risk = ToolRisk.SAFE
 
+    override val enabled = false
+
     override val argsSerializer = Args.serializer()
 
     override suspend fun executeTyped(args: Args): JsonObject {

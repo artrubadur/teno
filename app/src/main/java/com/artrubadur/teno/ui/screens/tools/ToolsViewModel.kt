@@ -86,15 +86,16 @@ class ToolsViewModel(
         }
 
         pendingPermissions = pendingPermissions.drop(1).filterNot { it.isGranted(application) }
-        if (pendingPermissions.isEmpty()) {
-            viewModelScope.launch {
+        val hasMorePermissions = pendingPermissions.isNotEmpty()
+        viewModelScope.launch {
+            if (hasMorePermissions) {
+                requestNextPermission()
+            } else {
                 toolManager.setEnabled(toolName, true)
                 clearPendingEnable()
             }
-        } else {
-            requestNextPermission()
+            refresh()
         }
-        refresh()
     }
 
     private fun requestNextPermission() {

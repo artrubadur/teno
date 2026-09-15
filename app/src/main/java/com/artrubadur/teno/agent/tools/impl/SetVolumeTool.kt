@@ -27,6 +27,8 @@ class SetVolumeTool(
 
     override val risk = ToolRisk.SAFE
 
+    override val enabled = true
+
     override val requiredPermissions = setOf(ToolPermission.MODIFY_AUDIO_SETTINGS)
 
     override val argsSerializer = Args.serializer()

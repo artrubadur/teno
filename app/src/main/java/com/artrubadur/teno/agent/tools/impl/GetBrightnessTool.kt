@@ -24,6 +24,8 @@ class GetBrightnessTool(
 
     override val risk = ToolRisk.SAFE
 
+    override val enabled = true
+
     override val argsSerializer = NoArgs.serializer()
 
     override suspend fun executeTyped(args: NoArgs): JsonObject {

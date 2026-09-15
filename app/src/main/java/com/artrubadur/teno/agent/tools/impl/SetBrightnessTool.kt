@@ -25,6 +25,8 @@ class SetBrightnessTool(
 
     override val risk = ToolRisk.SAFE
 
+    override val enabled = true
+
     override val requiredPermissions = setOf(ToolPermission.WRITE_SETTINGS)
 
     override val argsSerializer = Args.serializer()

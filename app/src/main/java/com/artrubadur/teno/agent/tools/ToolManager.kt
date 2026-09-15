@@ -15,35 +15,33 @@ class ToolManager(
     }
 
     val enabledToolNames: Flow<Set<String>> =
-        settingsStore.enabledToolNames.map { it ?: defaultEnabledToolNames() }
+        settingsStore.toolOverrides.map { overrides ->
+            specs.filter { spec -> overrides[spec.name] ?: spec.enabled }
+                .map { it.name }
+                .toSet()
+        }
 
     fun allSpecs(): List<ToolSpec> = specs
 
     suspend fun enabledSpecs(): List<ToolSpec> {
-        val enabledNames = settingsStore.getEnabledToolNames(defaultEnabledToolNames())
+        val overrides = settingsStore.getToolOverrides()
         return specs.filter { spec ->
-            spec.name in enabledNames && spec.requiredPermissions.all { it.isGranted(context) }
+            (overrides[spec.name] ?: spec.enabled) &&
+                    spec.requiredPermissions.all { it.isGranted(context) }
         }
     }
 
     suspend fun isEnabled(tool: Tool<*>): Boolean {
         val spec = tool.toSpec()
-        val enabledNames = settingsStore.getEnabledToolNames(defaultEnabledToolNames())
-        return spec.name in enabledNames && spec.requiredPermissions.all { it.isGranted(context) }
+        val overrides = settingsStore.getToolOverrides()
+        return (overrides[spec.name] ?: spec.enabled) &&
+                spec.requiredPermissions.all { it.isGranted(context) }
     }
 
     suspend fun setEnabled(toolName: String, enabled: Boolean) {
-        settingsStore.setEnabled(
+        settingsStore.setOverride(
             toolName = toolName,
             enabled = enabled,
-            defaultNames = defaultEnabledToolNames()
         )
-    }
-
-    private fun defaultEnabledToolNames(): Set<String> {
-        return specs
-            .filter { it.requiredPermissions.isEmpty() }
-            .map { it.name }
-            .toSet()
     }
 }

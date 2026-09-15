@@ -29,6 +29,8 @@ class GetScreenTreeTool(
 
     override val risk = ToolRisk.SAFE
 
+    override val enabled = true
+
     override val requiredPermissions = setOf(ToolPermission.ACCESSIBILITY_SERVICE)
 
     override val argsSerializer = NoArgs.serializer()

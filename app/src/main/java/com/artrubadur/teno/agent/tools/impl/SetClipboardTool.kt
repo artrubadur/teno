@@ -26,6 +26,8 @@ class SetClipboardTool(
 
     override val risk = ToolRisk.SAFE
 
+    override val enabled = true
+
     override val argsSerializer =
         Args.serializer()
 

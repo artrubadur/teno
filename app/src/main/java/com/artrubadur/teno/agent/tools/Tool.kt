@@ -14,6 +14,7 @@ interface Tool<TArgs : Any> {
     val description: String
     val group: ToolGroup
     val risk: ToolRisk
+    val enabled: Boolean
     val requiredPermissions: Set<ToolPermission>
         get() = emptySet()
     val argsSerializer: KSerializer<TArgs>
@@ -46,6 +47,7 @@ fun Tool<*>.toSpec() = ToolSpec(
     title = title,
     description = description,
     group = group,
+    enabled = enabled,
     argsSchema = argsSchema,
     requiredPermissions = requiredPermissions,
 )
@@ -55,6 +57,7 @@ data class ToolSpec(
     val title: String,
     val description: String,
     val group: ToolGroup,
+    val enabled: Boolean = true,
     val argsSchema: JsonSchema,
     val requiredPermissions: Set<ToolPermission> = emptySet(),
 )
