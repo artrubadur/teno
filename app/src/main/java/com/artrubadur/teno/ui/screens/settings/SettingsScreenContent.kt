@@ -20,12 +20,12 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.artrubadur.teno.R
 import com.artrubadur.teno.connection.runtime.llm.local.LiteRtBackendOption
+import com.artrubadur.teno.ui.components.MenuItem
 import com.artrubadur.teno.ui.components.ScreenHeader
 import com.artrubadur.teno.ui.components.SectionLabel
 import com.artrubadur.teno.ui.components.buttons.ErrorIconButton
 import com.artrubadur.teno.ui.components.buttons.OutlinedIconButton
 import com.artrubadur.teno.ui.screens.settings.components.BackendSelector
-import com.artrubadur.teno.ui.screens.settings.components.SettingsMenuItem
 import com.artrubadur.teno.ui.screens.settings.components.SettingsTextField
 import com.artrubadur.teno.ui.theme.AppTheme
 
@@ -65,16 +65,16 @@ fun SettingsScreenContent(
                     verticalArrangement = Arrangement.spacedBy(8.dp),
                 ) {
                     SectionLabel(text = "AGENT")
-                    SettingsMenuItem(text = "Tools", onClick = onOpenTools)
+                    MenuItem(text = "Tools", onClick = onOpenTools)
                     Row(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.spacedBy(8.dp),
                     ) {
                         Box(modifier = Modifier.weight(1f)) {
-                            SettingsMenuItem(text = "Identity", onClick = onOpenIdentity)
+                            MenuItem(text = "Identity", onClick = onOpenIdentity)
                         }
                         Box(modifier = Modifier.weight(1f)) {
-                            SettingsMenuItem(text = "Rules", onClick = onOpenRules)
+                            MenuItem(text = "Rules", onClick = onOpenRules)
                         }
                     }
                     Row(

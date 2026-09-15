@@ -22,6 +22,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.artrubadur.teno.R
 import com.artrubadur.teno.connection.ConnectionKind
+import com.artrubadur.teno.ui.components.MenuItem
 import com.artrubadur.teno.ui.components.buttons.OutlinedIconButton
 import com.artrubadur.teno.ui.screens.home.components.ActiveConnectionCard
 import com.artrubadur.teno.ui.screens.home.components.OverlayCard
@@ -35,6 +36,7 @@ fun HomeScreenContent(
     onOpenChat: () -> Unit,
     onOpenConnections: () -> Unit,
     onOpenSettings: () -> Unit,
+    onOpenTools: () -> Unit,
     onOverlayEnabledChange: (Boolean) -> Unit,
 ) {
     val uriHandler = LocalUriHandler.current
@@ -105,6 +107,8 @@ fun HomeScreenContent(
                 onOverlayEnabledChange = onOverlayEnabledChange,
             )
 
+            MenuItem(text = "Tools", onClick = onOpenTools)
+
             Spacer(modifier = Modifier.weight(1f))
 
             Row(
@@ -152,6 +156,7 @@ private fun HomeScreenPreview() {
             onOpenChat = {},
             onOpenConnections = {},
             onOpenSettings = {},
+            onOpenTools = {},
             onOverlayEnabledChange = {},
         )
     }
@@ -181,6 +186,7 @@ private fun HomeScreenEnabledPreview() {
             onOpenChat = {},
             onOpenConnections = {},
             onOpenSettings = {},
+            onOpenTools = {},
             onOverlayEnabledChange = {},
         )
     }

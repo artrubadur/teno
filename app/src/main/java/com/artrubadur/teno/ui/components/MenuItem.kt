@@ -1,7 +1,6 @@
-package com.artrubadur.teno.ui.screens.settings.components
+package com.artrubadur.teno.ui.components
 
 import androidx.compose.foundation.BorderStroke
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -20,14 +19,13 @@ import androidx.compose.ui.unit.dp
 import com.artrubadur.teno.R
 
 @Composable
-fun SettingsMenuItem(
+fun MenuItem(
     text: String,
     onClick: () -> Unit,
 ) {
     Card(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clickable(onClick = onClick),
+        modifier = Modifier.fillMaxWidth(),
+        onClick = onClick,
         shape = RoundedCornerShape(16.dp),
         colors = CardDefaults.cardColors(
             containerColor = MaterialTheme.colorScheme.surface,

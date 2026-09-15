@@ -35,11 +35,11 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.artrubadur.teno.R
 import com.artrubadur.teno.connection.ConnectionKind
-import com.artrubadur.teno.ui.components.PromptInput
 import com.artrubadur.teno.ui.components.ScreenHeader
 import com.artrubadur.teno.ui.components.buttons.ErrorIconButton
 import com.artrubadur.teno.ui.screens.chat.components.ActiveConnectionCard
 import com.artrubadur.teno.ui.screens.chat.components.ChatMessage
+import com.artrubadur.teno.ui.screens.chat.components.ChatPromptInput
 import com.artrubadur.teno.ui.screens.chat.components.MessageList
 import com.artrubadur.teno.ui.theme.AppTheme
 
@@ -157,7 +157,7 @@ fun ChatScreenContent(
                                 }
                             }
                     ) {
-                        PromptInput(
+                        ChatPromptInput(
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .onSizeChanged {

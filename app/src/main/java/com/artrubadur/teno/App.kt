@@ -66,7 +66,8 @@ fun App() {
                 HomeScreen(
                     onOpenChat = { navController.navigate(Route.Chat) },
                     onOpenConnections = { navController.navigate(Route.Connections) },
-                    onOpenSettings = { navController.navigate(Route.Settings) }
+                    onOpenSettings = { navController.navigate(Route.Settings) },
+                    onOpenTools = { navController.navigate(Route.Tools) },
                 )
             }
             composable(Route.Connections) {

@@ -1,4 +1,4 @@
-package com.artrubadur.teno.ui.components
+package com.artrubadur.teno.ui.screens.chat.components
 
 import android.content.res.Configuration
 import androidx.compose.foundation.BorderStroke
@@ -37,7 +37,7 @@ import com.artrubadur.teno.ui.components.buttons.PrimaryIconButton
 import com.artrubadur.teno.ui.theme.AppTheme
 
 @Composable
-fun PromptInput(
+fun ChatPromptInput(
     modifier: Modifier = Modifier,
     inputFieldModifier: Modifier = Modifier,
     value: String,
@@ -213,9 +213,9 @@ private fun ChatInputActionButton(
     uiMode = Configuration.UI_MODE_NIGHT_YES,
 )
 @Composable
-private fun PromptInputEmptyPreview() {
+private fun ChatPromptInputEmptyPreview() {
     AppTheme {
-        PromptInput(
+        ChatPromptInput(
             value = "",
             onValueChange = { _ -> },
             onSend = {},
@@ -235,9 +235,9 @@ private fun PromptInputEmptyPreview() {
     uiMode = Configuration.UI_MODE_NIGHT_YES,
 )
 @Composable
-private fun PromptInputShortPreview() {
+private fun ChatPromptInputShortPreview() {
     AppTheme {
-        PromptInput(
+        ChatPromptInput(
             value = "Short input",
             onValueChange = { _ -> },
             onSend = {},
@@ -257,9 +257,9 @@ private fun PromptInputShortPreview() {
     uiMode = Configuration.UI_MODE_NIGHT_YES,
 )
 @Composable
-private fun PromptInputLongPreview() {
+private fun ChatPromptInputLongPreview() {
     AppTheme {
-        PromptInput(
+        ChatPromptInput(
             value = "Long long long long long long long long long " +
                     "long long long long long long long long input",
             onValueChange = { _ -> },
@@ -280,9 +280,9 @@ private fun PromptInputLongPreview() {
     uiMode = Configuration.UI_MODE_NIGHT_YES,
 )
 @Composable
-private fun PromptInputWorkingPreview() {
+private fun ChatPromptInputWorkingPreview() {
     AppTheme {
-        PromptInput(
+        ChatPromptInput(
             value = "",
             onValueChange = { _ -> },
             onSend = {},

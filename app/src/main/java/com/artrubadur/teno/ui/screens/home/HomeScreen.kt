@@ -22,6 +22,7 @@ fun HomeScreen(
     onOpenChat: () -> Unit = {},
     onOpenConnections: () -> Unit = {},
     onOpenSettings: () -> Unit = {},
+    onOpenTools: () -> Unit = {},
     viewModel: HomeViewModel = koinViewModel(),
 ) {
     val context = LocalContext.current
@@ -88,6 +89,7 @@ fun HomeScreen(
         onOpenChat = onOpenChat,
         onOpenSettings = onOpenSettings,
         onOpenConnections = onOpenConnections,
+        onOpenTools = onOpenTools,
         onOverlayEnabledChange = ::onOverlayEnabledChange
     )
 }
