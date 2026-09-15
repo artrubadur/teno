@@ -1,14 +1,10 @@
 package com.artrubadur.teno.ui.screens.connections.components
 
 import android.content.res.Configuration
-import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -25,6 +21,7 @@ import com.artrubadur.teno.connection.ConnectionType
 import com.artrubadur.teno.connection.LocalConnection
 import com.artrubadur.teno.connection.LocalConnectionConfig
 import com.artrubadur.teno.connection.ModelType
+import com.artrubadur.teno.ui.components.AppCard
 import com.artrubadur.teno.ui.components.Switch
 import com.artrubadur.teno.ui.theme.AppTheme
 
@@ -34,18 +31,9 @@ fun ConnectionCard(
     onOpenConnection: (String) -> Unit,
     onToggleActive: (Connection) -> Unit
 ) {
-    Card(
+    AppCard(
         onClick = { onOpenConnection(connection.id) },
         modifier = Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(16.dp),
-        colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surface,
-            contentColor = MaterialTheme.colorScheme.onSurface,
-        ),
-        border = BorderStroke(
-            1.dp,
-            MaterialTheme.colorScheme.outline,
-        ),
     ) {
         Row(
             modifier = Modifier

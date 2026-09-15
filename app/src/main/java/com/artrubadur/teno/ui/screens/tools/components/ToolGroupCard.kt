@@ -1,14 +1,10 @@
 package com.artrubadur.teno.ui.screens.tools.components
 
 import android.content.res.Configuration
-import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
@@ -19,6 +15,7 @@ import com.artrubadur.teno.agent.tools.NoArgs
 import com.artrubadur.teno.agent.tools.ToolGroup
 import com.artrubadur.teno.agent.tools.ToolPermission
 import com.artrubadur.teno.agent.tools.ToolSpec
+import com.artrubadur.teno.ui.components.AppCard
 import com.artrubadur.teno.ui.components.SectionLabel
 import com.artrubadur.teno.ui.screens.tools.ToolItemState
 import com.artrubadur.teno.ui.screens.tools.ToolPermissionState
@@ -37,17 +34,8 @@ internal fun ToolGroupCard(
     ) {
         SectionLabel(text = group.name)
 
-        Card(
+        AppCard(
             modifier = Modifier.fillMaxWidth(),
-            shape = RoundedCornerShape(16.dp),
-            colors = CardDefaults.cardColors(
-                containerColor = MaterialTheme.colorScheme.surface,
-                contentColor = MaterialTheme.colorScheme.onSurface,
-            ),
-            border = BorderStroke(
-                1.dp,
-                MaterialTheme.colorScheme.outline,
-            ),
         ) {
             Column(
                 modifier = Modifier
