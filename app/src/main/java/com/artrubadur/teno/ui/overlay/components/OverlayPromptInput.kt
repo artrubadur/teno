@@ -1,8 +1,6 @@
 package com.artrubadur.teno.ui.overlay.components
 
 import android.content.res.Configuration
-import androidx.compose.animation.core.animateDpAsState
-import androidx.compose.animation.core.tween
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -37,6 +35,7 @@ import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.artrubadur.teno.R
+import com.artrubadur.teno.ui.components.buttons.OutlinedIconButton
 import com.artrubadur.teno.ui.components.buttons.PrimaryIconButton
 import com.artrubadur.teno.ui.theme.AppTheme
 
@@ -47,12 +46,15 @@ fun OverlayPromptInput(
     value: String,
     onValueChange: (String) -> Unit,
     onSend: () -> Unit,
+    onStopWork: () -> Unit,
     onLaunchActiveConnection: () -> Unit,
     isWorking: Boolean,
+    isConfirmationRequired: Boolean,
     isReady: Boolean,
     isLoading: Boolean,
     canSend: Boolean,
     isActivated: Boolean,
+    expansion: Float = if (isWorking) 0f else 1f,
 ) {
     val shape = RoundedCornerShape(28.dp)
 
@@ -60,20 +62,17 @@ fun OverlayPromptInput(
         modifier = modifier.fillMaxWidth(),
         contentAlignment = Alignment.BottomEnd,
     ) {
-        val expandedWidth = maxWidth
-        val width by animateDpAsState(
-            targetValue = if (isWorking) 56.dp else expandedWidth,
-            animationSpec = tween(durationMillis = 250),
-            label = "overlay_prompt_width",
-        )
+        val width = 56.dp + (maxWidth - 56.dp) * expansion
         val showInput = !isWorking && width > 180.dp
 
         OverlayPromptInputContent(
             value = value,
             onValueChange = onValueChange,
             onSend = onSend,
+            onStopWork = onStopWork,
             onLaunchActiveConnection = onLaunchActiveConnection,
             isWorking = isWorking,
+            isConfirmationRequired = isConfirmationRequired,
             isReady = isReady,
             isLoading = isLoading,
             canSend = canSend,
@@ -92,8 +91,10 @@ private fun OverlayPromptInputContent(
     value: String,
     onValueChange: (String) -> Unit,
     onSend: () -> Unit,
+    onStopWork: () -> Unit,
     onLaunchActiveConnection: () -> Unit,
     isWorking: Boolean,
+    isConfirmationRequired: Boolean,
     isReady: Boolean,
     isLoading: Boolean,
     canSend: Boolean,
@@ -128,7 +129,7 @@ private fun OverlayPromptInputContent(
     Surface(
         modifier = modifier,
         shape = RoundedCornerShape(28.dp),
-        color = MaterialTheme.colorScheme.surface,
+        color = MaterialTheme.colorScheme.surface.copy(alpha = 0.8f),
         border = BorderStroke(
             1.dp,
             MaterialTheme.colorScheme.outline,
@@ -145,6 +146,7 @@ private fun OverlayPromptInputContent(
                 if (showInput) {
                     BasicTextField(
                         value = inputValue,
+                        enabled = !isConfirmationRequired,
                         onValueChange = {
                             inputValue = it
                             onValueChange(it.text)
@@ -167,7 +169,7 @@ private fun OverlayPromptInputContent(
                             Box(
                                 modifier = Modifier.fillMaxWidth(),
                             ) {
-                                if (inputValue.text.isEmpty()) {
+                                if (inputValue.text.isEmpty() && !isConfirmationRequired) {
                                     Text(
                                         text = "Ask Teno",
                                         color = MaterialTheme.colorScheme.onSurfaceVariant,
@@ -182,11 +184,13 @@ private fun OverlayPromptInputContent(
                 if (!showInput || !multiline) {
                     OverlayPromptActionButton(
                         isWorking = isWorking,
+                        isConfirmationRequired = isConfirmationRequired,
                         isReady = isReady,
                         isLoading = isLoading,
                         canSend = canSend,
                         isActivated = isActivated,
                         onSendMessage = onSend,
+                        onStopWork = onStopWork,
                         onLaunchActiveConnection = onLaunchActiveConnection,
                     )
                 }
@@ -200,11 +204,13 @@ private fun OverlayPromptInputContent(
                 ) {
                     OverlayPromptActionButton(
                         isWorking = isWorking,
+                        isConfirmationRequired = isConfirmationRequired,
                         isReady = isReady,
                         isLoading = isLoading,
                         canSend = canSend,
                         isActivated = isActivated,
                         onSendMessage = onSend,
+                        onStopWork = onStopWork,
                         onLaunchActiveConnection = onLaunchActiveConnection,
                     )
                 }
@@ -216,14 +222,23 @@ private fun OverlayPromptInputContent(
 @Composable
 private fun OverlayPromptActionButton(
     isWorking: Boolean,
+    isConfirmationRequired: Boolean,
     isReady: Boolean,
     isLoading: Boolean,
     canSend: Boolean,
     isActivated: Boolean,
     onSendMessage: () -> Unit,
+    onStopWork: () -> Unit,
     onLaunchActiveConnection: () -> Unit,
 ) {
     when {
+        isConfirmationRequired -> OutlinedIconButton(
+            iconRes = R.drawable.ic_stop,
+            contentDescription = "Stop work",
+            onClick = onStopWork,
+            modifier = Modifier.size(40.dp),
+        )
+
         isWorking || isLoading -> Box(
             modifier = Modifier.size(40.dp),
             contentAlignment = Alignment.Center,
@@ -267,8 +282,10 @@ private fun OverlayPromptInputPreview() {
             value = "Open settings",
             onValueChange = {},
             onSend = {},
+            onStopWork = {},
             onLaunchActiveConnection = {},
             isWorking = false,
+            isConfirmationRequired = false,
             isReady = true,
             isLoading = false,
             canSend = true,
@@ -288,8 +305,10 @@ private fun OverlayPromptInputWorkingPreview() {
             value = "",
             onValueChange = {},
             onSend = {},
+            onStopWork = {},
             onLaunchActiveConnection = {},
             isWorking = true,
+            isConfirmationRequired = false,
             isReady = true,
             isLoading = false,
             canSend = false,

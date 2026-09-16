@@ -259,7 +259,7 @@ private fun ToolCallStatusLabel(
 
 
 @Composable
-private fun ToolCallConfirmation(
+fun ToolCallConfirmation(
     event: AgentEvent.ConfirmationRequired,
     onApproveConfirmation: (String) -> Unit,
     onRejectConfirmation: (String) -> Unit,

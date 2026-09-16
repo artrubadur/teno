@@ -117,6 +117,17 @@ class AgentOrchestrator(
         }
     }
 
+    suspend fun cancelConfirmation(confirmationId: String): AgentEvent.ToolBlocked? {
+        val confirmation = confirmationManager.consume(confirmationId) ?: return null
+        return AgentEvent.ToolBlocked(
+            ToolResult(
+                toolCallId = confirmation.call.id,
+                tool = confirmation.call.tool,
+                result = buildJsonObject { put("message", JsonPrimitive("Stopped")) },
+            )
+        )
+    }
+
     private suspend fun FlowCollector<AgentEvent>.runAgentLoop(session: AgentSession) {
         while (session.agentOptions.unlimitedMaxSteps || session.stepCount < session.agentOptions.maxSteps) {
             when (val response = llmRuntime.generate(session.toLlmRequest())) {

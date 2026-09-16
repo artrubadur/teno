@@ -33,6 +33,8 @@ import androidx.compose.ui.graphics.TransformOrigin
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.artrubadur.teno.ui.components.eventlist.pendingConfirmation
+import com.artrubadur.teno.ui.components.eventlist.toEventEntries
 import com.artrubadur.teno.ui.overlay.components.AuraOverlay
 import com.artrubadur.teno.ui.overlay.components.OverlayAgentTimeline
 import com.artrubadur.teno.ui.overlay.components.OverlayPromptInput
@@ -43,14 +45,28 @@ fun OverlayView(
     state: OverlayState,
     onInputChanged: (String) -> Unit,
     onSend: () -> Unit,
+    onStopWork: () -> Unit,
     onLaunchActiveConnection: () -> Unit,
     onApproveConfirmation: (String) -> Unit,
     onRejectConfirmation: (String) -> Unit,
     onOutsideClick: () -> Unit,
     onIslandHidden: () -> Unit,
+    onCollapsed: () -> Unit = {},
 ) {
     val focusRequester = remember { FocusRequester() }
     val islandVisibility = remember { MutableTransitionState(false) }
+    val expansion by animateFloatAsState(
+        targetValue = if (state.isWorking) 0f else 1f,
+        animationSpec = tween(durationMillis = 250),
+        label = "overlay_expansion",
+    )
+    LaunchedEffect(state.isWorking, expansion == 0f) {
+        if (state.isWorking && expansion == 0f) onCollapsed()
+    }
+    val isConfirmationRequired =
+        !state.isWorking && remember(state.controllerEvents) {
+            state.controllerEvents.toEventEntries().pendingConfirmation() != null
+        }
 
     LaunchedEffect(state.isIslandVisible) {
         islandVisibility.targetState = state.isIslandVisible
@@ -75,12 +91,11 @@ fun OverlayView(
     Box(modifier = Modifier.fillMaxSize()) {
         AnimatedVisibility(
             visible = state.isWorking,
-            enter = fadeIn(animationSpec = tween(durationMillis = 250)),
-            exit = fadeOut(animationSpec = tween(durationMillis = 250)),
+            enter = fadeIn(tween(250)),
+            exit = fadeOut(tween(250)),
         ) {
             AuraOverlay()
         }
-
         Box(
             modifier = Modifier
                 .fillMaxSize()
@@ -97,6 +112,7 @@ fun OverlayView(
                 .align(Alignment.BottomCenter)
                 .fillMaxWidth()
                 .imePadding()
+                .navigationBarsPadding()
                 .padding(24.dp),
             enter = slideInVertically(
                 initialOffsetY = { it },
@@ -112,6 +128,7 @@ fun OverlayView(
             ) {
                 OverlayTimelineIsland(
                     state = state,
+                    expansion = expansion,
                     onApproveConfirmation = onApproveConfirmation,
                     onRejectConfirmation = onRejectConfirmation,
                 )
@@ -122,12 +139,15 @@ fun OverlayView(
                     modifier = Modifier.fillMaxWidth(),
                     inputFieldModifier = Modifier.focusRequester(focusRequester),
                     onSend = onSend,
+                    onStopWork = onStopWork,
                     onLaunchActiveConnection = onLaunchActiveConnection,
                     isWorking = state.isWorking,
+                    isConfirmationRequired = isConfirmationRequired,
                     isReady = state.isReady,
                     isLoading = state.isLoading,
                     canSend = state.canSend,
                     isActivated = state.isActivated,
+                    expansion = expansion,
                 )
             }
         }
@@ -135,41 +155,9 @@ fun OverlayView(
 }
 
 @Composable
-fun OverlayWorkingView(state: OverlayState) {
-    Box(modifier = Modifier.fillMaxSize()) {
-        Column(
-            modifier = Modifier
-                .align(Alignment.BottomCenter)
-                .fillMaxWidth()
-                .imePadding()
-                .navigationBarsPadding()
-                .padding(24.dp),
-            verticalArrangement = Arrangement.spacedBy(12.dp),
-        ) {
-            OverlayTimelineIsland(
-                state = state,
-                onApproveConfirmation = {},
-                onRejectConfirmation = {},
-            )
-
-            OverlayPromptInput(
-                value = state.input,
-                onValueChange = {},
-                onSend = {},
-                onLaunchActiveConnection = {},
-                isWorking = state.isWorking,
-                isReady = state.isReady,
-                isLoading = state.isLoading,
-                canSend = state.canSend,
-                isActivated = state.isActivated,
-            )
-        }
-    }
-}
-
-@Composable
 private fun OverlayTimelineIsland(
     state: OverlayState,
+    expansion: Float,
     onApproveConfirmation: (String) -> Unit,
     onRejectConfirmation: (String) -> Unit,
 ) {
@@ -179,22 +167,13 @@ private fun OverlayTimelineIsland(
         )
     }
 
-    LaunchedEffect(state.isWorking, state.controllerEvents) {
+    LaunchedEffect(state.isWorking, state.controllerEvents, expansion == 0f) {
         if (!state.isWorking && state.controllerEvents.isNotEmpty()) {
             visibleEvents = state.controllerEvents
+        } else if (state.isWorking && expansion == 0f) {
+            visibleEvents = emptyList()
         }
     }
-
-    val scale by animateFloatAsState(
-        targetValue = if (!state.isWorking && visibleEvents.isNotEmpty()) 1f else 0f,
-        animationSpec = tween(durationMillis = 250),
-        label = "overlay_timeline_scale",
-        finishedListener = { value ->
-            if (value == 0f && state.isWorking) {
-                visibleEvents = emptyList()
-            }
-        }
-    )
 
     Box(
         modifier = Modifier.fillMaxWidth(),
@@ -207,9 +186,9 @@ private fun OverlayTimelineIsland(
                 onApproveConfirmation = onApproveConfirmation,
                 onRejectConfirmation = onRejectConfirmation,
                 modifier = Modifier.graphicsLayer {
-                    scaleX = scale
-                    scaleY = scale
-                    alpha = scale
+                    scaleX = expansion
+                    scaleY = expansion
+                    alpha = expansion
                     transformOrigin = TransformOrigin(1f, 1f)
                 },
             )
@@ -239,6 +218,7 @@ private fun OverlayViewOpenIslandPreview() {
             ),
             onInputChanged = { _ -> },
             onSend = {},
+            onStopWork = {},
             onLaunchActiveConnection = {},
             onApproveConfirmation = {},
             onRejectConfirmation = {},
@@ -269,6 +249,7 @@ private fun OverlayViewWorkingPreview() {
             ),
             onInputChanged = { _ -> },
             onSend = {},
+            onStopWork = {},
             onLaunchActiveConnection = {},
             onApproveConfirmation = {},
             onRejectConfirmation = {},

@@ -5,6 +5,7 @@ import android.os.SystemClock
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.detectVerticalDragGestures
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
@@ -35,7 +36,9 @@ import com.artrubadur.teno.agent.orchestration.AgentEvent
 import com.artrubadur.teno.agent.tools.ToolCall
 import com.artrubadur.teno.agent.tools.ToolResult
 import com.artrubadur.teno.ui.components.AgentTimeline
+import com.artrubadur.teno.ui.components.eventlist.ToolCallConfirmation
 import com.artrubadur.teno.ui.components.eventlist.hasLiveTimer
+import com.artrubadur.teno.ui.components.eventlist.pendingConfirmation
 import com.artrubadur.teno.ui.components.eventlist.toEventEntries
 import com.artrubadur.teno.ui.theme.AppTheme
 import kotlinx.coroutines.delay
@@ -56,6 +59,7 @@ fun OverlayAgentTimeline(
         .firstNotNullOfOrNull { (it as? AgentControllerEvent.Agent)?.event as? AgentEvent.FinalAnswer }
     val serviceMessage =
         events.asReversed().firstNotNullOfOrNull { (it as? AgentControllerEvent.Message)?.message }
+    val confirmation = remember(entries) { entries.pendingConfirmation() }
     var now by remember { mutableLongStateOf(SystemClock.elapsedRealtime()) }
     var expanded by remember(events) { mutableStateOf(false) }
 
@@ -68,7 +72,7 @@ fun OverlayAgentTimeline(
 
     BoxWithConstraints(modifier = modifier.fillMaxWidth()) {
         Surface(
-            color = MaterialTheme.colorScheme.surface,
+            color = MaterialTheme.colorScheme.surface.copy(alpha = 0.8f),
             contentColor = MaterialTheme.colorScheme.onSurface,
             modifier = Modifier
                 .fillMaxWidth()
@@ -111,6 +115,22 @@ fun OverlayAgentTimeline(
                             .fillMaxWidth()
                             .padding(top = 12.dp),
                     )
+                } else if (confirmation != null) {
+                    Column(
+                        modifier = if (entries.size > 1) Modifier.padding(top = 12.dp) else Modifier,
+                        verticalArrangement = Arrangement.spacedBy(8.dp),
+                    ) {
+                        Text(
+                            text = "Agent wants to ${confirmation.call.tool.replace("_", " ")}",
+                            color = MaterialTheme.colorScheme.onSurface,
+                            style = MaterialTheme.typography.bodyMedium,
+                        )
+                        ToolCallConfirmation(
+                            event = confirmation,
+                            onApproveConfirmation = onApproveConfirmation,
+                            onRejectConfirmation = onRejectConfirmation,
+                        )
+                    }
                 } else {
                     Text(
                         text = when {

@@ -3,6 +3,7 @@ package com.artrubadur.teno.ui.overlay
 import android.annotation.SuppressLint
 import android.content.Context
 import android.widget.FrameLayout
+import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.platform.ComposeView
@@ -20,7 +21,7 @@ import com.artrubadur.teno.ui.theme.AppTheme
 class OverlayHostView(
     context: Context,
     controller: OverlayController,
-    workingOnly: Boolean = false,
+    onCollapsed: () -> Unit,
 ) : FrameLayout(context), LifecycleOwner, SavedStateRegistryOwner {
 
     private val lifecycleRegistry = LifecycleRegistry(this)
@@ -44,21 +45,24 @@ class OverlayHostView(
 
         composeView.setContent {
             val state by controller.state.collectAsState()
+            SideEffect {
+                composeView.importantForAccessibility = if (state.isWorking) {
+                    IMPORTANT_FOR_ACCESSIBILITY_NO_HIDE_DESCENDANTS
+                } else IMPORTANT_FOR_ACCESSIBILITY_AUTO
+            }
             AppTheme {
-                if (workingOnly) {
-                    OverlayWorkingView(state)
-                } else {
-                    OverlayView(
-                        state = state,
-                        onInputChanged = controller::onInputChanged,
-                        onSend = controller::onSend,
-                        onLaunchActiveConnection = controller::launchActiveConnection,
-                        onApproveConfirmation = controller::approveConfirmation,
-                        onRejectConfirmation = controller::rejectConfirmation,
-                        onOutsideClick = controller::onOutsideClick,
-                        onIslandHidden = controller::onIslandHidden,
-                    )
-                }
+                OverlayView(
+                    state = state,
+                    onInputChanged = controller::onInputChanged,
+                    onSend = controller::onSend,
+                    onStopWork = controller::stopWork,
+                    onLaunchActiveConnection = controller::launchActiveConnection,
+                    onApproveConfirmation = controller::approveConfirmation,
+                    onRejectConfirmation = controller::rejectConfirmation,
+                    onOutsideClick = controller::onOutsideClick,
+                    onIslandHidden = controller::onIslandHidden,
+                    onCollapsed = onCollapsed,
+                )
             }
         }
 

@@ -18,6 +18,7 @@ class OverlayController(
     application: Application,
 ) {
     private val agentController = AgentControllerClient(application)
+    private var pendingWorkingCommand: AgentControllerCommand? = null
 
     private val _state = MutableStateFlow(OverlayState())
     val state: StateFlow<OverlayState> = _state.asStateFlow()
@@ -48,6 +49,7 @@ class OverlayController(
     }
 
     fun terminateConnection() {
+        pendingWorkingCommand = null
         agentController.send(AgentControllerCommand.TerminateConnection)
     }
 
@@ -57,6 +59,7 @@ class OverlayController(
 
         if (!current.canSend) return
 
+        pendingWorkingCommand = AgentControllerCommand.SendMessage(prompt)
         _state.update {
             it.copy(
                 input = "",
@@ -67,11 +70,10 @@ class OverlayController(
                 controllerEvents = emptyList(),
             )
         }
-
-        agentController.send(AgentControllerCommand.SendMessage(prompt))
     }
 
     fun stopWork() {
+        pendingWorkingCommand = null
         agentController.send(AgentControllerCommand.StopWork)
         _state.update {
             it.copy(
@@ -82,14 +84,29 @@ class OverlayController(
     }
 
     fun approveConfirmation(confirmationId: String) {
-        agentController.send(AgentControllerCommand.ApproveConfirmation(confirmationId))
+        resumeAfterOverlayCollapse(AgentControllerCommand.ApproveConfirmation(confirmationId))
     }
 
     fun rejectConfirmation(confirmationId: String) {
-        agentController.send(AgentControllerCommand.RejectConfirmation(confirmationId))
+        resumeAfterOverlayCollapse(AgentControllerCommand.RejectConfirmation(confirmationId))
+    }
+
+    private fun resumeAfterOverlayCollapse(command: AgentControllerCommand) {
+        if (_state.value.isWorking) return
+        pendingWorkingCommand = command
+        _state.update {
+            it.copy(isWorking = true, focusInput = false)
+        }
+    }
+
+    fun onOverlayCollapsed() {
+        val command = pendingWorkingCommand ?: return
+        pendingWorkingCommand = null
+        agentController.send(command)
     }
 
     fun close() {
+        pendingWorkingCommand = null
         agentController.close()
     }
 
@@ -149,7 +166,7 @@ class OverlayController(
                 activeConnectionName = agentState.activeConnectionName,
                 isReady = agentState.isReady,
                 isLoading = agentState.isLoading,
-                isWorking = agentState.isWorking,
+                isWorking = agentState.isWorking || pendingWorkingCommand != null,
                 isOverlayVisible = if (shouldCloseOverlay) false else it.isOverlayVisible,
                 isIslandVisible = if (!agentState.isWorking && shouldCloseOverlay) true else it.isIslandVisible,
             )

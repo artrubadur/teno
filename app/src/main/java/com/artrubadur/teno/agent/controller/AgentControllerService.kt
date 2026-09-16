@@ -9,6 +9,7 @@ import android.os.Looper
 import android.os.Message
 import android.os.Messenger
 import android.os.RemoteException
+import com.artrubadur.teno.agent.orchestration.AgentEvent
 import com.artrubadur.teno.agent.orchestration.AgentOrchestrator
 import com.artrubadur.teno.connection.Connection
 import com.artrubadur.teno.connection.ConnectionManager
@@ -39,6 +40,7 @@ class AgentControllerService : Service(), KoinComponent {
     private var activeConnection: Connection? = null
     private var workJob: Job? = null
     private var launchJob: Job? = null
+    private var pendingConfirmationId: String? = null
 
     override fun onCreate() {
         super.onCreate()
@@ -175,9 +177,7 @@ class AgentControllerService : Service(), KoinComponent {
         workJob = scope.launch {
             val currentJob = coroutineContext[Job]
             try {
-                agentOrchestrator.sendMessage(text).collect { event ->
-                    emitEvent(AgentControllerEvent.Agent(event))
-                }
+                agentOrchestrator.sendMessage(text).collect(::emitAgentEvent)
             } catch (t: CancellationException) {
                 throw t
             } catch (t: Throwable) {
@@ -194,6 +194,7 @@ class AgentControllerService : Service(), KoinComponent {
     private fun respondToConfirmation(confirmationId: String, approve: Boolean) {
         if (state.isWorking) return
 
+        if (pendingConfirmationId == confirmationId) pendingConfirmationId = null
         updateState { it.copy(isWorking = true) }
         workJob = scope.launch {
             val currentJob = coroutineContext[Job]
@@ -203,9 +204,7 @@ class AgentControllerService : Service(), KoinComponent {
                 } else {
                     agentOrchestrator.rejectConfirmation(confirmationId)
                 }
-                events.collect { event ->
-                    emitEvent(AgentControllerEvent.Agent(event))
-                }
+                events.collect(::emitAgentEvent)
             } catch (t: CancellationException) {
                 throw t
             } catch (t: Throwable) {
@@ -220,13 +219,20 @@ class AgentControllerService : Service(), KoinComponent {
     }
 
     private fun stopWork(resetLoading: Boolean = true) {
-        val hadWork = workJob != null
+        val confirmationId = pendingConfirmationId
+        pendingConfirmationId = null
+        val hadWork = workJob != null || confirmationId != null
         launchJob?.cancel()
         launchJob = null
         workJob?.cancel()
         workJob = null
         agentOrchestrator.stopWork()
-        if (hadWork) {
+        if (confirmationId != null) {
+            scope.launch {
+                agentOrchestrator.cancelConfirmation(confirmationId)?.let(::emitAgentEvent)
+                emitMessage("Stopped")
+            }
+        } else if (hadWork) {
             emitMessage("Stopped")
         }
         updateState {
@@ -244,6 +250,13 @@ class AgentControllerService : Service(), KoinComponent {
 
     private fun emitMessage(message: String) {
         emitEvent(AgentControllerEvent.Message(message))
+    }
+
+    private fun emitAgentEvent(event: AgentEvent) {
+        if (event is AgentEvent.ConfirmationRequired) {
+            pendingConfirmationId = event.confirmationId
+        }
+        emitEvent(AgentControllerEvent.Agent(event))
     }
 
     private fun emitEvent(event: AgentControllerEvent) {

@@ -64,6 +64,11 @@ fun List<AgentControllerEvent>.toEventEntries(): List<EventEntry> {
     return entries
 }
 
+fun List<EventEntry>.pendingConfirmation(): AgentEvent.ConfirmationRequired? =
+    asReversed().firstNotNullOfOrNull {
+        ((it as? EventEntry.Tool)?.result?.event as? AgentEvent.ConfirmationRequired)
+    }
+
 fun EventEntry.workDurationUntil(next: EventEntry?): WorkDuration? {
     if (this is EventEntry.Message) return null
     if (this is EventEntry.Single && event is AgentEvent.FinalAnswer) return null
