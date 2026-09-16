@@ -9,7 +9,7 @@ import kotlinx.serialization.json.put
 class ToolBroker(
     private val registry: ToolRegistry,
     private val safetyPolicy: SafetyPolicy,
-    private val toolManager: ToolManager,
+    private val toolManager: ToolManager? = null,
 ) {
     suspend fun execute(
         call: ToolCall,
@@ -27,7 +27,7 @@ class ToolBroker(
                 )
             )
 
-        if (!toolManager.isEnabled(tool)) {
+        if (toolManager != null && !toolManager.isEnabled(tool)) {
             return disabledToolResult(call)
         }
 
@@ -73,7 +73,7 @@ class ToolBroker(
                 )
             )
 
-        if (!toolManager.isEnabled(tool)) {
+        if (toolManager != null && !toolManager.isEnabled(tool)) {
             return disabledToolResult(call)
         }
 
@@ -111,7 +111,8 @@ class ToolBroker(
     }
 
     suspend fun listToolSpecs(): List<ToolSpec> {
-        return toolManager.enabledSpecs()
+        return toolManager?.enabledSpecs()
+            ?: registry.all().filter { it.enabled }.map { it.toSpec() }
     }
 
     private fun disabledToolResult(call: ToolCall): BrokerResult.Blocked {

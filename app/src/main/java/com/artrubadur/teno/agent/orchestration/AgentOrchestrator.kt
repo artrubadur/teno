@@ -20,8 +20,8 @@ class AgentOrchestrator(
     private val llmRuntime: LlmRuntime,
     private val toolBroker: ToolBroker,
     private val confirmationManager: ConfirmationManager,
-    private val settingsStore: AgentSettingsStore,
-    private val screenNodeStore: ScreenNodeStore,
+    private val settingsStore: AgentSettingsStore? = null,
+    private val screenNodeStore: ScreenNodeStore = ScreenNodeStore(),
 ) {
     val isReady: Boolean
         get() = llmRuntime.isReady
@@ -41,14 +41,14 @@ class AgentOrchestrator(
     fun sendMessage(userMessage: String): Flow<AgentEvent> {
         return flow {
             screenNodeStore.clear()
-            val settings = settingsStore.getSettings()
+            val settings = settingsStore?.getSettings()
             val session = AgentSession(
                 id = UUID.randomUUID().toString(),
                 userRequest = userMessage,
                 tools = toolBroker.listToolSpecs(),
-                instructions = settings.instructions,
-                agentOptions = settings.agentOptions,
-                llmOptions = settings.llmOptions,
+                instructions = settings?.instructions ?: AgentDefaults.instructions,
+                agentOptions = settings?.agentOptions ?: AgentDefaults.agentOptions,
+                llmOptions = settings?.llmOptions ?: AgentDefaults.llmOptions,
             )
             emit(AgentEvent.WorkStarted)
             runAgentLoop(session)

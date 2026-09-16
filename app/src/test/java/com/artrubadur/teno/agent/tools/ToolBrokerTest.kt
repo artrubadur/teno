@@ -1,5 +1,6 @@
 package com.artrubadur.teno.agent.tools
 
+import com.artrubadur.teno.agent.orchestration.AgentDefaults
 import com.artrubadur.teno.agent.orchestration.AgentSession
 import com.artrubadur.teno.agent.policy.SafetyPolicy
 import kotlinx.coroutines.runBlocking
@@ -53,15 +54,21 @@ class ToolBrokerTest {
     private fun testSession() = AgentSession(
         id = "test-session",
         userRequest = "What time is it?",
-        tools = emptyList()
+        tools = emptyList(),
+        instructions = AgentDefaults.instructions,
+        agentOptions = AgentDefaults.agentOptions,
+        llmOptions = AgentDefaults.llmOptions,
     )
 
     private class EchoTool : Tool<NoArgs> {
         var executions = 0
 
         override val name = "echo"
+        override val title = "Echo"
         override val description = "Echoes a static result"
+        override val group = ToolGroup.SYSTEM
         override val risk = ToolRisk.SAFE
+        override val enabled = true
         override val argsSerializer = NoArgs.serializer()
 
         override suspend fun executeTyped(args: NoArgs): JsonObject {
@@ -74,8 +81,11 @@ class ToolBrokerTest {
         var executions = 0
 
         override val name = "confirm"
+        override val title = "Confirm"
         override val description = "Needs confirmation"
+        override val group = ToolGroup.SYSTEM
         override val risk = ToolRisk.REQUIRES_CONFIRMATION
+        override val enabled = true
         override val argsSerializer = NoArgs.serializer()
 
         override suspend fun executeTyped(args: NoArgs): JsonObject {

@@ -44,12 +44,13 @@ class AgentOrchestratorTest {
             confirmationManager = ConfirmationManager(),
         )
 
-        val events = orchestrator.handleUserMessage("hello").toList()
+        val events = orchestrator.sendMessage("hello").toList()
 
-        assertEquals(3, events.size)
-        assertTrue(events[0] is AgentEvent.ToolStarted)
-        assertTrue(events[1] is AgentEvent.ToolExecuted)
-        assertTrue(events[2] is AgentEvent.FinalAnswer)
+        assertEquals(4, events.size)
+        assertTrue(events[0] is AgentEvent.WorkStarted)
+        assertTrue(events[1] is AgentEvent.ToolStarted)
+        assertTrue(events[2] is AgentEvent.ToolExecuted)
+        assertTrue(events[3] is AgentEvent.FinalAnswer)
         assertEquals(1, tool.executions)
     }
 
@@ -73,7 +74,7 @@ class AgentOrchestratorTest {
             confirmationManager = ConfirmationManager(),
         )
 
-        val firstRun = orchestrator.handleUserMessage("confirm this").toList()
+        val firstRun = orchestrator.sendMessage("confirm this").toList()
         val confirmation = firstRun.filterIsInstance<AgentEvent.ConfirmationRequired>().single()
 
         assertEquals(0, tool.executions)
@@ -105,7 +106,7 @@ class AgentOrchestratorTest {
             confirmationManager = ConfirmationManager(),
         )
 
-        val firstRun = orchestrator.handleUserMessage("reject this").toList()
+        val firstRun = orchestrator.sendMessage("reject this").toList()
         val confirmation = firstRun.filterIsInstance<AgentEvent.ConfirmationRequired>().single()
 
         val events = orchestrator.rejectConfirmation(confirmation.confirmationId).toList()
@@ -138,8 +139,11 @@ class AgentOrchestratorTest {
         var executions = 0
 
         override val name = "echo"
+        override val title = "Echo"
         override val description = "Echoes a static result"
+        override val group = com.artrubadur.teno.agent.tools.ToolGroup.SYSTEM
         override val risk = ToolRisk.SAFE
+        override val enabled = true
         override val argsSerializer = NoArgs.serializer()
 
         override suspend fun executeTyped(args: NoArgs): JsonObject {
@@ -152,8 +156,11 @@ class AgentOrchestratorTest {
         var executions = 0
 
         override val name = "confirm"
+        override val title = "Confirm"
         override val description = "Needs confirmation"
+        override val group = com.artrubadur.teno.agent.tools.ToolGroup.SYSTEM
         override val risk = ToolRisk.REQUIRES_CONFIRMATION
+        override val enabled = true
         override val argsSerializer = NoArgs.serializer()
 
         override suspend fun executeTyped(args: NoArgs): JsonObject {
