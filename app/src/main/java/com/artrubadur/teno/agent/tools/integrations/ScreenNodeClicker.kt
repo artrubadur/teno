@@ -5,29 +5,17 @@ import android.view.accessibility.AccessibilityNodeInfo
 class ScreenNodeClicker(
     private val reader: ScreenTreeReader
 ) {
-    fun click(fingerprint: String) {
-        val node = reader.find(fingerprint)
+    fun click(reference: ScreenNodeReference) {
+        val node = reader.find(reference)
+        if (!node.node.isClickable) {
+            error("Node is not clickable")
+        }
         if (!node.enabled) {
             error("Node disabled")
         }
 
-        if (!node.node.clickSelfOrParent()) {
+        if (!node.node.performAction(AccessibilityNodeInfo.ACTION_CLICK)) {
             error("Click failed")
         }
-    }
-
-    private fun AccessibilityNodeInfo.clickSelfOrParent(): Boolean {
-        var current: AccessibilityNodeInfo? = this
-        while (current != null) {
-            if (
-                current.isEnabled &&
-                current.isClickable &&
-                current.performAction(AccessibilityNodeInfo.ACTION_CLICK)
-            ) {
-                return true
-            }
-            current = current.parent
-        }
-        return false
     }
 }

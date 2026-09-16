@@ -22,7 +22,7 @@ class ClickScreenNodeTool(
     override val title = "Click screen node"
 
     override val description =
-        "Clicks a visible element on the screen using its node_id."
+        "Clicks a visible clickable node using its node_id."
 
     override val group = ToolGroup.SCREEN
 
@@ -38,10 +38,10 @@ class ClickScreenNodeTool(
         val nodeId = args.nodeId.extractNodeId()
             ?: error("Invalid node id")
 
-        val fingerprint = store.fingerprint(nodeId)
+        val reference = store.reference(nodeId)
             ?: error("Call get_screen_tree first")
 
-        clicker.click(fingerprint)
+        clicker.click(reference)
         return buildJsonObject {
             put("ok", true)
             put("node_id", nodeId)

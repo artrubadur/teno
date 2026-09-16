@@ -38,10 +38,11 @@ class GetScreenTreeTool(
     override suspend fun executeTyped(args: NoArgs): JsonObject {
         val capture = reader.read()
 
-        store.replace(capture.nodes)
+        store.replace(capture)
 
         return buildJsonObject {
             put("ok", true)
+            capture.packageName?.let { put("package_name", it) }
             // put(
             //     "screen",
             //     buildJsonObject {
@@ -71,6 +72,7 @@ class GetScreenTreeTool(
             //     )
             // )
             if (clickable) put("clickable", true)
+            if (longClickable) put("long_clickable", true)
             if (!enabled) put("enabled", false)
             if (focused) put("focused", true)
             checked?.let { put("checked", it) }

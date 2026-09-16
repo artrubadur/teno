@@ -22,7 +22,7 @@ class GetScreenNodeTool(
     override val title = "Get screen node"
 
     override val description =
-        "Returns full text, state, and screen coordinates for a node_id."
+        "Returns complete details for a node by its node_id."
 
     override val group = ToolGroup.SCREEN
 
@@ -37,9 +37,9 @@ class GetScreenNodeTool(
     override suspend fun executeTyped(args: Args): JsonObject {
         val nodeId = args.nodeId.extractNodeId()
             ?: error("Invalid node id")
-        val fingerprint = store.fingerprint(nodeId)
+        val reference = store.reference(nodeId)
             ?: error("Call get_screen_tree first")
-        val node = reader.find(fingerprint)
+        val node = reader.find(reference)
         val source = node.node
 
         return buildJsonObject {
@@ -59,6 +59,7 @@ class GetScreenNodeTool(
                 }
             )
             put("clickable", node.clickable)
+            put("long_clickable", node.longClickable)
             put("enabled", node.enabled)
             put("focused", node.focused)
             node.checked?.let { put("checked", it) }

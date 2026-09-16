@@ -8,19 +8,23 @@ import android.view.accessibility.AccessibilityWindowInfo
 import java.security.MessageDigest
 
 class ScreenNodeStore {
-    private var fingerprintsById: Map<String, String> = emptyMap()
+    private var referencesById: Map<String, ScreenNodeReference> = emptyMap()
 
-    fun replace(nodes: List<ScreenNode>) {
-        fingerprintsById = nodes.flatten().associate { node ->
-            node.id to node.fingerprint
+    fun replace(capture: ScreenCapture) {
+        referencesById = capture.nodes.flatten().associate { node ->
+            node.id to ScreenNodeReference(
+                fingerprint = node.fingerprint,
+                packageName = capture.packageName,
+                windowType = capture.windowType
+            )
         }
     }
 
     fun clear() {
-        fingerprintsById = emptyMap()
+        referencesById = emptyMap()
     }
 
-    fun fingerprint(nodeId: String): String? = fingerprintsById[nodeId]
+    fun reference(nodeId: String): ScreenNodeReference? = referencesById[nodeId]
 }
 
 class ScreenTreeReader(
@@ -28,27 +32,33 @@ class ScreenTreeReader(
 ) {
     fun read(): ScreenCapture {
         val service = ScreenAccessibilityBridge.service
-            ?: error("Accessibility service is not connected. Enable accessibility access for Teno and try again.")
+            ?: error("Accessibility unavailable. Enable Teno accessibility.")
         val windows = service.windows
-            ?: error("Screen windows are unavailable. Wait for the screen to finish changing, then call get_screen_tree again.")
+            ?: error("Window list unavailable. Call get_screen_tree again.")
         if (windows.isEmpty()) {
-            error("No screen windows are available. Wait for the screen to finish changing, then call get_screen_tree again.")
+            error("No screen windows. Call get_screen_tree again.")
         }
 
-        val applicationWindows = windows.filter {
-            it.type == AccessibilityWindowInfo.TYPE_APPLICATION
-        }
-        if (applicationWindows.isEmpty()) {
-            error("No app screen is available to read. Close any system dialog or wait for the screen to finish changing, then call get_screen_tree again.")
+        val prioritizedWindows = windows
+            .filter { window ->
+                window.type == AccessibilityWindowInfo.TYPE_APPLICATION ||
+                        window.type == AccessibilityWindowInfo.TYPE_SYSTEM
+            }
+            .sortedBy { window ->
+                window.type == AccessibilityWindowInfo.TYPE_SYSTEM
+            }
+
+        if (prioritizedWindows.isEmpty()) {
+            error("No readable application or system windows.")
         }
 
-        val root = applicationWindows.firstNotNullOfOrNull { it.root }
-            ?: error("The app screen is present, but its content is not available yet. Wait for it to finish loading, then call get_screen_tree again.")
+        val (window, root) = prioritizedWindows.firstNotNullOfOrNull { window ->
+            window.root?.let { root -> window to root }
+        } ?: error("Window content unavailable. Call get_screen_tree again.")
 
         val nodes = simplify(
             node = root,
-            path = "0",
-            ancestorClickable = false
+            path = "0"
         )
             .sortedWith(nodeOrder)
 
@@ -62,13 +72,23 @@ class ScreenTreeReader(
         return ScreenCapture(
             width = metrics.widthPixels,
             height = metrics.heightPixels,
-            nodes = indexed
+            nodes = indexed,
+            packageName = root.packageName?.toString(),
+            windowType = window.type
         )
     }
 
-    fun find(fingerprint: String): ScreenNode {
-        val matches = read().nodes.flatten().filter { node ->
-            node.fingerprint == fingerprint
+    fun find(reference: ScreenNodeReference): ScreenNode {
+        val capture = read()
+        if (capture.packageName != reference.packageName) {
+            error("Screen changed: package changed. Call get_screen_tree.")
+        }
+        if (capture.windowType != reference.windowType) {
+            error("Screen changed: window type changed. Call get_screen_tree.")
+        }
+
+        val matches = capture.nodes.flatten().filter { node ->
+            node.fingerprint == reference.fingerprint
         }
 
         if (matches.isEmpty()) error("Node not found")
@@ -78,8 +98,7 @@ class ScreenTreeReader(
 
     private fun simplify(
         node: AccessibilityNodeInfo,
-        path: String,
-        ancestorClickable: Boolean
+        path: String
     ): List<ScreenNode> {
         val bounds = Rect()
         node.getBoundsInScreen(bounds)
@@ -90,8 +109,7 @@ class ScreenTreeReader(
                 node.getChild(index)?.let { child ->
                     simplify(
                         node = child,
-                        path = "$path.$index",
-                        ancestorClickable = ancestorClickable || nodeClickable
+                        path = "$path.$index"
                     )
                 }
             }
@@ -141,7 +159,8 @@ class ScreenTreeReader(
                 text = text,
                 hint = hint,
                 bounds = bounds,
-                clickable = nodeClickable || ancestorClickable,
+                clickable = node.isClickable,
+                longClickable = node.isLongClickable,
                 enabled = node.isEnabled,
                 focused = node.isFocused,
                 checked = node.checkedOrNull(),
@@ -190,7 +209,15 @@ class ScreenTreeReader(
 data class ScreenCapture(
     val width: Int,
     val height: Int,
-    val nodes: List<ScreenNode>
+    val nodes: List<ScreenNode>,
+    val packageName: String?,
+    val windowType: Int
+)
+
+data class ScreenNodeReference(
+    val fingerprint: String,
+    val packageName: String?,
+    val windowType: Int
 )
 
 data class ScreenNode(
@@ -201,6 +228,7 @@ data class ScreenNode(
     val hint: String?,
     val bounds: Rect,
     val clickable: Boolean,
+    val longClickable: Boolean,
     val enabled: Boolean,
     val focused: Boolean,
     val checked: Boolean?,
