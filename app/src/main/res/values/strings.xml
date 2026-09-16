@@ -1,5 +1,9 @@
 <resources>
     <string name="app_name">Teno</string>
+    <string name="accessibility_service_name">Teno screen access</string>
+    <string name="accessibility_service_description">Allows Teno to read visible screen content and interact with screen controls.</string>
+    <string name="notification_channel_name">Teno overlay</string>
+    <string name="notification_channel_description">Keeps the Teno overlay available while the agent is running.</string>
     <string name="notification_action_input">Open input</string>
     <string name="notification_action_input_short">Input</string>
     <string name="notification_action_stop">Stop</string>

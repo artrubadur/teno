@@ -20,9 +20,10 @@ class OverlayNotificationFactory(
         val manager = context.getSystemService(NotificationManager::class.java)
         val channel = NotificationChannel(
             CHANNEL_ID,
-            "Teno overlay",
+            context.getString(R.string.notification_channel_name),
             NotificationManager.IMPORTANCE_LOW
         ).apply {
+            description = context.getString(R.string.notification_channel_description)
             setShowBadge(false)
         }
         manager.createNotificationChannel(channel)
@@ -53,8 +54,7 @@ class OverlayNotificationFactory(
         }
 
         return NotificationCompat.Builder(context, CHANNEL_ID)
-            .setSmallIcon(R.drawable.ic_keyboard)
-            .setContentTitle("")
+            .setSmallIcon(R.drawable.ic_launcher_monochrome)
             .setContentText(agentStatus(state))
             .setOngoing(true)
             .setAutoCancel(false)
