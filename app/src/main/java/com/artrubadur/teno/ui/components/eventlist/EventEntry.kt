@@ -71,7 +71,7 @@ fun List<EventEntry>.pendingConfirmation(): AgentEvent.ConfirmationRequired? =
 
 fun EventEntry.workDurationUntil(next: EventEntry?): WorkDuration? {
     if (this is EventEntry.Message) return null
-    if (this is EventEntry.Single && event is AgentEvent.FinalAnswer) return null
+    if (this is EventEntry.Single && (event is AgentEvent.FinalAnswer || event is AgentEvent.Failed)) return null
     if (this is EventEntry.Tool && (result == null || result.event is AgentEvent.ConfirmationRequired)) return null
     return WorkDuration(startTime = endTime, endTime = next?.startTime)
 }
