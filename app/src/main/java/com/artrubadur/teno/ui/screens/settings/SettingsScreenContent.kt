@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -20,6 +21,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.artrubadur.teno.R
 import com.artrubadur.teno.connection.runtime.llm.local.LiteRtBackendOption
+import com.artrubadur.teno.ui.components.AppLink
 import com.artrubadur.teno.ui.components.MenuItem
 import com.artrubadur.teno.ui.components.ScreenHeader
 import com.artrubadur.teno.ui.components.SectionLabel
@@ -161,6 +163,33 @@ fun SettingsScreenContent(
                     )
                 }
 
+            }
+
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.Center,
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                androidx.compose.material3.Text(
+                    text = "\u00A9 2026 Sergey Suchkov \u00B7 ",
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    style = MaterialTheme.typography.bodySmall,
+                )
+                AppLink(
+                    text = "GPL-3.0",
+                    url = "https://github.com/artrubadur/teno/blob/main/LICENSE",
+                    style = MaterialTheme.typography.bodySmall,
+                )
+                androidx.compose.material3.Text(
+                    text = " \u00B7 ",
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    style = MaterialTheme.typography.bodySmall,
+                )
+                AppLink(
+                    text = "GitHub",
+                    url = "https://github.com/artrubadur/teno",
+                    style = MaterialTheme.typography.bodySmall,
+                )
             }
         }
     }

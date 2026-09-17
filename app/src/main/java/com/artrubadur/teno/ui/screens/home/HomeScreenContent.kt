@@ -18,12 +18,10 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.artrubadur.teno.R
 import com.artrubadur.teno.connection.ConnectionKind
-import com.artrubadur.teno.ui.components.AppLink
 import com.artrubadur.teno.ui.components.MenuItem
 import com.artrubadur.teno.ui.components.buttons.OutlinedIconButton
 import com.artrubadur.teno.ui.overlays.onboarding.tourTarget
@@ -132,23 +130,6 @@ fun HomeScreenContent(
 
             Spacer(modifier = Modifier.weight(1f))
 
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.Center,
-                verticalAlignment = Alignment.CenterVertically,
-            ) {
-                Text(
-                    text = "\u00A9 2026 Sergey Suchkov \u00B7 Teno \u00B7 GPL-3.0 \u00B7 ",
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    style = MaterialTheme.typography.bodySmall,
-                    textAlign = TextAlign.Center,
-                )
-                AppLink(
-                    text = "GitHub",
-                    url = "https://github.com/artrubadur/teno",
-                    style = MaterialTheme.typography.bodySmall,
-                )
-            }
         }
     }
 }
