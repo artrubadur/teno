@@ -16,7 +16,7 @@ import org.junit.Test
 class ToolArgsSchemaTest {
 
     @Test
-    fun `generates object schema with properties`() {
+    fun generatesObjectSchemaWithProperties() {
         val schema = TestArgs.serializer().toSchema().toJsonObject()
 
         assertEquals(JsonPrimitive("object"), schema["type"])
@@ -29,7 +29,7 @@ class ToolArgsSchemaTest {
     }
 
     @Test
-    fun `marks only fields without defaults as required`() {
+    fun marksOnlyFieldsWithoutDefaultsAsRequired() {
         val schema = TestArgs.serializer().toSchema().toJsonObject()
 
         assertEquals(
@@ -39,7 +39,7 @@ class ToolArgsSchemaTest {
     }
 
     @Test
-    fun `generates enum schema using serial names`() {
+    fun generatesEnumSchemaUsingSerialNames() {
         val schema = TestArgs.serializer().toSchema().toJsonObject()
         val levelSchema = schema["properties"]!!.jsonObject["level"]!!.jsonObject
 
@@ -58,14 +58,14 @@ class ToolArgsSchemaTest {
     }
 
     @Test
-    fun `omits required for object with only optional fields`() {
+    fun omitsRequiredForObjectWithOnlyOptionalFields() {
         val schema = OptionalArgs.serializer().toSchema().toJsonObject()
 
         assertFalse(schema.containsKey("required"))
     }
 
     @Test
-    fun `generates nested object schema`() {
+    fun generatesNestedObjectSchema() {
         val schema = NestedArgs.serializer().toSchema().toJsonObject()
         val childSchema = schema["properties"]!!.jsonObject["child"]!!.jsonObject
 
@@ -74,7 +74,7 @@ class ToolArgsSchemaTest {
     }
 
     @Test
-    fun `generates empty object schema when no arguments are needed`() {
+    fun generatesEmptyObjectSchemaWhenNoArgumentsAreNeeded() {
         val schema = NoArgs.serializer().toSchema().toJsonObject()
 
         assertEquals(JsonPrimitive("object"), schema["type"])

@@ -14,7 +14,7 @@ import org.junit.Test
 class ToolBrokerTest {
 
     @Test
-    fun `executes tool without arguments when arguments are absent`() = runBlocking {
+    fun executesToolWithoutArgumentsWhenArgumentsAreAbsent() = runBlocking {
         val broker = ToolBroker(
             registry = ToolRegistry(listOf(EchoTool())),
             safetyPolicy = SafetyPolicy()
@@ -32,7 +32,7 @@ class ToolBrokerTest {
     }
 
     @Test
-    fun `requires confirmation before executing risky tool`() = runBlocking {
+    fun requiresConfirmationBeforeExecutingRiskyTool() = runBlocking {
         val tool = ConfirmTool()
         val broker = ToolBroker(
             registry = ToolRegistry(listOf(tool)),

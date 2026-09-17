@@ -25,7 +25,7 @@ import org.junit.Test
 class AgentOrchestratorTest {
 
     @Test
-    fun `runs tool loop until final answer`() = runBlocking {
+    fun runsToolLoopUntilFinalAnswer() = runBlocking {
         val runtime = FakeLlmRuntime(
             responses = mutableListOf(
                 LlmResponse.ToolCalls(
@@ -55,7 +55,7 @@ class AgentOrchestratorTest {
     }
 
     @Test
-    fun `continues after confirmation approval`() = runBlocking {
+    fun continuesAfterConfirmationApproval() = runBlocking {
         val runtime = FakeLlmRuntime(
             responses = mutableListOf(
                 LlmResponse.ToolCalls(
@@ -87,7 +87,7 @@ class AgentOrchestratorTest {
     }
 
     @Test
-    fun `rejecting confirmation reports rejected tool`() = runBlocking {
+    fun rejectingConfirmationReportsRejectedTool() = runBlocking {
         val runtime = FakeLlmRuntime(
             responses = mutableListOf(
                 LlmResponse.ToolCalls(
