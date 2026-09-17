@@ -40,6 +40,7 @@ object AgentDefaults {
                     "or related topics unless explicitly requested.",
             "Do not invite the user to continue, choose an option, or provide more information.",
             "End the response immediately after the requested answer is complete.",
+            "The final message must never be empty.",
             "After all required tool calls succeed or cannot be recovered, return a non-empty " +
                     "final answer to the user.",
         )
