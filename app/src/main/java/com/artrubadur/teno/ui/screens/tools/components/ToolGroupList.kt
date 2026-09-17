@@ -23,7 +23,7 @@ import com.artrubadur.teno.ui.theme.AppTheme
 import kotlinx.schema.generator.json.serialization.SerializationClassJsonSchemaGenerator
 
 @Composable
-internal fun ToolGroupCard(
+internal fun ToolGroupList(
     group: ToolGroup,
     tools: List<ToolItemState>,
     setToolEnabled: (String, Boolean) -> Unit,
@@ -91,9 +91,9 @@ private fun previewToolItem(enabled: Boolean = false): ToolItemState {
     uiMode = Configuration.UI_MODE_NIGHT_YES,
 )
 @Composable
-private fun ToolGroupCardPreview() {
+private fun ToolGroupListPreview() {
     AppTheme {
-        ToolGroupCard(
+        ToolGroupList(
             group = ToolGroup.SYSTEM,
             tools = listOf(previewToolItem(), previewToolItem(enabled = true)),
             setToolEnabled = { _, _ -> },

@@ -20,7 +20,8 @@ fun LlmRequest.toApiRequest(model: String): ApiRequest =
                 messages.map { it.toApiMessage() },
         tools = tools.map { it.toApiTool() },
         temperature = options.temperature,
-        topP = options.topP
+        topP = options.topP,
+        maxTokens = options.maxTokens,
     )
 
 

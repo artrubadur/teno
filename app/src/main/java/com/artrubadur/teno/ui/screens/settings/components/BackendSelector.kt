@@ -1,7 +1,6 @@
 package com.artrubadur.teno.ui.screens.settings.components
 
 import android.content.res.Configuration
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -19,13 +18,12 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalUriHandler
-import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.artrubadur.teno.R
 import com.artrubadur.teno.connection.runtime.llm.local.LiteRtBackendOption
 import com.artrubadur.teno.connection.runtime.llm.local.SupportedSoC
+import com.artrubadur.teno.ui.components.AppLink
 import com.artrubadur.teno.ui.components.buttons.OutlinedButton
 import com.artrubadur.teno.ui.components.buttons.PlainButton
 import com.artrubadur.teno.ui.components.buttons.PlainIconButton
@@ -120,8 +118,6 @@ private fun NpuHelpDialog(
     supportedSoCs: List<SupportedSoC>,
     onDismiss: () -> Unit,
 ) {
-    val uriHandler = LocalUriHandler.current
-
     AlertDialog(
         onDismissRequest = onDismiss,
         confirmButton = {
@@ -177,36 +173,18 @@ private fun NpuHelpDialog(
                     style = MaterialTheme.typography.labelMedium,
                 )
 
-                NpuLink("LiteRT-LM Android", LITERT_LM_ANDROID_URL, uriHandler::openUri)
-                NpuLink("Qualcomm SoCs", QUALCOMM_NPU_URL, uriHandler::openUri)
-                NpuLink("MediaTek SoCs", MEDIATEK_NPU_URL, uriHandler::openUri)
-                NpuLink("LiteRT-LM NPU", LITERT_LM_NPU_URL, uriHandler::openUri)
-                NpuLink("Report detection issue", ISSUES_URL, uriHandler::openUri)
+                AppLink("LiteRT-LM Android", "https://developers.google.com/edge/litert-lm/android")
+                AppLink("Qualcomm SoCs", "https://developers.google.com/edge/litert/next/qualcomm")
+                AppLink("MediaTek SoCs", "https://developers.google.com/edge/litert/next/mediatek")
+                AppLink(
+                    "LiteRT-LM NPU",
+                    "https://developers.google.com/edge/litert/next/litert_lm_npu"
+                )
+                AppLink("Report detection issue", "https://github.com/artrubadur/teno/issues")
             }
         },
     )
 }
-
-@Composable
-private fun NpuLink(
-    title: String,
-    url: String,
-    openUri: (String) -> Unit,
-) {
-    Text(
-        text = title,
-        modifier = Modifier.clickable { openUri(url) },
-        color = MaterialTheme.colorScheme.primary,
-        style = MaterialTheme.typography.bodyMedium,
-        textDecoration = TextDecoration.Underline,
-    )
-}
-
-private const val LITERT_LM_ANDROID_URL = "https://developers.google.com/edge/litert-lm/android"
-private const val QUALCOMM_NPU_URL = "https://developers.google.com/edge/litert/next/qualcomm"
-private const val MEDIATEK_NPU_URL = "https://developers.google.com/edge/litert/next/mediatek"
-private const val LITERT_LM_NPU_URL = "https://developers.google.com/edge/litert/next/litert_lm_npu"
-private const val ISSUES_URL = "https://github.com/artrubadur/teno/issues"
 
 @Preview(
     name = "Light",

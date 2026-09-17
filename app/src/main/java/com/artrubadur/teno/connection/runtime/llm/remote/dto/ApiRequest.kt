@@ -10,7 +10,9 @@ data class ApiRequest(
     val tools: List<ApiTool>? = null,
     val temperature: Double? = null,
     @SerialName("top_p")
-    val topP: Double? = null
+    val topP: Double? = null,
+    @SerialName("max_tokens")
+    val maxTokens: Int? = null,
 )
 
 

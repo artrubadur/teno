@@ -16,6 +16,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -37,6 +38,7 @@ import com.artrubadur.teno.agent.tools.ToolPermission
 import com.artrubadur.teno.agent.tools.ToolSpec
 import com.artrubadur.teno.ui.components.Switch
 import com.artrubadur.teno.ui.components.buttons.PlainIconButton
+import com.artrubadur.teno.ui.overlays.onboarding.tourTarget
 import com.artrubadur.teno.ui.screens.tools.ToolItemState
 import com.artrubadur.teno.ui.screens.tools.ToolPermissionState
 import com.artrubadur.teno.ui.theme.AppTheme
@@ -89,6 +91,10 @@ fun ToolItem(
             PlainIconButton(
                 iconRes = R.drawable.ic_kb_arrow,
                 contentDescription = if (expanded) "Collapse tool" else "Expand tool",
+                modifier = Modifier.tourTarget(
+                    "tool-details-${tool.spec.name}",
+                    shape = IconButtonDefaults.standardShape
+                ),
                 onClick = { expanded = !expanded },
                 tint = MaterialTheme.colorScheme.onSurfaceVariant,
                 iconModifier = Modifier
@@ -120,7 +126,7 @@ fun ToolItem(
 
                 if (!tool.permissions.isEmpty()) {
                     tool.permissions.forEach { permission ->
-                        PermissionItem(
+                        ToolPermissionItem(
                             permission = permission,
                             onGrantPermission = onGrantPermission,
                         )

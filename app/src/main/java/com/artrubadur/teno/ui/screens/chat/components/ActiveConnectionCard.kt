@@ -25,6 +25,7 @@ import com.artrubadur.teno.connection.ConnectionKind
 import com.artrubadur.teno.ui.components.AppCard
 import com.artrubadur.teno.ui.components.buttons.ErrorIconButton
 import com.artrubadur.teno.ui.components.buttons.PrimaryIconButton
+import com.artrubadur.teno.ui.overlays.onboarding.tourTarget
 import com.artrubadur.teno.ui.screens.chat.ChatState
 import com.artrubadur.teno.ui.theme.AppTheme
 
@@ -37,7 +38,9 @@ fun ActiveConnectionCard(
 ) {
     AppCard(
         onClick = onOpenConnections,
-        modifier = Modifier.height(56.dp),
+        modifier = Modifier
+            .height(56.dp)
+            .tourTarget("chat-connection", shape = RoundedCornerShape(28.dp)),
         shape = RoundedCornerShape(28.dp),
     ) {
         Row(

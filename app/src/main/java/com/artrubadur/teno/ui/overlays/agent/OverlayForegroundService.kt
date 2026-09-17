@@ -1,4 +1,4 @@
-package com.artrubadur.teno.ui.overlay
+package com.artrubadur.teno.ui.overlays.agent
 
 import android.Manifest
 import android.app.Service
@@ -86,7 +86,6 @@ class OverlayForegroundService : Service() {
         when (intent?.action) {
             ACTION_START -> {
                 showForegroundNotification()
-                controller.onShowIsland(false)
             }
 
             ACTION_INPUT -> controller.onOpenInput()

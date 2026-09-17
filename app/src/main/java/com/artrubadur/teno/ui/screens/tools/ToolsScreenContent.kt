@@ -18,7 +18,7 @@ import com.artrubadur.teno.agent.tools.ToolGroup
 import com.artrubadur.teno.agent.tools.ToolPermission
 import com.artrubadur.teno.agent.tools.ToolSpec
 import com.artrubadur.teno.ui.components.ScreenHeader
-import com.artrubadur.teno.ui.screens.tools.components.ToolGroupCard
+import com.artrubadur.teno.ui.screens.tools.components.ToolGroupList
 import com.artrubadur.teno.ui.theme.AppTheme
 import kotlinx.schema.generator.json.serialization.SerializationClassJsonSchemaGenerator
 
@@ -61,7 +61,7 @@ fun ToolsScreenContent(
                     key = { index -> groupedTools[index].first.name }
                 ) { index ->
                     val (group, tools) = groupedTools[index]
-                    ToolGroupCard(
+                    ToolGroupList(
                         group = group,
                         tools = tools,
                         setToolEnabled = setToolEnabled,

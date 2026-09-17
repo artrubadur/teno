@@ -61,7 +61,7 @@
         </service>
 
         <service
-            android:name=".ui.overlay.OverlayForegroundService"
+            android:name=".ui.overlays.agent.OverlayForegroundService"
             android:exported="false"
             android:foregroundServiceType="dataSync"
             android:process=":agent"

@@ -1,4 +1,4 @@
-package com.artrubadur.teno.ui.overlay
+package com.artrubadur.teno.ui.overlays.agent
 
 import android.annotation.SuppressLint
 import android.content.Context

@@ -1,4 +1,4 @@
-package com.artrubadur.teno.ui.overlay
+package com.artrubadur.teno.ui.overlays.agent
 
 import android.content.res.Configuration
 import androidx.compose.animation.AnimatedVisibility
@@ -35,9 +35,9 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.artrubadur.teno.ui.components.eventlist.pendingConfirmation
 import com.artrubadur.teno.ui.components.eventlist.toEventEntries
-import com.artrubadur.teno.ui.overlay.components.AuraOverlay
-import com.artrubadur.teno.ui.overlay.components.OverlayAgentTimeline
-import com.artrubadur.teno.ui.overlay.components.OverlayPromptInput
+import com.artrubadur.teno.ui.overlays.agent.components.AuraOverlay
+import com.artrubadur.teno.ui.overlays.agent.components.OverlayAgentTimeline
+import com.artrubadur.teno.ui.overlays.agent.components.OverlayPromptInput
 import com.artrubadur.teno.ui.theme.AppTheme
 
 @Composable

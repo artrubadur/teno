@@ -25,6 +25,7 @@ import com.artrubadur.teno.ui.components.ScreenHeader
 import com.artrubadur.teno.ui.components.SectionLabel
 import com.artrubadur.teno.ui.components.buttons.ErrorIconButton
 import com.artrubadur.teno.ui.components.buttons.OutlinedIconButton
+import com.artrubadur.teno.ui.overlays.onboarding.tourTarget
 import com.artrubadur.teno.ui.screens.settings.components.BackendSelector
 import com.artrubadur.teno.ui.screens.settings.components.SettingsTextField
 import com.artrubadur.teno.ui.theme.AppTheme
@@ -70,7 +71,11 @@ fun SettingsScreenContent(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.spacedBy(8.dp),
                     ) {
-                        Box(modifier = Modifier.weight(1f)) {
+                        Box(
+                            modifier = Modifier
+                                .weight(1f)
+                                .tourTarget("identity")
+                        ) {
                             MenuItem(text = "Identity", onClick = onOpenIdentity)
                         }
                         Box(modifier = Modifier.weight(1f)) {

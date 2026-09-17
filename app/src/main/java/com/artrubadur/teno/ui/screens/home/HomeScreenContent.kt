@@ -1,29 +1,32 @@
 package com.artrubadur.teno.ui.screens.home
 
 import android.content.res.Configuration
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.artrubadur.teno.R
 import com.artrubadur.teno.connection.ConnectionKind
+import com.artrubadur.teno.ui.components.AppLink
 import com.artrubadur.teno.ui.components.MenuItem
 import com.artrubadur.teno.ui.components.buttons.OutlinedIconButton
+import com.artrubadur.teno.ui.overlays.onboarding.tourTarget
 import com.artrubadur.teno.ui.screens.home.components.ActiveConnectionCard
 import com.artrubadur.teno.ui.screens.home.components.OverlayCard
 import com.artrubadur.teno.ui.theme.AppTheme
@@ -38,9 +41,8 @@ fun HomeScreenContent(
     onOpenSettings: () -> Unit,
     onOpenTools: () -> Unit,
     onOverlayEnabledChange: (Boolean) -> Unit,
+    onOpenHelp: () -> Unit = {},
 ) {
-    val uriHandler = LocalUriHandler.current
-
     Surface(
         modifier = Modifier.fillMaxSize(),
         color = MaterialTheme.colorScheme.background,
@@ -48,6 +50,7 @@ fun HomeScreenContent(
         Column(
             modifier = Modifier
                 .fillMaxSize()
+                .verticalScroll(rememberScrollState())
                 .padding(24.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
@@ -81,16 +84,31 @@ fun HomeScreenContent(
                     OutlinedIconButton(
                         iconRes = R.drawable.ic_chat,
                         contentDescription = "Chat",
+                        modifier = Modifier.tourTarget(
+                            "chat",
+                            shape = IconButtonDefaults.standardShape,
+                            action = onOpenChat
+                        ),
                         onClick = onOpenChat
                     )
                     OutlinedIconButton(
                         iconRes = R.drawable.ic_settings,
                         contentDescription = "Settings",
+                        modifier = Modifier.tourTarget(
+                            "settings",
+                            shape = IconButtonDefaults.standardShape,
+                            action = onOpenSettings
+                        ),
                         onClick = onOpenSettings
                     )
                     OutlinedIconButton(
                         iconRes = R.drawable.ic_computer,
                         contentDescription = "Connections",
+                        modifier = Modifier.tourTarget(
+                            "connections",
+                            shape = IconButtonDefaults.standardShape,
+                            action = onOpenConnections
+                        ),
                         onClick = onOpenConnections,
                     )
                 }
@@ -107,7 +125,10 @@ fun HomeScreenContent(
                 onOverlayEnabledChange = onOverlayEnabledChange,
             )
 
-            MenuItem(text = "Tools", onClick = onOpenTools)
+            Box(Modifier.tourTarget("tools", action = onOpenTools)) {
+                MenuItem(text = "Tools", onClick = onOpenTools)
+            }
+            MenuItem(text = "How it works", onClick = onOpenHelp)
 
             Spacer(modifier = Modifier.weight(1f))
 
@@ -122,14 +143,10 @@ fun HomeScreenContent(
                     style = MaterialTheme.typography.bodySmall,
                     textAlign = TextAlign.Center,
                 )
-                Text(
+                AppLink(
                     text = "GitHub",
-                    modifier = Modifier.clickable {
-                        uriHandler.openUri("https://github.com/artrubadur/teno")
-                    },
-                    color = MaterialTheme.colorScheme.primary,
+                    url = "https://github.com/artrubadur/teno",
                     style = MaterialTheme.typography.bodySmall,
-                    textDecoration = TextDecoration.Underline,
                 )
             }
         }

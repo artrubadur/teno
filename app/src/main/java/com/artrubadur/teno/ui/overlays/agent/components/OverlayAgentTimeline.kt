@@ -1,4 +1,4 @@
-package com.artrubadur.teno.ui.overlay.components
+package com.artrubadur.teno.ui.overlays.agent.components
 
 import android.content.res.Configuration
 import android.os.SystemClock

@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
@@ -28,6 +29,7 @@ import com.artrubadur.teno.connection.ModelType
 import com.artrubadur.teno.connection.RemoteConnection
 import com.artrubadur.teno.connection.RemoteConnectionConfig
 import com.artrubadur.teno.ui.components.ScreenHeader
+import com.artrubadur.teno.ui.overlays.onboarding.tourTarget
 import com.artrubadur.teno.ui.screens.connections.components.ConnectionDialog
 import com.artrubadur.teno.ui.screens.connections.components.ConnectionList
 import com.artrubadur.teno.ui.theme.AppTheme
@@ -64,6 +66,10 @@ internal fun ConnectionsScreenContent(
                 onAdd = onAddConnection,
                 addEnabled = !state.isLoading,
                 addContentDescription = "Add connection",
+                addModifier = Modifier.tourTarget(
+                    "add-connection",
+                    shape = IconButtonDefaults.standardShape
+                ),
             )
 
             when {

@@ -15,7 +15,7 @@ import androidx.lifecycle.viewModelScope
 import com.artrubadur.teno.connection.Connection
 import com.artrubadur.teno.connection.ConnectionManager
 import com.artrubadur.teno.connection.ConnectionType
-import com.artrubadur.teno.ui.overlay.OverlayForegroundService
+import com.artrubadur.teno.ui.overlays.agent.OverlayForegroundService
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow

@@ -22,7 +22,7 @@ import com.artrubadur.teno.ui.screens.tools.ToolPermissionState
 import com.artrubadur.teno.ui.theme.AppTheme
 
 @Composable
-fun PermissionItem(
+fun ToolPermissionItem(
     permission: ToolPermissionState,
     onGrantPermission: (ToolPermission) -> Unit,
 ) {
@@ -64,9 +64,9 @@ fun PermissionItem(
     uiMode = Configuration.UI_MODE_NIGHT_NO,
 )
 @Composable
-private fun PermissionItemPreview() {
+private fun ToolPermissionItemPreview() {
     AppTheme {
-        PermissionItem(
+        ToolPermissionItem(
             permission = ToolPermissionState(
                 permission = ToolPermission.WRITE_SETTINGS,
                 granted = false,
@@ -82,9 +82,9 @@ private fun PermissionItemPreview() {
     uiMode = Configuration.UI_MODE_NIGHT_NO,
 )
 @Composable
-private fun PermissionGrantedPreview() {
+private fun ToolPermissionGrantedPreview() {
     AppTheme {
-        PermissionItem(
+        ToolPermissionItem(
             permission = ToolPermissionState(
                 permission = ToolPermission.WRITE_SETTINGS,
                 granted = true,

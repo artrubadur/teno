@@ -21,9 +21,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.BlurredEdgeTreatment
 import androidx.compose.ui.draw.blur
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
 import com.artrubadur.teno.ui.components.AppCard
 import com.artrubadur.teno.ui.components.Switch
+import com.artrubadur.teno.ui.overlays.onboarding.tourTarget
 import com.artrubadur.teno.ui.screens.home.HomeState
 import com.artrubadur.teno.ui.theme.AppTheme
 
@@ -60,10 +62,19 @@ fun OverlayCard(
                     )
                 }
 
-                Switch(
-                    checked = state.overlayEnabled,
-                    onCheckedChange = onOverlayEnabledChange
-                )
+                Box(
+                    Modifier.tourTarget(
+                        "overlay",
+                        shape = CircleShape,
+                        visualSize = DpSize(52.dp, 32.dp)
+                    ) {
+                        if (!state.overlayEnabled) onOverlayEnabledChange(true)
+                    }) {
+                    Switch(
+                        checked = state.overlayEnabled,
+                        onCheckedChange = onOverlayEnabledChange
+                    )
+                }
             }
 
             HorizontalDivider(

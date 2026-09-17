@@ -1,10 +1,13 @@
-package com.artrubadur.teno.ui.overlay
+package com.artrubadur.teno.ui.overlays
 
 import android.view.WindowManager
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.test.junit4.v2.createComposeRule
+import com.artrubadur.teno.ui.overlays.agent.OverlayState
+import com.artrubadur.teno.ui.overlays.agent.OverlayView
+import com.artrubadur.teno.ui.overlays.agent.overlayFlags
 import com.artrubadur.teno.ui.theme.AppTheme
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse

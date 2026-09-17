@@ -21,6 +21,7 @@ fun ScreenHeader(
     onAdd: (() -> Unit)? = null,
     addEnabled: Boolean = true,
     addContentDescription: String = "Add",
+    addModifier: Modifier = Modifier,
 ) {
     Row(
         modifier = modifier.fillMaxWidth(),
@@ -41,6 +42,7 @@ fun ScreenHeader(
                 PrimaryIconButton(
                     iconRes = R.drawable.ic_add,
                     contentDescription = addContentDescription,
+                    modifier = addModifier,
                     onClick = onAdd,
                     enabled = addEnabled,
                 )
