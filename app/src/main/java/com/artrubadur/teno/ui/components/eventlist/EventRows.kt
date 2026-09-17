@@ -13,6 +13,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import com.artrubadur.teno.R
 import com.artrubadur.teno.agent.orchestration.AgentEvent
+import com.artrubadur.teno.ui.components.markdown.MarkdownText
 import java.util.Locale
 
 @Composable
@@ -57,11 +58,7 @@ fun SingleEventRow(event: AgentEvent) {
 private fun MessageRow(
     message: String,
 ) {
-    Text(
-        color = MaterialTheme.colorScheme.onSurface,
-        style = MaterialTheme.typography.bodyMedium,
-        text = message
-    )
+    MarkdownText(markdown = message)
 }
 
 @Composable

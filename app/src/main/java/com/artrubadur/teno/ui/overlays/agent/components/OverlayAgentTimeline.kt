@@ -41,6 +41,7 @@ import com.artrubadur.teno.ui.components.eventlist.ToolCallConfirmation
 import com.artrubadur.teno.ui.components.eventlist.hasLiveTimer
 import com.artrubadur.teno.ui.components.eventlist.pendingConfirmation
 import com.artrubadur.teno.ui.components.eventlist.toEventEntries
+import com.artrubadur.teno.ui.components.markdown.MarkdownText
 import com.artrubadur.teno.ui.theme.AppTheme
 import kotlinx.coroutines.delay
 import kotlinx.serialization.json.buildJsonObject
@@ -133,23 +134,32 @@ fun OverlayAgentTimeline(
                         )
                     }
                 } else {
-                    Text(
-                        text = when {
-                            isWorking -> "Agent is working..."
-                            finalAnswer != null -> finalAnswer.message
-                            serviceMessage != null -> serviceMessage
-                            else -> "Agent was interrupted"
-                        },
-                        modifier = if (entries.size > 1) Modifier.padding(top = 12.dp) else Modifier,
-                        color = if (isWorking || serviceMessage != null) {
-                            MaterialTheme.colorScheme.onSurfaceVariant
-                        } else {
-                            MaterialTheme.colorScheme.onSurface
-                        },
-                        style = MaterialTheme.typography.bodyMedium,
-                        maxLines = 3,
-                        overflow = TextOverflow.Ellipsis,
-                    )
+                    val contentModifier =
+                        if (entries.size > 1) Modifier.padding(top = 12.dp) else Modifier
+                    if (finalAnswer != null) {
+                        MarkdownText(
+                            markdown = finalAnswer.message,
+                            modifier = contentModifier,
+                            maxLines = 3,
+                        )
+                    } else {
+                        Text(
+                            text = when {
+                                isWorking -> "Agent is working..."
+                                serviceMessage != null -> serviceMessage
+                                else -> "Agent was interrupted"
+                            },
+                            modifier = contentModifier,
+                            color = if (isWorking || serviceMessage != null) {
+                                MaterialTheme.colorScheme.onSurfaceVariant
+                            } else {
+                                MaterialTheme.colorScheme.onSurface
+                            },
+                            style = MaterialTheme.typography.bodyMedium,
+                            maxLines = 3,
+                            overflow = TextOverflow.Ellipsis,
+                        )
+                    }
                 }
             }
         }
