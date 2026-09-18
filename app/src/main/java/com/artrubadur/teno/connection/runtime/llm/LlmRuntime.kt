@@ -18,8 +18,8 @@ interface LlmRuntime : AutoCloseable {
 
 data class LlmOptions(
     val temperature: Double = 0.1,
-    val topK: Int = 40,
-    val topP: Double = 0.9,
+    val topK: Int = 1,
+    val topP: Double = 1.0,
     val maxTokens: Int = 500
 )
 
