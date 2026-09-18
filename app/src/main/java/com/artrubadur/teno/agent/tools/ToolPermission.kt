@@ -41,6 +41,18 @@ enum class ToolPermission(
         grantType = PermissionGrantType.RUNTIME
     ),
 
+    CALL_PHONE(
+        title = "Make phone calls",
+        description = "Allows the agent to make phone calls",
+        grantType = PermissionGrantType.RUNTIME
+    ),
+
+    READ_CALL_LOG(
+        title = "Read call history",
+        description = "Allows the agent to read call history",
+        grantType = PermissionGrantType.RUNTIME
+    ),
+
     MODIFY_AUDIO_SETTINGS(
         title = "Modify audio settings",
         description = "Allows the agent to control device audio",
@@ -76,6 +88,18 @@ enum class ToolPermission(
                     Manifest.permission.WRITE_CONTACTS
                 ) == PackageManager.PERMISSION_GRANTED
 
+            CALL_PHONE ->
+                ContextCompat.checkSelfPermission(
+                    context,
+                    Manifest.permission.CALL_PHONE
+                ) == PackageManager.PERMISSION_GRANTED
+
+            READ_CALL_LOG ->
+                ContextCompat.checkSelfPermission(
+                    context,
+                    Manifest.permission.READ_CALL_LOG
+                ) == PackageManager.PERMISSION_GRANTED
+
             ACCESSIBILITY_SERVICE ->
                 isAccessibilityServiceEnabled(context)
 
@@ -101,6 +125,8 @@ enum class ToolPermission(
             CAMERA -> Manifest.permission.CAMERA
             READ_CONTACTS -> Manifest.permission.READ_CONTACTS
             WRITE_CONTACTS -> Manifest.permission.WRITE_CONTACTS
+            CALL_PHONE -> Manifest.permission.CALL_PHONE
+            READ_CALL_LOG -> Manifest.permission.READ_CALL_LOG
             else -> null
         }
     }

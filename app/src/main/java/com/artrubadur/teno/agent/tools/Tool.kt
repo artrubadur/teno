@@ -42,6 +42,7 @@ enum class ToolGroup {
     DIAGNOSTICS,
     DEVICE,
     CONTACTS,
+    PHONE,
     APPS
 }
 

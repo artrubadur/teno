@@ -22,6 +22,8 @@ import com.artrubadur.teno.agent.tools.impl.device.DeviceSetBrightnessTool
 import com.artrubadur.teno.agent.tools.impl.device.DeviceSetVolumeTool
 import com.artrubadur.teno.agent.tools.impl.device.DeviceToggleFlashlightTool
 import com.artrubadur.teno.agent.tools.impl.diagnostics.DiagnosticsWriteDebugLogTool
+import com.artrubadur.teno.agent.tools.impl.phone.PhoneCallTool
+import com.artrubadur.teno.agent.tools.impl.phone.PhoneGetCallHistoryTool
 import com.artrubadur.teno.agent.tools.impl.screen.ScreenClickScreenNodeTool
 import com.artrubadur.teno.agent.tools.impl.screen.ScreenCollapseNotificationShadeTool
 import com.artrubadur.teno.agent.tools.impl.screen.ScreenGetScreenNodeTool
@@ -41,28 +43,36 @@ val agentModule = module {
     single { ScreenTreeReader(androidContext()) }
     single { ScreenNodeClicker(get()) }
 
-    factory { DiagnosticsWriteDebugLogTool() } bind Tool::class
-    factory { SystemGetCurrentTimeTool() } bind Tool::class
+    factory { ScreenGetScreenTreeTool(get(), get()) } bind Tool::class
+    factory { ScreenGetScreenNodeTool(get(), get()) } bind Tool::class
+    factory { ScreenClickScreenNodeTool(get(), get()) } bind Tool::class
+    factory { ScreenCollapseNotificationShadeTool() } bind Tool::class
+
     factory { DeviceGetBrightnessTool(androidContext()) } bind Tool::class
     factory { DeviceSetBrightnessTool(androidContext()) } bind Tool::class
     factory { DeviceGetVolumeTool(androidContext()) } bind Tool::class
     factory { DeviceSetVolumeTool(androidContext()) } bind Tool::class
     factory { DeviceToggleFlashlightTool(androidContext()) } bind Tool::class
+
+    factory { SystemGetCurrentTimeTool() } bind Tool::class
     factory { SystemGetClipboardTool(androidContext()) } bind Tool::class
     factory { SystemSetClipboardTool(androidContext()) } bind Tool::class
-    factory { ScreenGetScreenTreeTool(get(), get()) } bind Tool::class
-    factory { ScreenGetScreenNodeTool(get(), get()) } bind Tool::class
-    factory { ScreenClickScreenNodeTool(get(), get()) } bind Tool::class
-    factory { ScreenCollapseNotificationShadeTool() } bind Tool::class
+
     factory { ContactsSearchTool(androidContext()) } bind Tool::class
     factory { ContactsGetTool(androidContext()) } bind Tool::class
     factory { ContactsCreateTool(androidContext()) } bind Tool::class
     factory { ContactsUpdateTool(androidContext()) } bind Tool::class
     factory { ContactsDeleteTool(androidContext()) } bind Tool::class
+
+    factory { PhoneCallTool(androidContext()) } bind Tool::class
+    factory { PhoneGetCallHistoryTool(androidContext()) } bind Tool::class
+
     factory { AppsListInstalledTool(androidContext()) } bind Tool::class
     factory { AppsOpenTool(androidContext()) } bind Tool::class
     factory { AppsSearchTool(androidContext()) } bind Tool::class
     factory { AppsGetInfoTool(androidContext()) } bind Tool::class
+
+    factory { DiagnosticsWriteDebugLogTool() } bind Tool::class
 
     single {
         ToolRegistry(

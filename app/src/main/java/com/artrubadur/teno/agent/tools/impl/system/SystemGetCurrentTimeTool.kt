@@ -4,11 +4,8 @@ import com.artrubadur.teno.agent.tools.NoArgs
 import com.artrubadur.teno.agent.tools.Tool
 import com.artrubadur.teno.agent.tools.ToolGroup
 import com.artrubadur.teno.agent.tools.ToolRisk
+import com.artrubadur.teno.agent.tools.integrations.time.formatTimestamp
 import kotlinx.serialization.json.JsonObject
-import kotlinx.serialization.json.buildJsonObject
-import kotlinx.serialization.json.put
-import java.time.ZonedDateTime
-import java.time.temporal.ChronoUnit
 
 class SystemGetCurrentTimeTool : Tool<NoArgs> {
 
@@ -26,13 +23,6 @@ class SystemGetCurrentTimeTool : Tool<NoArgs> {
     override val argsSerializer = NoArgs.serializer()
 
     override suspend fun executeTyped(args: NoArgs): JsonObject {
-        val zdt = ZonedDateTime.now()
-
-        return buildJsonObject {
-            put("date", zdt.toLocalDate().toString())
-            put("weekday", zdt.dayOfWeek.name)
-            put("time", zdt.toLocalTime().truncatedTo(ChronoUnit.SECONDS).toString())
-            put("timezone", zdt.zone.id)
-        }
+        return formatTimestamp(System.currentTimeMillis())
     }
 }
