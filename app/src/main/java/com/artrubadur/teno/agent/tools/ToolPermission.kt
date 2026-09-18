@@ -65,6 +65,18 @@ enum class ToolPermission(
         grantType = PermissionGrantType.RUNTIME
     ),
 
+    READ_CALENDAR(
+        title = "Read calendar",
+        description = "Allows the agent to read calendar events",
+        grantType = PermissionGrantType.RUNTIME
+    ),
+
+    WRITE_CALENDAR(
+        title = "Write calendar",
+        description = "Allows the agent to create, change, and delete calendar events",
+        grantType = PermissionGrantType.RUNTIME
+    ),
+
     MODIFY_AUDIO_SETTINGS(
         title = "Modify audio settings",
         description = "Allows the agent to control device audio",
@@ -124,6 +136,18 @@ enum class ToolPermission(
                     Manifest.permission.READ_SMS
                 ) == PackageManager.PERMISSION_GRANTED
 
+            READ_CALENDAR ->
+                ContextCompat.checkSelfPermission(
+                    context,
+                    Manifest.permission.READ_CALENDAR
+                ) == PackageManager.PERMISSION_GRANTED
+
+            WRITE_CALENDAR ->
+                ContextCompat.checkSelfPermission(
+                    context,
+                    Manifest.permission.WRITE_CALENDAR
+                ) == PackageManager.PERMISSION_GRANTED
+
             ACCESSIBILITY_SERVICE ->
                 isAccessibilityServiceEnabled(context)
 
@@ -153,6 +177,8 @@ enum class ToolPermission(
             READ_CALL_LOG -> Manifest.permission.READ_CALL_LOG
             SEND_SMS -> Manifest.permission.SEND_SMS
             READ_SMS -> Manifest.permission.READ_SMS
+            READ_CALENDAR -> Manifest.permission.READ_CALENDAR
+            WRITE_CALENDAR -> Manifest.permission.WRITE_CALENDAR
             else -> null
         }
     }

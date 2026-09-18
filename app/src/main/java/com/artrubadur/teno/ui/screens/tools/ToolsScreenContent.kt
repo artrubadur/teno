@@ -41,7 +41,8 @@ fun ToolsScreenContent(
                 ToolGroup.PHONE -> 4
                 ToolGroup.SMS -> 5
                 ToolGroup.APPS -> 6
-                ToolGroup.DIAGNOSTICS -> 7
+                ToolGroup.CALENDAR -> 7
+                ToolGroup.DIAGNOSTICS -> 8
             }
         }
 

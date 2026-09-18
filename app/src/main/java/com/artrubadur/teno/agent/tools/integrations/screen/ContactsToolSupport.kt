@@ -4,6 +4,7 @@ import android.content.ContentResolver
 import android.content.ContentUris
 import android.content.ContentValues
 import android.provider.ContactsContract
+import com.artrubadur.teno.agent.tools.integrations.search.matchesSearchQuery
 import kotlinx.serialization.json.JsonArray
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.JsonPrimitive
@@ -16,13 +17,18 @@ internal fun ContentResolver.findContactIds(query: String): Set<Long> {
 
     query(
         ContactsContract.Contacts.CONTENT_URI,
-        arrayOf(ContactsContract.Contacts._ID),
-        "${ContactsContract.Contacts.DISPLAY_NAME} LIKE ?",
-        arrayOf("%$normalizedQuery%"),
+        arrayOf(ContactsContract.Contacts._ID, ContactsContract.Contacts.DISPLAY_NAME),
+        null,
+        null,
         null,
     )?.use { cursor ->
         val idColumn = cursor.getColumnIndexOrThrow(ContactsContract.Contacts._ID)
-        while (cursor.moveToNext()) ids += cursor.getLong(idColumn)
+        val nameColumn = cursor.getColumnIndexOrThrow(ContactsContract.Contacts.DISPLAY_NAME)
+        while (cursor.moveToNext()) {
+            if (cursor.getString(nameColumn).orEmpty().matchesSearchQuery(normalizedQuery)) {
+                ids += cursor.getLong(idColumn)
+            }
+        }
     }
 
     query(

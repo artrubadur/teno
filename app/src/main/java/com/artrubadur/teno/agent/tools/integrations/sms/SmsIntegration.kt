@@ -5,6 +5,7 @@ import android.net.Uri
 import android.provider.ContactsContract
 import android.provider.Telephony
 import android.telephony.SmsManager
+import com.artrubadur.teno.agent.tools.integrations.search.matchesSearchQuery
 import com.artrubadur.teno.agent.tools.integrations.time.formatTimestamp
 import kotlinx.serialization.json.JsonArray
 import kotlinx.serialization.json.JsonObject
@@ -29,14 +30,11 @@ internal fun Context.sendSms(phoneNumber: String, message: String): JsonObject {
 internal fun Context.searchSms(queries: List<String>, limit: Int): JsonArray {
     val contactNames = mutableMapOf<String, String?>()
     val messages = if (queries.isEmpty()) {
-        querySms(null, null, limit, contactNames)
+        querySms(null, limit, contactNames)
     } else {
         queries.flatMap { query ->
-            val contactNumbers = findContactNumbers(query)
-            val smsQuery = buildSmsSearchQuery(query, contactNumbers)
             querySms(
-                smsQuery.selection,
-                smsQuery.args.toTypedArray(),
+                query,
                 limit,
                 contactNames,
             )
@@ -68,8 +66,7 @@ internal fun buildSmsSearchQuery(
 }
 
 private fun Context.querySms(
-    selection: String?,
-    selectionArgs: Array<String>?,
+    searchQuery: String?,
     limit: Int,
     contactNames: MutableMap<String, String?>,
 ): List<SmsRecord> {
@@ -84,8 +81,8 @@ private fun Context.querySms(
             Telephony.Sms.TYPE,
             Telephony.Sms.THREAD_ID,
         ),
-        selection,
-        selectionArgs,
+        null,
+        null,
         "${Telephony.Sms.DATE} DESC",
     )?.use { cursor ->
         val addressColumn = cursor.getColumnIndexOrThrow(Telephony.Sms.ADDRESS)
@@ -102,6 +99,13 @@ private fun Context.querySms(
             val type = smsType(cursor.getInt(typeColumn))
             val contact = contactName(phoneNumber, contactNames)
                 ?: phoneNumber.ifBlank { "unknown" }
+            val body = cursor.getString(bodyColumn).orEmpty()
+            if (searchQuery != null && !phoneNumber.matchesSearchQuery(searchQuery) &&
+                !body.matchesSearchQuery(searchQuery) &&
+                !contact.matchesSearchQuery(searchQuery)
+            ) {
+                continue
+            }
             val message = buildJsonObject {
                 put("phone_number", phoneNumber)
                 if (type == "sent") {
@@ -113,7 +117,7 @@ private fun Context.querySms(
                 }
                 put(
                     "message",
-                    cursor.getString(bodyColumn).orEmpty().replace(Regex("[\\r\\n]+"), " ")
+                    body.replace(Regex("[\\r\\n]+"), " ")
                 )
                 put("time", formatTimestamp(timestamp))
                 put("thread_id", cursor.getLong(threadColumn))
@@ -136,24 +140,6 @@ internal fun mergeSmsRecords(records: List<SmsRecord>, limit: Int): List<SmsReco
         .sortedByDescending { it.timestamp }
         .take(limit)
         .asReversed()
-
-private fun Context.findContactNumbers(query: String): List<String> {
-    val numbers = mutableSetOf<String>()
-    contentResolver.query(
-        ContactsContract.CommonDataKinds.Phone.CONTENT_URI,
-        arrayOf(ContactsContract.CommonDataKinds.Phone.NUMBER),
-        "${ContactsContract.CommonDataKinds.Phone.DISPLAY_NAME} LIKE ?",
-        arrayOf("%$query%"),
-        null,
-    )?.use { cursor ->
-        val numberColumn =
-            cursor.getColumnIndexOrThrow(ContactsContract.CommonDataKinds.Phone.NUMBER)
-        while (cursor.moveToNext()) {
-            cursor.getString(numberColumn)?.takeIf { it.isNotBlank() }?.let(numbers::add)
-        }
-    }
-    return numbers.toList()
-}
 
 private fun Context.contactName(
     phoneNumber: String,

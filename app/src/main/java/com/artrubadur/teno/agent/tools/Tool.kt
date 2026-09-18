@@ -44,7 +44,8 @@ enum class ToolGroup {
     CONTACTS,
     PHONE,
     SMS,
-    APPS
+    APPS,
+    CALENDAR
 }
 
 fun Tool<*>.toSpec() = ToolSpec(

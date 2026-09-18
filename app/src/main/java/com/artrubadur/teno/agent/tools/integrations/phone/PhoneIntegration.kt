@@ -4,6 +4,7 @@ import android.content.Context
 import android.content.Intent
 import android.net.Uri
 import android.provider.CallLog
+import com.artrubadur.teno.agent.tools.integrations.search.matchesSearchQuery
 import com.artrubadur.teno.agent.tools.integrations.time.formatTimestamp
 import kotlinx.serialization.json.JsonArray
 import kotlinx.serialization.json.JsonObject
@@ -24,14 +25,10 @@ internal fun Context.callPhoneNumber(phoneNumber: String): JsonObject {
 
 internal fun Context.getCallHistory(queries: List<String>, limit: Int): JsonArray {
     val calls = if (queries.isEmpty()) {
-        queryCallHistory(null, null, limit)
+        queryCallHistory(null, limit)
     } else {
         queries.flatMap { query ->
-            queryCallHistory(
-                selection = "${CallLog.Calls.NUMBER} LIKE ? OR ${CallLog.Calls.CACHED_NAME} LIKE ?",
-                selectionArgs = arrayOf("%$query%", "%$query%"),
-                limit = limit,
-            )
+            queryCallHistory(query, limit)
         }
     }
 
@@ -46,8 +43,7 @@ internal fun Context.getCallHistory(queries: List<String>, limit: Int): JsonArra
 }
 
 private fun Context.queryCallHistory(
-    selection: String?,
-    selectionArgs: Array<String>?,
+    searchQuery: String?,
     limit: Int,
 ): List<CallRecord> {
     val calls = mutableListOf<CallRecord>()
@@ -61,8 +57,8 @@ private fun Context.queryCallHistory(
             CallLog.Calls.DATE,
             CallLog.Calls.DURATION,
         ),
-        selection,
-        selectionArgs,
+        null,
+        null,
         "${CallLog.Calls.DATE} DESC",
     )?.use { cursor ->
         val idColumn = cursor.getColumnIndexOrThrow(CallLog.Calls._ID)
@@ -74,9 +70,16 @@ private fun Context.queryCallHistory(
 
         while (cursor.moveToNext() && calls.size < limit) {
             val timestamp = cursor.getLong(dateColumn)
+            val phoneNumber = cursor.getString(numberColumn).orEmpty()
+            val name = cursor.getString(nameColumn).orEmpty()
+            if (searchQuery != null && !phoneNumber.matchesSearchQuery(searchQuery) &&
+                !name.matchesSearchQuery(searchQuery)
+            ) {
+                continue
+            }
             val call = buildJsonObject {
-                put("phone_number", cursor.getString(numberColumn).orEmpty())
-                cursor.getString(nameColumn)?.let { put("name", it) }
+                put("phone_number", phoneNumber)
+                name.takeIf { it.isNotBlank() }?.let { put("name", it) }
                 put("type", callType(cursor.getInt(typeColumn)))
                 put("time", formatTimestamp(timestamp))
                 put("duration_seconds", cursor.getLong(durationColumn))

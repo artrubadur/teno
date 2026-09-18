@@ -11,6 +11,10 @@ import com.artrubadur.teno.agent.tools.impl.apps.AppsGetInfoTool
 import com.artrubadur.teno.agent.tools.impl.apps.AppsListInstalledTool
 import com.artrubadur.teno.agent.tools.impl.apps.AppsOpenTool
 import com.artrubadur.teno.agent.tools.impl.apps.AppsSearchTool
+import com.artrubadur.teno.agent.tools.impl.calendar.CalendarCreateEventTool
+import com.artrubadur.teno.agent.tools.impl.calendar.CalendarDeleteEventTool
+import com.artrubadur.teno.agent.tools.impl.calendar.CalendarSearchEventsTool
+import com.artrubadur.teno.agent.tools.impl.calendar.CalendarUpdateEventTool
 import com.artrubadur.teno.agent.tools.impl.contacts.ContactsCreateTool
 import com.artrubadur.teno.agent.tools.impl.contacts.ContactsDeleteTool
 import com.artrubadur.teno.agent.tools.impl.contacts.ContactsGetTool
@@ -76,6 +80,11 @@ val agentModule = module {
     factory { AppsOpenTool(androidContext()) } bind Tool::class
     factory { AppsSearchTool(androidContext()) } bind Tool::class
     factory { AppsGetInfoTool(androidContext()) } bind Tool::class
+
+    factory { CalendarSearchEventsTool(androidContext()) } bind Tool::class
+    factory { CalendarCreateEventTool(androidContext()) } bind Tool::class
+    factory { CalendarUpdateEventTool(androidContext()) } bind Tool::class
+    factory { CalendarDeleteEventTool(androidContext()) } bind Tool::class
 
     factory { DiagnosticsWriteDebugLogTool() } bind Tool::class
 
