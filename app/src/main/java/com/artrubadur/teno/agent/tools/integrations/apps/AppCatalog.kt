@@ -3,6 +3,8 @@ package com.artrubadur.teno.agent.tools.integrations.apps
 import android.content.Context
 import android.content.Intent
 import android.content.pm.ApplicationInfo
+import com.artrubadur.teno.agent.tools.integrations.search.expandSearchQueries
+import com.artrubadur.teno.agent.tools.integrations.search.matchesSearchQuery
 import kotlinx.serialization.json.JsonArray
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.buildJsonObject
@@ -24,15 +26,17 @@ internal fun Context.appMetadata(packageName: String): JsonObject {
 }
 
 internal fun Context.searchApplications(query: String): JsonArray {
-    val normalizedQuery = query.trim().lowercase()
+    val searchQueries = expandSearchQueries(listOf(query))
     return JsonArray(
         launchableApplications()
             .filter { application ->
-                application.packageName.lowercase().contains(normalizedQuery) ||
-                        packageManager.getApplicationLabel(application)
-                            .toString()
-                            .lowercase()
-                            .contains(normalizedQuery)
+                val packageName = application.packageName
+                val label = packageManager.getApplicationLabel(application).toString()
+                searchQueries.any { searchQuery ->
+                    packageName.matchesSearchQuery(searchQuery) || label.matchesSearchQuery(
+                        searchQuery
+                    )
+                }
             }
             .map { summaryJson(it) }
     )

@@ -5,6 +5,7 @@ import android.net.Uri
 import android.provider.ContactsContract
 import android.provider.Telephony
 import android.telephony.SmsManager
+import com.artrubadur.teno.agent.tools.integrations.search.expandSearchQueries
 import com.artrubadur.teno.agent.tools.integrations.search.matchesSearchQuery
 import com.artrubadur.teno.agent.tools.integrations.time.formatTimestamp
 import kotlinx.serialization.json.JsonArray
@@ -29,10 +30,11 @@ internal fun Context.sendSms(phoneNumber: String, message: String): JsonObject {
 
 internal fun Context.searchSms(queries: List<String>, limit: Int): JsonArray {
     val contactNames = mutableMapOf<String, String?>()
-    val messages = if (queries.isEmpty()) {
+    val searchQueries = expandSearchQueries(queries)
+    val messages = if (searchQueries.isEmpty()) {
         querySms(null, limit, contactNames)
     } else {
-        queries.flatMap { query ->
+        searchQueries.flatMap { query ->
             querySms(
                 query,
                 limit,

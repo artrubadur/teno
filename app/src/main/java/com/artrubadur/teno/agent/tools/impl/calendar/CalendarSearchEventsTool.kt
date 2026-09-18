@@ -15,7 +15,7 @@ class CalendarSearchEventsTool(private val context: Context) : Tool<CalendarSear
     override val name = "calendar_search_events"
     override val title = "Search calendar events"
     override val description =
-        "Searches calendar events; without filters returns events in the next 30 days"
+        "Searches calendar events; use time bounds instead of query when possible; without filters returns events in the next 30 days"
     override val group = ToolGroup.CALENDAR
     override val risk = ToolRisk.SAFE
     override val enabled = true

@@ -4,6 +4,7 @@ import android.content.ContentResolver
 import android.content.ContentUris
 import android.content.ContentValues
 import android.provider.CalendarContract
+import com.artrubadur.teno.agent.tools.integrations.search.expandSearchQueries
 import com.artrubadur.teno.agent.tools.integrations.search.matchesSearchQuery
 import com.artrubadur.teno.agent.tools.integrations.time.formatTimestamp
 import com.artrubadur.teno.agent.tools.integrations.time.parseTimestamp
@@ -24,7 +25,8 @@ internal fun ContentResolver.listCalendarEvents(
     limit: Int,
 ): JsonArray {
     val now = System.currentTimeMillis()
-    val noFilters = queries.isEmpty() && startTime == null && endTime == null
+    val searchQueries = expandSearchQueries(queries)
+    val noFilters = searchQueries.isEmpty() && startTime == null && endTime == null
     val start = startTime?.let { parseTimestamp(it, timezone) }
         ?: if (endTime == null) now else 0L
     val end = endTime?.let { parseTimestamp(it, timezone) }
@@ -34,12 +36,28 @@ internal fun ContentResolver.listCalendarEvents(
     val events = buildList {
         val beforeEnd = minOf(now, end)
         if (start < beforeEnd) {
-            addAll(queryCalendarEventsInRange(start, beforeEnd, queries, limit, descending = true))
+            addAll(
+                queryCalendarEventsInRange(
+                    start,
+                    beforeEnd,
+                    searchQueries,
+                    limit,
+                    descending = true
+                )
+            )
         }
 
         val afterStart = maxOf(now, start)
         if (afterStart < end) {
-            addAll(queryCalendarEventsInRange(afterStart, end, queries, limit, descending = false))
+            addAll(
+                queryCalendarEventsInRange(
+                    afterStart,
+                    end,
+                    searchQueries,
+                    limit,
+                    descending = false
+                )
+            )
         }
     }
 

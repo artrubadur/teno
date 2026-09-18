@@ -4,6 +4,7 @@ import android.content.Context
 import android.content.Intent
 import android.net.Uri
 import android.provider.CallLog
+import com.artrubadur.teno.agent.tools.integrations.search.expandSearchQueries
 import com.artrubadur.teno.agent.tools.integrations.search.matchesSearchQuery
 import com.artrubadur.teno.agent.tools.integrations.time.formatTimestamp
 import kotlinx.serialization.json.JsonArray
@@ -24,10 +25,11 @@ internal fun Context.callPhoneNumber(phoneNumber: String): JsonObject {
 }
 
 internal fun Context.getCallHistory(queries: List<String>, limit: Int): JsonArray {
-    val calls = if (queries.isEmpty()) {
+    val searchQueries = expandSearchQueries(queries)
+    val calls = if (searchQueries.isEmpty()) {
         queryCallHistory(null, limit)
     } else {
-        queries.flatMap { query ->
+        searchQueries.flatMap { query ->
             queryCallHistory(query, limit)
         }
     }

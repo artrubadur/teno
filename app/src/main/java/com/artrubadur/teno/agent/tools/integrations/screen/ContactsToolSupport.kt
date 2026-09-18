@@ -4,6 +4,7 @@ import android.content.ContentResolver
 import android.content.ContentUris
 import android.content.ContentValues
 import android.provider.ContactsContract
+import com.artrubadur.teno.agent.tools.integrations.search.expandSearchQueries
 import com.artrubadur.teno.agent.tools.integrations.search.matchesSearchQuery
 import kotlinx.serialization.json.JsonArray
 import kotlinx.serialization.json.JsonObject
@@ -12,7 +13,7 @@ import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.put
 
 internal fun ContentResolver.findContactIds(query: String): Set<Long> {
-    val normalizedQuery = query.trim()
+    val searchQueries = expandSearchQueries(listOf(query))
     val ids = linkedSetOf<Long>()
 
     query(
@@ -25,7 +26,9 @@ internal fun ContentResolver.findContactIds(query: String): Set<Long> {
         val idColumn = cursor.getColumnIndexOrThrow(ContactsContract.Contacts._ID)
         val nameColumn = cursor.getColumnIndexOrThrow(ContactsContract.Contacts.DISPLAY_NAME)
         while (cursor.moveToNext()) {
-            if (cursor.getString(nameColumn).orEmpty().matchesSearchQuery(normalizedQuery)) {
+            if (searchQueries.any {
+                    cursor.getString(nameColumn).orEmpty().matchesSearchQuery(it)
+                }) {
                 ids += cursor.getLong(idColumn)
             }
         }
@@ -48,17 +51,16 @@ internal fun ContentResolver.findContactIds(query: String): Set<Long> {
         val idColumn = cursor.getColumnIndexOrThrow(ContactsContract.Data.CONTACT_ID)
         val mimeColumn = cursor.getColumnIndexOrThrow(ContactsContract.Data.MIMETYPE)
         val valueColumn = cursor.getColumnIndexOrThrow(ContactsContract.Data.DATA1)
-        val normalizedDigits = normalizedQuery.filter(Char::isDigit)
-
         while (cursor.moveToNext()) {
             val value = cursor.getString(valueColumn).orEmpty()
-            val matches = if (
-                cursor.getString(mimeColumn) == ContactsContract.CommonDataKinds.Phone.CONTENT_ITEM_TYPE
-            ) {
-                normalizedDigits.isNotEmpty() && value.filter(Char::isDigit)
-                    .contains(normalizedDigits)
-            } else {
-                value.contains(normalizedQuery, ignoreCase = true)
+            val matches = searchQueries.any { searchQuery ->
+                if (cursor.getString(mimeColumn) == ContactsContract.CommonDataKinds.Phone.CONTENT_ITEM_TYPE) {
+                    val normalizedDigits = searchQuery.filter(Char::isDigit)
+                    normalizedDigits.isNotEmpty() && value.filter(Char::isDigit)
+                        .contains(normalizedDigits)
+                } else {
+                    value.matchesSearchQuery(searchQuery)
+                }
             }
             if (matches) ids += cursor.getLong(idColumn)
         }
