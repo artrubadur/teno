@@ -8,6 +8,7 @@ import com.artrubadur.teno.agent.tools.ToolBroker
 import com.artrubadur.teno.agent.tools.ToolManager
 import com.artrubadur.teno.agent.tools.ToolRegistry
 import com.artrubadur.teno.agent.tools.impl.ClickScreenNodeTool
+import com.artrubadur.teno.agent.tools.impl.CollapseNotificationShadeTool
 import com.artrubadur.teno.agent.tools.impl.GetBrightnessTool
 import com.artrubadur.teno.agent.tools.impl.GetClipboardTool
 import com.artrubadur.teno.agent.tools.impl.GetCurrentTimeTool
@@ -43,6 +44,7 @@ val agentModule = module {
     factory { GetScreenTreeTool(get(), get()) } bind Tool::class
     factory { GetScreenNodeTool(get(), get()) } bind Tool::class
     factory { ClickScreenNodeTool(get(), get()) } bind Tool::class
+    factory { CollapseNotificationShadeTool() } bind Tool::class
 
     single {
         ToolRegistry(
