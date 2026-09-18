@@ -82,7 +82,7 @@ fun ActiveConnectionCard(
 
                 Text(
                     text = when (state.activeConnectionKind) {
-                        ConnectionKind.REMOTE -> "remote"
+                        ConnectionKind.REMOTE -> "Remote"
                         ConnectionKind.LOCAL -> "Local"
                         else -> "Select to start chatting"
                     },

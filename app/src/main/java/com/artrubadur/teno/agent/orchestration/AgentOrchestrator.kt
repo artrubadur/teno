@@ -103,7 +103,7 @@ class AgentOrchestrator(
                 toolCallId = confirmation.call.id,
                 tool = confirmation.call.tool,
                 result = buildJsonObject {
-                    put("message", JsonPrimitive("Confirmation rejected"))
+                    put("message", JsonPrimitive("Confirmation rejected by user"))
                 }
             )
 
