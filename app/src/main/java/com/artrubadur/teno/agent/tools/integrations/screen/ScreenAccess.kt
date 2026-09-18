@@ -1,4 +1,4 @@
-package com.artrubadur.teno.agent.tools.integrations
+package com.artrubadur.teno.agent.tools.integrations.screen
 
 import android.accessibilityservice.AccessibilityService
 import android.annotation.SuppressLint

@@ -6,7 +6,7 @@ import com.artrubadur.teno.agent.tools.Tool
 import com.artrubadur.teno.agent.tools.ToolGroup
 import com.artrubadur.teno.agent.tools.ToolPermission
 import com.artrubadur.teno.agent.tools.ToolRisk
-import com.artrubadur.teno.agent.tools.integrations.ScreenAccessibilityBridge
+import com.artrubadur.teno.agent.tools.integrations.screen.ScreenAccessibilityBridge
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.put

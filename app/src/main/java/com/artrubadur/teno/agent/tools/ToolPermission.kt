@@ -10,7 +10,7 @@ import android.provider.Settings
 import android.view.accessibility.AccessibilityManager
 import androidx.core.content.ContextCompat
 import androidx.core.net.toUri
-import com.artrubadur.teno.agent.tools.integrations.ScreenAccessibilityService
+import com.artrubadur.teno.agent.tools.integrations.screen.ScreenAccessibilityService
 
 enum class ToolPermission(
     val title: String,
@@ -26,6 +26,18 @@ enum class ToolPermission(
     CAMERA(
         title = "Camera access",
         description = "Allows the agent to use the camera and flashlight",
+        grantType = PermissionGrantType.RUNTIME
+    ),
+
+    READ_CONTACTS(
+        title = "Read contacts",
+        description = "Allows the agent to read contacts",
+        grantType = PermissionGrantType.RUNTIME
+    ),
+
+    WRITE_CONTACTS(
+        title = "Write contacts",
+        description = "Allows the agent to create, change, and delete contacts",
         grantType = PermissionGrantType.RUNTIME
     ),
 
@@ -52,6 +64,18 @@ enum class ToolPermission(
                     Manifest.permission.CAMERA
                 ) == PackageManager.PERMISSION_GRANTED
 
+            READ_CONTACTS ->
+                ContextCompat.checkSelfPermission(
+                    context,
+                    Manifest.permission.READ_CONTACTS
+                ) == PackageManager.PERMISSION_GRANTED
+
+            WRITE_CONTACTS ->
+                ContextCompat.checkSelfPermission(
+                    context,
+                    Manifest.permission.WRITE_CONTACTS
+                ) == PackageManager.PERMISSION_GRANTED
+
             ACCESSIBILITY_SERVICE ->
                 isAccessibilityServiceEnabled(context)
 
@@ -75,6 +99,8 @@ enum class ToolPermission(
     fun manifestPermission(): String? {
         return when (this) {
             CAMERA -> Manifest.permission.CAMERA
+            READ_CONTACTS -> Manifest.permission.READ_CONTACTS
+            WRITE_CONTACTS -> Manifest.permission.WRITE_CONTACTS
             else -> null
         }
     }

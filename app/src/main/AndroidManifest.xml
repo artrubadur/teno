@@ -16,6 +16,8 @@
     <uses-permission android:name="android.permission.WRITE_SETTINGS" />
     <uses-permission android:name="android.permission.MODIFY_AUDIO_SETTINGS" />
     <uses-permission android:name="android.permission.CAMERA" />
+    <uses-permission android:name="android.permission.READ_CONTACTS" />
+    <uses-permission android:name="android.permission.WRITE_CONTACTS" />
 
     <application
         android:name=".TenoApp"
@@ -45,7 +47,7 @@
             android:process=":agent" />
 
         <service
-            android:name=".agent.tools.integrations.ScreenAccessibilityService"
+            android:name=".agent.tools.integrations.screen.ScreenAccessibilityService"
             android:exported="true"
             android:label="@string/accessibility_service_name"
             android:permission="android.permission.BIND_ACCESSIBILITY_SERVICE"

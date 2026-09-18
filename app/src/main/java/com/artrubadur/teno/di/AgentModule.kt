@@ -7,6 +7,11 @@ import com.artrubadur.teno.agent.tools.Tool
 import com.artrubadur.teno.agent.tools.ToolBroker
 import com.artrubadur.teno.agent.tools.ToolManager
 import com.artrubadur.teno.agent.tools.ToolRegistry
+import com.artrubadur.teno.agent.tools.impl.contacts.ContactsCreateTool
+import com.artrubadur.teno.agent.tools.impl.contacts.ContactsDeleteTool
+import com.artrubadur.teno.agent.tools.impl.contacts.ContactsGetTool
+import com.artrubadur.teno.agent.tools.impl.contacts.ContactsSearchTool
+import com.artrubadur.teno.agent.tools.impl.contacts.ContactsUpdateTool
 import com.artrubadur.teno.agent.tools.impl.device.DeviceGetBrightnessTool
 import com.artrubadur.teno.agent.tools.impl.device.DeviceGetVolumeTool
 import com.artrubadur.teno.agent.tools.impl.device.DeviceSetBrightnessTool
@@ -20,9 +25,9 @@ import com.artrubadur.teno.agent.tools.impl.screen.ScreenGetScreenTreeTool
 import com.artrubadur.teno.agent.tools.impl.system.SystemGetClipboardTool
 import com.artrubadur.teno.agent.tools.impl.system.SystemGetCurrentTimeTool
 import com.artrubadur.teno.agent.tools.impl.system.SystemSetClipboardTool
-import com.artrubadur.teno.agent.tools.integrations.ScreenNodeClicker
-import com.artrubadur.teno.agent.tools.integrations.ScreenNodeStore
-import com.artrubadur.teno.agent.tools.integrations.ScreenTreeReader
+import com.artrubadur.teno.agent.tools.integrations.screen.ScreenNodeClicker
+import com.artrubadur.teno.agent.tools.integrations.screen.ScreenNodeStore
+import com.artrubadur.teno.agent.tools.integrations.screen.ScreenTreeReader
 import org.koin.android.ext.koin.androidContext
 import org.koin.dsl.bind
 import org.koin.dsl.module
@@ -45,6 +50,11 @@ val agentModule = module {
     factory { ScreenGetScreenNodeTool(get(), get()) } bind Tool::class
     factory { ScreenClickScreenNodeTool(get(), get()) } bind Tool::class
     factory { ScreenCollapseNotificationShadeTool() } bind Tool::class
+    factory { ContactsSearchTool(androidContext()) } bind Tool::class
+    factory { ContactsGetTool(androidContext()) } bind Tool::class
+    factory { ContactsCreateTool(androidContext()) } bind Tool::class
+    factory { ContactsUpdateTool(androidContext()) } bind Tool::class
+    factory { ContactsDeleteTool(androidContext()) } bind Tool::class
 
     single {
         ToolRegistry(

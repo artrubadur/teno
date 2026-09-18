@@ -40,7 +40,8 @@ enum class ToolGroup {
     SYSTEM,
     SCREEN,
     DIAGNOSTICS,
-    DEVICE
+    DEVICE,
+    CONTACTS
 }
 
 fun Tool<*>.toSpec() = ToolSpec(

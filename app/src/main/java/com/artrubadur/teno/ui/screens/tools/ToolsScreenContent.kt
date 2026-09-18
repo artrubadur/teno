@@ -37,7 +37,8 @@ fun ToolsScreenContent(
                 ToolGroup.SCREEN -> 0
                 ToolGroup.DEVICE -> 1
                 ToolGroup.SYSTEM -> 2
-                ToolGroup.DIAGNOSTICS -> 3
+                ToolGroup.CONTACTS -> 3
+                ToolGroup.DIAGNOSTICS -> 4
             }
         }
 

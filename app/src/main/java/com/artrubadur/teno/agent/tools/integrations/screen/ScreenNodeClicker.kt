@@ -1,4 +1,4 @@
-package com.artrubadur.teno.agent.tools.integrations
+package com.artrubadur.teno.agent.tools.integrations.screen
 
 import android.view.accessibility.AccessibilityNodeInfo
 

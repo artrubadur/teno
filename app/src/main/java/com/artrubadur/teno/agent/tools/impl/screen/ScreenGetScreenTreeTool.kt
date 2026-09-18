@@ -5,9 +5,9 @@ import com.artrubadur.teno.agent.tools.Tool
 import com.artrubadur.teno.agent.tools.ToolGroup
 import com.artrubadur.teno.agent.tools.ToolPermission
 import com.artrubadur.teno.agent.tools.ToolRisk
-import com.artrubadur.teno.agent.tools.integrations.ScreenNode
-import com.artrubadur.teno.agent.tools.integrations.ScreenNodeStore
-import com.artrubadur.teno.agent.tools.integrations.ScreenTreeReader
+import com.artrubadur.teno.agent.tools.integrations.screen.ScreenNode
+import com.artrubadur.teno.agent.tools.integrations.screen.ScreenNodeStore
+import com.artrubadur.teno.agent.tools.integrations.screen.ScreenTreeReader
 import kotlinx.serialization.json.JsonArray
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.buildJsonObject

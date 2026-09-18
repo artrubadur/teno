@@ -24,6 +24,10 @@ object AgentDefaults {
             "When a tool needs another tool's result, immediately call the required tool first, " +
                     "then use its result in the next call without asking the user.",
 
+            "For an existing contact, search for the contact first and use contacts_update. " +
+                    "Use contacts_create only when the user explicitly wants a new contact. " +
+                    "Never create a duplicate contact to add or change contact data.",
+
             "Call a tool only when the user's request requires that tool's result or action.",
             "Do not call tools speculatively, for unrelated information, " +
                     "or merely because a tool is available.",
