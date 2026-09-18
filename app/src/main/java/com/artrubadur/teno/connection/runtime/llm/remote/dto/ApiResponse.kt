@@ -6,7 +6,7 @@ import kotlinx.serialization.Serializable
 @Serializable
 data class ApiResponse(
     val choices: List<ApiChoice> = emptyList(),
-    val usage: ApiUsage
+    val usage: ApiUsage? = null
 )
 
 @Serializable

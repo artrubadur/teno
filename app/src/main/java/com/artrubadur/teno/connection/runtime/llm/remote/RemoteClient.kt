@@ -51,10 +51,10 @@ class RemoteClient(
         Log.d(
             TAG,
             "usage=" +
-                    "prompt=${apiResponse.usage.promptTokens}, " +
-                    "cached=${apiResponse.usage.promptTokensDetails?.cachedTokens ?: 0}, " +
-                    "completion=${apiResponse.usage.completionTokens}, " +
-                    "total=${apiResponse.usage.totalTokens}"
+                    "prompt=${apiResponse.usage?.promptTokens ?: 0}, " +
+                    "cached=${apiResponse.usage?.promptTokensDetails?.cachedTokens ?: 0}, " +
+                    "completion=${apiResponse.usage?.completionTokens ?: 0}, " +
+                    "total=${apiResponse.usage?.totalTokens ?: 0}"
         )
 
         return apiResponse.toLlmResponse()

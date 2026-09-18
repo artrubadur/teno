@@ -6,13 +6,13 @@ import kotlinx.serialization.Serializable
 @Serializable
 data class ApiUsage(
     @SerialName("prompt_tokens")
-    val promptTokens: Int,
+    val promptTokens: Int = 0,
 
     @SerialName("completion_tokens")
-    val completionTokens: Int,
+    val completionTokens: Int = 0,
 
     @SerialName("total_tokens")
-    val totalTokens: Int,
+    val totalTokens: Int = 0,
 
     @SerialName("prompt_tokens_details")
     val promptTokensDetails: PromptTokensDetails? = null
