@@ -53,6 +53,18 @@ enum class ToolPermission(
         grantType = PermissionGrantType.RUNTIME
     ),
 
+    SEND_SMS(
+        title = "Send SMS",
+        description = "Allows the agent to send text messages",
+        grantType = PermissionGrantType.RUNTIME
+    ),
+
+    READ_SMS(
+        title = "Read SMS",
+        description = "Allows the agent to read text messages",
+        grantType = PermissionGrantType.RUNTIME
+    ),
+
     MODIFY_AUDIO_SETTINGS(
         title = "Modify audio settings",
         description = "Allows the agent to control device audio",
@@ -100,6 +112,18 @@ enum class ToolPermission(
                     Manifest.permission.READ_CALL_LOG
                 ) == PackageManager.PERMISSION_GRANTED
 
+            SEND_SMS ->
+                ContextCompat.checkSelfPermission(
+                    context,
+                    Manifest.permission.SEND_SMS
+                ) == PackageManager.PERMISSION_GRANTED
+
+            READ_SMS ->
+                ContextCompat.checkSelfPermission(
+                    context,
+                    Manifest.permission.READ_SMS
+                ) == PackageManager.PERMISSION_GRANTED
+
             ACCESSIBILITY_SERVICE ->
                 isAccessibilityServiceEnabled(context)
 
@@ -127,6 +151,8 @@ enum class ToolPermission(
             WRITE_CONTACTS -> Manifest.permission.WRITE_CONTACTS
             CALL_PHONE -> Manifest.permission.CALL_PHONE
             READ_CALL_LOG -> Manifest.permission.READ_CALL_LOG
+            SEND_SMS -> Manifest.permission.SEND_SMS
+            READ_SMS -> Manifest.permission.READ_SMS
             else -> null
         }
     }

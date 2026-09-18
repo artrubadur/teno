@@ -43,6 +43,7 @@ enum class ToolGroup {
     DEVICE,
     CONTACTS,
     PHONE,
+    SMS,
     APPS
 }
 

@@ -28,6 +28,8 @@ import com.artrubadur.teno.agent.tools.impl.screen.ScreenClickScreenNodeTool
 import com.artrubadur.teno.agent.tools.impl.screen.ScreenCollapseNotificationShadeTool
 import com.artrubadur.teno.agent.tools.impl.screen.ScreenGetScreenNodeTool
 import com.artrubadur.teno.agent.tools.impl.screen.ScreenGetScreenTreeTool
+import com.artrubadur.teno.agent.tools.impl.sms.SmsSearchTool
+import com.artrubadur.teno.agent.tools.impl.sms.SmsSendTool
 import com.artrubadur.teno.agent.tools.impl.system.SystemGetClipboardTool
 import com.artrubadur.teno.agent.tools.impl.system.SystemGetCurrentTimeTool
 import com.artrubadur.teno.agent.tools.impl.system.SystemSetClipboardTool
@@ -67,6 +69,9 @@ val agentModule = module {
     factory { PhoneCallTool(androidContext()) } bind Tool::class
     factory { PhoneGetCallHistoryTool(androidContext()) } bind Tool::class
 
+    factory { SmsSendTool(androidContext()) } bind Tool::class
+    factory { SmsSearchTool(androidContext()) } bind Tool::class
+
     factory { AppsListInstalledTool(androidContext()) } bind Tool::class
     factory { AppsOpenTool(androidContext()) } bind Tool::class
     factory { AppsSearchTool(androidContext()) } bind Tool::class
@@ -86,4 +91,3 @@ val agentModule = module {
     single { ToolBroker(get(), get(), get()) }
     single { AgentOrchestrator(get(), get(), get(), get(), get()) }
 }
-
