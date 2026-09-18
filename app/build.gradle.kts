@@ -13,7 +13,7 @@ android {
 
     defaultConfig {
         applicationId = "com.artrubadur.teno"
-        minSdk = 30
+        minSdk = 31
         targetSdk = 37
         versionName = "1.0"
 
