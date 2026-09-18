@@ -1,4 +1,4 @@
-package com.artrubadur.teno.agent.tools.impl
+package com.artrubadur.teno.agent.tools.impl.device
 
 import android.content.Context
 import android.hardware.camera2.CameraAccessException
@@ -13,18 +13,18 @@ import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.put
 
-class ToggleFlashlightTool(
+class DeviceToggleFlashlightTool(
     private val context: Context
-) : Tool<ToggleFlashlightTool.Args> {
+) : Tool<DeviceToggleFlashlightTool.Args> {
 
-    override val name = "toggle_flashlight"
+    override val name = "device_toggle_flashlight"
 
     override val title = "Toggle flashlight"
 
     override val description =
         "Turns device flashlight on or off"
 
-    override val group = ToolGroup.SYSTEM
+    override val group = ToolGroup.DEVICE
 
     override val risk = ToolRisk.SAFE
 

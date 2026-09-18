@@ -1,26 +1,25 @@
-package com.artrubadur.teno.agent.tools.impl
+package com.artrubadur.teno.agent.tools.impl.system
 
-import android.content.ClipData
 import android.content.ClipboardManager
 import android.content.Context
+import com.artrubadur.teno.agent.tools.NoArgs
 import com.artrubadur.teno.agent.tools.Tool
 import com.artrubadur.teno.agent.tools.ToolGroup
 import com.artrubadur.teno.agent.tools.ToolRisk
-import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.put
 
-class SetClipboardTool(
+class SystemGetClipboardTool(
     private val context: Context
-) : Tool<SetClipboardTool.Args> {
+) : Tool<NoArgs> {
 
-    override val name = "set_clipboard"
+    override val name = "system_get_clipboard"
 
-    override val title = "Set clipboard text"
+    override val title = "Get clipboard"
 
     override val description =
-        "Sets clipboard text"
+        "Returns current clipboard text"
 
     override val group = ToolGroup.SYSTEM
 
@@ -29,10 +28,10 @@ class SetClipboardTool(
     override val enabled = true
 
     override val argsSerializer =
-        Args.serializer()
+        NoArgs.serializer()
 
     override suspend fun executeTyped(
-        args: Args
+        args: NoArgs
     ): JsonObject {
 
         val clipboard =
@@ -40,21 +39,17 @@ class SetClipboardTool(
                 Context.CLIPBOARD_SERVICE
             ) as ClipboardManager
 
-        val clip =
-            ClipData.newPlainText(
-                "agent",
-                args.text
-            )
-
-        clipboard.setPrimaryClip(clip)
+        val text =
+            clipboard.primaryClip
+                ?.getItemAt(0)
+                ?.coerceToText(context)
+                ?.toString()
 
         return buildJsonObject {
-            put("ok", true)
+            put(
+                "text",
+                text ?: ""
+            )
         }
     }
-
-    @Serializable
-    data class Args(
-        val text: String
-    )
 }

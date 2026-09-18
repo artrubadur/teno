@@ -1,4 +1,4 @@
-package com.artrubadur.teno.agent.tools.impl
+package com.artrubadur.teno.agent.tools.impl.screen
 
 import android.accessibilityservice.AccessibilityService
 import com.artrubadur.teno.agent.tools.NoArgs
@@ -11,8 +11,8 @@ import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.put
 
-class CollapseNotificationShadeTool : Tool<NoArgs> {
-    override val name = "collapse_notification_shade"
+class ScreenCollapseNotificationShadeTool : Tool<NoArgs> {
+    override val name = "screen_collapse_notification_shade"
     override val title = "Collapse notification shade"
     override val description = "Collapses the notification shade"
     override val group = ToolGroup.SCREEN

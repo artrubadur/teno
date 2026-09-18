@@ -1,4 +1,4 @@
-package com.artrubadur.teno.agent.tools.impl
+package com.artrubadur.teno.agent.tools.impl.screen
 
 import com.artrubadur.teno.agent.tools.Tool
 import com.artrubadur.teno.agent.tools.ToolGroup
@@ -12,12 +12,12 @@ import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.put
 
-class GetScreenNodeTool(
+class ScreenGetScreenNodeTool(
     private val store: ScreenNodeStore,
     private val reader: ScreenTreeReader
-) : Tool<GetScreenNodeTool.Args> {
+) : Tool<ScreenGetScreenNodeTool.Args> {
 
-    override val name = "get_screen_node"
+    override val name = "screen_get_screen_node"
 
     override val title = "Get screen node"
 

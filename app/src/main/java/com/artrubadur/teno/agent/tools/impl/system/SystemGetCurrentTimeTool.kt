@@ -1,4 +1,4 @@
-package com.artrubadur.teno.agent.tools.impl
+package com.artrubadur.teno.agent.tools.impl.system
 
 import com.artrubadur.teno.agent.tools.NoArgs
 import com.artrubadur.teno.agent.tools.Tool
@@ -10,9 +10,9 @@ import kotlinx.serialization.json.put
 import java.time.ZonedDateTime
 import java.time.temporal.ChronoUnit
 
-class GetCurrentTimeTool : Tool<NoArgs> {
+class SystemGetCurrentTimeTool : Tool<NoArgs> {
 
-    override val name = "get_current_time"
+    override val name = "system_get_current_time"
 
     override val title = "Get current time"
 

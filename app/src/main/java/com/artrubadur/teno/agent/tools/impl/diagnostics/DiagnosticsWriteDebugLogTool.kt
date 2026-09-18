@@ -1,4 +1,4 @@
-package com.artrubadur.teno.agent.tools.impl
+package com.artrubadur.teno.agent.tools.impl.diagnostics
 
 import android.util.Log
 import com.artrubadur.teno.agent.tools.Tool
@@ -10,9 +10,9 @@ import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.put
 
-class WriteDebugLogTool : Tool<WriteDebugLogTool.Args> {
+class DiagnosticsWriteDebugLogTool : Tool<DiagnosticsWriteDebugLogTool.Args> {
 
-    override val name = "write_debug_log"
+    override val name = "diagnostics_write_debug_log"
 
     override val title = "Write debug log"
 
@@ -61,4 +61,3 @@ class WriteDebugLogTool : Tool<WriteDebugLogTool.Args> {
         ERROR
     }
 }
-

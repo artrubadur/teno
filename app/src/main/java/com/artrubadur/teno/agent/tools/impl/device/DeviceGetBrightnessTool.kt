@@ -1,4 +1,4 @@
-package com.artrubadur.teno.agent.tools.impl
+package com.artrubadur.teno.agent.tools.impl.device
 
 import android.content.Context
 import android.provider.Settings
@@ -11,16 +11,16 @@ import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.put
 import kotlin.math.roundToInt
 
-class GetBrightnessTool(
+class DeviceGetBrightnessTool(
     private val context: Context
 ) : Tool<NoArgs> {
 
-    override val name = "get_brightness"
+    override val name = "device_get_brightness"
 
     override val title = "Get brightness"
 
     override val description = "Returns current system brightness"
-    override val group = ToolGroup.SYSTEM
+    override val group = ToolGroup.DEVICE
 
     override val risk = ToolRisk.SAFE
 

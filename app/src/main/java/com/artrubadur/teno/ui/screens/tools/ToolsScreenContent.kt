@@ -35,8 +35,9 @@ fun ToolsScreenContent(
         .sortedBy { (group, _) ->
             when (group) {
                 ToolGroup.SCREEN -> 0
-                ToolGroup.SYSTEM -> 1
-                ToolGroup.DIAGNOSTICS -> 2
+                ToolGroup.DEVICE -> 1
+                ToolGroup.SYSTEM -> 2
+                ToolGroup.DIAGNOSTICS -> 3
             }
         }
 

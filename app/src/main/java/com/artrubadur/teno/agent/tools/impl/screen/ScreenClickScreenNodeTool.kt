@@ -1,4 +1,4 @@
-package com.artrubadur.teno.agent.tools.impl
+package com.artrubadur.teno.agent.tools.impl.screen
 
 import com.artrubadur.teno.agent.tools.Tool
 import com.artrubadur.teno.agent.tools.ToolGroup
@@ -12,12 +12,12 @@ import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.put
 
-class ClickScreenNodeTool(
+class ScreenClickScreenNodeTool(
     private val store: ScreenNodeStore,
     private val clicker: ScreenNodeClicker
-) : Tool<ClickScreenNodeTool.Args> {
+) : Tool<ScreenClickScreenNodeTool.Args> {
 
-    override val name = "click_screen_node"
+    override val name = "screen_click_screen_node"
 
     override val title = "Click screen node"
 

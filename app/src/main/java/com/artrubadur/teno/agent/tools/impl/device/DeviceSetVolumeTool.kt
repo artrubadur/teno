@@ -1,4 +1,4 @@
-package com.artrubadur.teno.agent.tools.impl
+package com.artrubadur.teno.agent.tools.impl.device
 
 import android.content.Context
 import android.media.AudioManager
@@ -12,18 +12,18 @@ import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.put
 import kotlin.math.roundToInt
 
-class SetVolumeTool(
+class DeviceSetVolumeTool(
     private val context: Context
-) : Tool<SetVolumeTool.Args> {
+) : Tool<DeviceSetVolumeTool.Args> {
 
-    override val name = "set_volume"
+    override val name = "device_set_volume"
 
     override val title = "Set volume"
 
     override val description =
         "Sets system media volume as a value from 0.0 to 1.0"
 
-    override val group = ToolGroup.SYSTEM
+    override val group = ToolGroup.DEVICE
 
     override val risk = ToolRisk.SAFE
 

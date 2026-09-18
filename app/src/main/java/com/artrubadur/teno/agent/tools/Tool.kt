@@ -39,7 +39,8 @@ enum class ToolRisk {
 enum class ToolGroup {
     SYSTEM,
     SCREEN,
-    DIAGNOSTICS
+    DIAGNOSTICS,
+    DEVICE
 }
 
 fun Tool<*>.toSpec() = ToolSpec(

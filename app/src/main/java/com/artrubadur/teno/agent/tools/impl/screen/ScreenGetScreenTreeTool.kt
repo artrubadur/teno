@@ -1,4 +1,4 @@
-package com.artrubadur.teno.agent.tools.impl
+package com.artrubadur.teno.agent.tools.impl.screen
 
 import com.artrubadur.teno.agent.tools.NoArgs
 import com.artrubadur.teno.agent.tools.Tool
@@ -13,12 +13,12 @@ import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.put
 
-class GetScreenTreeTool(
+class ScreenGetScreenTreeTool(
     private val reader: ScreenTreeReader,
     private val store: ScreenNodeStore
 ) : Tool<NoArgs> {
 
-    override val name = "get_screen_tree"
+    override val name = "screen_get_screen_tree"
 
     override val title = "Get screen tree"
 

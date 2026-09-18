@@ -1,25 +1,26 @@
-package com.artrubadur.teno.agent.tools.impl
+package com.artrubadur.teno.agent.tools.impl.system
 
+import android.content.ClipData
 import android.content.ClipboardManager
 import android.content.Context
-import com.artrubadur.teno.agent.tools.NoArgs
 import com.artrubadur.teno.agent.tools.Tool
 import com.artrubadur.teno.agent.tools.ToolGroup
 import com.artrubadur.teno.agent.tools.ToolRisk
+import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.put
 
-class GetClipboardTool(
+class SystemSetClipboardTool(
     private val context: Context
-) : Tool<NoArgs> {
+) : Tool<SystemSetClipboardTool.Args> {
 
-    override val name = "get_clipboard"
+    override val name = "system_set_clipboard"
 
-    override val title = "Get clipboard"
+    override val title = "Set clipboard text"
 
     override val description =
-        "Returns current clipboard text"
+        "Sets clipboard text"
 
     override val group = ToolGroup.SYSTEM
 
@@ -28,10 +29,10 @@ class GetClipboardTool(
     override val enabled = true
 
     override val argsSerializer =
-        NoArgs.serializer()
+        Args.serializer()
 
     override suspend fun executeTyped(
-        args: NoArgs
+        args: Args
     ): JsonObject {
 
         val clipboard =
@@ -39,17 +40,21 @@ class GetClipboardTool(
                 Context.CLIPBOARD_SERVICE
             ) as ClipboardManager
 
-        val text =
-            clipboard.primaryClip
-                ?.getItemAt(0)
-                ?.coerceToText(context)
-                ?.toString()
+        val clip =
+            ClipData.newPlainText(
+                "agent",
+                args.text
+            )
+
+        clipboard.setPrimaryClip(clip)
 
         return buildJsonObject {
-            put(
-                "text",
-                text ?: ""
-            )
+            put("ok", true)
         }
     }
+
+    @Serializable
+    data class Args(
+        val text: String
+    )
 }

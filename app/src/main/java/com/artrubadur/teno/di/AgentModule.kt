@@ -7,19 +7,19 @@ import com.artrubadur.teno.agent.tools.Tool
 import com.artrubadur.teno.agent.tools.ToolBroker
 import com.artrubadur.teno.agent.tools.ToolManager
 import com.artrubadur.teno.agent.tools.ToolRegistry
-import com.artrubadur.teno.agent.tools.impl.ClickScreenNodeTool
-import com.artrubadur.teno.agent.tools.impl.CollapseNotificationShadeTool
-import com.artrubadur.teno.agent.tools.impl.GetBrightnessTool
-import com.artrubadur.teno.agent.tools.impl.GetClipboardTool
-import com.artrubadur.teno.agent.tools.impl.GetCurrentTimeTool
-import com.artrubadur.teno.agent.tools.impl.GetScreenNodeTool
-import com.artrubadur.teno.agent.tools.impl.GetScreenTreeTool
-import com.artrubadur.teno.agent.tools.impl.GetVolumeTool
-import com.artrubadur.teno.agent.tools.impl.SetBrightnessTool
-import com.artrubadur.teno.agent.tools.impl.SetClipboardTool
-import com.artrubadur.teno.agent.tools.impl.SetVolumeTool
-import com.artrubadur.teno.agent.tools.impl.ToggleFlashlightTool
-import com.artrubadur.teno.agent.tools.impl.WriteDebugLogTool
+import com.artrubadur.teno.agent.tools.impl.device.DeviceGetBrightnessTool
+import com.artrubadur.teno.agent.tools.impl.device.DeviceGetVolumeTool
+import com.artrubadur.teno.agent.tools.impl.device.DeviceSetBrightnessTool
+import com.artrubadur.teno.agent.tools.impl.device.DeviceSetVolumeTool
+import com.artrubadur.teno.agent.tools.impl.device.DeviceToggleFlashlightTool
+import com.artrubadur.teno.agent.tools.impl.diagnostics.DiagnosticsWriteDebugLogTool
+import com.artrubadur.teno.agent.tools.impl.screen.ScreenClickScreenNodeTool
+import com.artrubadur.teno.agent.tools.impl.screen.ScreenCollapseNotificationShadeTool
+import com.artrubadur.teno.agent.tools.impl.screen.ScreenGetScreenNodeTool
+import com.artrubadur.teno.agent.tools.impl.screen.ScreenGetScreenTreeTool
+import com.artrubadur.teno.agent.tools.impl.system.SystemGetClipboardTool
+import com.artrubadur.teno.agent.tools.impl.system.SystemGetCurrentTimeTool
+import com.artrubadur.teno.agent.tools.impl.system.SystemSetClipboardTool
 import com.artrubadur.teno.agent.tools.integrations.ScreenNodeClicker
 import com.artrubadur.teno.agent.tools.integrations.ScreenNodeStore
 import com.artrubadur.teno.agent.tools.integrations.ScreenTreeReader
@@ -32,19 +32,19 @@ val agentModule = module {
     single { ScreenTreeReader(androidContext()) }
     single { ScreenNodeClicker(get()) }
 
-    factory { WriteDebugLogTool() } bind Tool::class
-    factory { GetCurrentTimeTool() } bind Tool::class
-    factory { GetBrightnessTool(androidContext()) } bind Tool::class
-    factory { SetBrightnessTool(androidContext()) } bind Tool::class
-    factory { GetVolumeTool(androidContext()) } bind Tool::class
-    factory { SetVolumeTool(androidContext()) } bind Tool::class
-    factory { ToggleFlashlightTool(androidContext()) } bind Tool::class
-    factory { GetClipboardTool(androidContext()) } bind Tool::class
-    factory { SetClipboardTool(androidContext()) } bind Tool::class
-    factory { GetScreenTreeTool(get(), get()) } bind Tool::class
-    factory { GetScreenNodeTool(get(), get()) } bind Tool::class
-    factory { ClickScreenNodeTool(get(), get()) } bind Tool::class
-    factory { CollapseNotificationShadeTool() } bind Tool::class
+    factory { DiagnosticsWriteDebugLogTool() } bind Tool::class
+    factory { SystemGetCurrentTimeTool() } bind Tool::class
+    factory { DeviceGetBrightnessTool(androidContext()) } bind Tool::class
+    factory { DeviceSetBrightnessTool(androidContext()) } bind Tool::class
+    factory { DeviceGetVolumeTool(androidContext()) } bind Tool::class
+    factory { DeviceSetVolumeTool(androidContext()) } bind Tool::class
+    factory { DeviceToggleFlashlightTool(androidContext()) } bind Tool::class
+    factory { SystemGetClipboardTool(androidContext()) } bind Tool::class
+    factory { SystemSetClipboardTool(androidContext()) } bind Tool::class
+    factory { ScreenGetScreenTreeTool(get(), get()) } bind Tool::class
+    factory { ScreenGetScreenNodeTool(get(), get()) } bind Tool::class
+    factory { ScreenClickScreenNodeTool(get(), get()) } bind Tool::class
+    factory { ScreenCollapseNotificationShadeTool() } bind Tool::class
 
     single {
         ToolRegistry(
