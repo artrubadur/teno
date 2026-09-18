@@ -7,6 +7,10 @@ import com.artrubadur.teno.agent.tools.Tool
 import com.artrubadur.teno.agent.tools.ToolBroker
 import com.artrubadur.teno.agent.tools.ToolManager
 import com.artrubadur.teno.agent.tools.ToolRegistry
+import com.artrubadur.teno.agent.tools.impl.apps.AppsGetInfoTool
+import com.artrubadur.teno.agent.tools.impl.apps.AppsListInstalledTool
+import com.artrubadur.teno.agent.tools.impl.apps.AppsOpenTool
+import com.artrubadur.teno.agent.tools.impl.apps.AppsSearchTool
 import com.artrubadur.teno.agent.tools.impl.contacts.ContactsCreateTool
 import com.artrubadur.teno.agent.tools.impl.contacts.ContactsDeleteTool
 import com.artrubadur.teno.agent.tools.impl.contacts.ContactsGetTool
@@ -55,6 +59,10 @@ val agentModule = module {
     factory { ContactsCreateTool(androidContext()) } bind Tool::class
     factory { ContactsUpdateTool(androidContext()) } bind Tool::class
     factory { ContactsDeleteTool(androidContext()) } bind Tool::class
+    factory { AppsListInstalledTool(androidContext()) } bind Tool::class
+    factory { AppsOpenTool(androidContext()) } bind Tool::class
+    factory { AppsSearchTool(androidContext()) } bind Tool::class
+    factory { AppsGetInfoTool(androidContext()) } bind Tool::class
 
     single {
         ToolRegistry(
