@@ -1,4 +1,4 @@
-package com.artrubadur.teno.agent.tools.integrations.screen
+package com.artrubadur.teno.agent.tools.integrations.contacts
 
 import android.content.ContentResolver
 import android.content.ContentUris

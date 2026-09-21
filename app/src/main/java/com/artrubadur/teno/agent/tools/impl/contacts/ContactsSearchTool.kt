@@ -5,8 +5,8 @@ import com.artrubadur.teno.agent.tools.Tool
 import com.artrubadur.teno.agent.tools.ToolGroup
 import com.artrubadur.teno.agent.tools.ToolPermission
 import com.artrubadur.teno.agent.tools.ToolRisk
-import com.artrubadur.teno.agent.tools.integrations.screen.findContactIds
-import com.artrubadur.teno.agent.tools.integrations.screen.readContact
+import com.artrubadur.teno.agent.tools.integrations.contacts.findContactIds
+import com.artrubadur.teno.agent.tools.integrations.contacts.readContact
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.JsonArray
 import kotlinx.serialization.json.JsonObject
