@@ -18,4 +18,18 @@ class ScreenNodeClicker(
             error("Click failed")
         }
     }
+
+    fun longClick(reference: ScreenNodeReference) {
+        val node = reader.find(reference)
+        if (!node.node.isLongClickable) {
+            error("Node is not long clickable")
+        }
+        if (!node.enabled) {
+            error("Node disabled")
+        }
+
+        if (!node.node.performAction(AccessibilityNodeInfo.ACTION_LONG_CLICK)) {
+            error("Long click failed")
+        }
+    }
 }
