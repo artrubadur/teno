@@ -26,11 +26,18 @@ class AgentSession(
         get() = _messages
 
     private val pendingToolCalls = ArrayDeque<ToolCall>()
+    private var nextToolCallIndex = 1
 
     fun addToolCalls(calls: List<ToolCall>) {
-        pendingToolCalls.addAll(calls)
-        _messages += LlmMessage.AssistantToolCalls(calls)
+        val uniqueCalls = calls.map(::withUniqueId)
+        pendingToolCalls.addAll(uniqueCalls)
+        _messages += LlmMessage.AssistantToolCalls(uniqueCalls)
         stepCount += 1
+    }
+
+    private fun withUniqueId(call: ToolCall): ToolCall {
+        val baseId = call.id.ifBlank { "tool-${call.tool}" }
+        return call.copy(id = "$baseId-${nextToolCallIndex++}")
     }
 
     fun consumeToolCall(): ToolCall? {
