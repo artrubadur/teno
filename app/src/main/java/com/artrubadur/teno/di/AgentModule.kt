@@ -43,6 +43,7 @@ import com.artrubadur.teno.agent.tools.impl.sms.SmsSendTool
 import com.artrubadur.teno.agent.tools.impl.system.SystemGetClipboardTool
 import com.artrubadur.teno.agent.tools.impl.system.SystemGetCurrentTimeTool
 import com.artrubadur.teno.agent.tools.impl.system.SystemSetClipboardTool
+import com.artrubadur.teno.agent.tools.impl.system.SystemWaitTool
 import com.artrubadur.teno.agent.tools.integrations.screen.ScreenEdgeScroller
 import com.artrubadur.teno.agent.tools.integrations.screen.ScreenNodeClicker
 import com.artrubadur.teno.agent.tools.integrations.screen.ScreenNodeScroller
@@ -83,6 +84,7 @@ val agentModule = module {
     factory { SystemGetCurrentTimeTool() } bind Tool::class
     factory { SystemGetClipboardTool(androidContext()) } bind Tool::class
     factory { SystemSetClipboardTool(androidContext()) } bind Tool::class
+    factory { SystemWaitTool() } bind Tool::class
 
     factory { ContactsSearchTool(androidContext()) } bind Tool::class
     factory { ContactsGetTool(androidContext()) } bind Tool::class
