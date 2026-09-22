@@ -34,7 +34,6 @@ class ScreenLongClickScreenNodeTool(
         clicker.longClick(reference)
         return buildJsonObject {
             put("ok", true)
-            put("node_id", nodeId)
         }
     }
 

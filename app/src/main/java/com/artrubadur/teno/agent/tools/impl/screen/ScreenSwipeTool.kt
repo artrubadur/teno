@@ -20,7 +20,7 @@ class ScreenSwipeTool(
     override val name = "screen_swipe"
     override val title = "Swipe screen"
     override val description =
-        "Swipes the screen in the specified direction; an empty node_id swipes at the screen center"
+        "Performs one swipe on node_id; an empty node_id swipes at the screen center"
     override val group = ToolGroup.SCREEN
     override val risk = ToolRisk.SAFE
     override val enabled = true
@@ -35,7 +35,6 @@ class ScreenSwipeTool(
         swiper.swipe(reference, args.direction)
         return buildJsonObject {
             put("ok", true)
-            nodeId?.let { put("node_id", it) }
         }
     }
 

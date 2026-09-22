@@ -48,10 +48,10 @@ class ScreenNodeSwiper(
                 ?: (metrics.heightPixels / 2f)
         }
         val end = when (direction) {
-            ScreenSwipeDirection.LEFT -> PointF(center.x - distance, center.y)
-            ScreenSwipeDirection.RIGHT -> PointF(center.x + distance, center.y)
-            ScreenSwipeDirection.UP -> PointF(center.x, center.y - distance)
-            ScreenSwipeDirection.DOWN -> PointF(center.x, center.y + distance)
+            ScreenSwipeDirection.RIGHT -> PointF(center.x - distance, center.y)
+            ScreenSwipeDirection.LEFT -> PointF(center.x + distance, center.y)
+            ScreenSwipeDirection.DOWN -> PointF(center.x, center.y - distance)
+            ScreenSwipeDirection.UP -> PointF(center.x, center.y + distance)
         }
 
         val service = ScreenAccessibilityBridge.service

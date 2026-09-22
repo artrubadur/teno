@@ -33,13 +33,17 @@ import com.artrubadur.teno.agent.tools.impl.screen.ScreenCollapseNotificationSha
 import com.artrubadur.teno.agent.tools.impl.screen.ScreenGetScreenNodeTool
 import com.artrubadur.teno.agent.tools.impl.screen.ScreenGetScreenTreeTool
 import com.artrubadur.teno.agent.tools.impl.screen.ScreenLongClickScreenNodeTool
+import com.artrubadur.teno.agent.tools.impl.screen.ScreenScrollToEdgeTool
+import com.artrubadur.teno.agent.tools.impl.screen.ScreenScrollToNodeTool
 import com.artrubadur.teno.agent.tools.impl.screen.ScreenSwipeTool
 import com.artrubadur.teno.agent.tools.impl.sms.SmsSearchTool
 import com.artrubadur.teno.agent.tools.impl.sms.SmsSendTool
 import com.artrubadur.teno.agent.tools.impl.system.SystemGetClipboardTool
 import com.artrubadur.teno.agent.tools.impl.system.SystemGetCurrentTimeTool
 import com.artrubadur.teno.agent.tools.impl.system.SystemSetClipboardTool
+import com.artrubadur.teno.agent.tools.integrations.screen.ScreenEdgeScroller
 import com.artrubadur.teno.agent.tools.integrations.screen.ScreenNodeClicker
+import com.artrubadur.teno.agent.tools.integrations.screen.ScreenNodeScroller
 import com.artrubadur.teno.agent.tools.integrations.screen.ScreenNodeStore
 import com.artrubadur.teno.agent.tools.integrations.screen.ScreenNodeSwiper
 import com.artrubadur.teno.agent.tools.integrations.screen.ScreenTreeReader
@@ -52,11 +56,15 @@ val agentModule = module {
     single { ScreenTreeReader(androidContext()) }
     single { ScreenNodeClicker(get()) }
     single { ScreenNodeSwiper(androidContext(), get()) }
+    single { ScreenNodeScroller(get()) }
+    single { ScreenEdgeScroller(get()) }
 
     factory { ScreenGetScreenTreeTool(get(), get()) } bind Tool::class
     factory { ScreenGetScreenNodeTool(get(), get()) } bind Tool::class
     factory { ScreenClickScreenNodeTool(get(), get()) } bind Tool::class
     factory { ScreenLongClickScreenNodeTool(get(), get()) } bind Tool::class
+    factory { ScreenScrollToNodeTool(get(), get()) } bind Tool::class
+    factory { ScreenScrollToEdgeTool(get()) } bind Tool::class
     factory { ScreenCollapseNotificationShadeTool() } bind Tool::class
     factory { ScreenSwipeTool(get(), get()) } bind Tool::class
 
