@@ -33,6 +33,7 @@ import com.artrubadur.teno.agent.tools.impl.screen.ScreenCollapseNotificationSha
 import com.artrubadur.teno.agent.tools.impl.screen.ScreenGetScreenNodeTool
 import com.artrubadur.teno.agent.tools.impl.screen.ScreenGetScreenTreeTool
 import com.artrubadur.teno.agent.tools.impl.screen.ScreenLongClickScreenNodeTool
+import com.artrubadur.teno.agent.tools.impl.screen.ScreenPressEnterTool
 import com.artrubadur.teno.agent.tools.impl.screen.ScreenPressNavigationButtonTool
 import com.artrubadur.teno.agent.tools.impl.screen.ScreenScrollToEdgeTool
 import com.artrubadur.teno.agent.tools.impl.screen.ScreenScrollToNodeTool
@@ -45,6 +46,7 @@ import com.artrubadur.teno.agent.tools.impl.system.SystemGetCurrentTimeTool
 import com.artrubadur.teno.agent.tools.impl.system.SystemSetClipboardTool
 import com.artrubadur.teno.agent.tools.impl.system.SystemWaitTool
 import com.artrubadur.teno.agent.tools.integrations.screen.ScreenEdgeScroller
+import com.artrubadur.teno.agent.tools.integrations.screen.ScreenEnterPresser
 import com.artrubadur.teno.agent.tools.integrations.screen.ScreenNodeClicker
 import com.artrubadur.teno.agent.tools.integrations.screen.ScreenNodeScroller
 import com.artrubadur.teno.agent.tools.integrations.screen.ScreenNodeStore
@@ -63,6 +65,7 @@ val agentModule = module {
     single { ScreenNodeScroller(get()) }
     single { ScreenEdgeScroller(get()) }
     single { ScreenNodeTextInputter(get()) }
+    single { ScreenEnterPresser(get()) }
 
     factory { ScreenGetScreenTreeTool(get(), get()) } bind Tool::class
     factory { ScreenGetScreenNodeTool(get(), get()) } bind Tool::class
@@ -74,6 +77,7 @@ val agentModule = module {
     factory { ScreenSwipeTool(get(), get()) } bind Tool::class
     factory { ScreenPressNavigationButtonTool() } bind Tool::class
     factory { ScreenSetTextTool(get(), get()) } bind Tool::class
+    factory { ScreenPressEnterTool(get()) } bind Tool::class
 
     factory { DeviceGetBrightnessTool(androidContext()) } bind Tool::class
     factory { DeviceSetBrightnessTool(androidContext()) } bind Tool::class
