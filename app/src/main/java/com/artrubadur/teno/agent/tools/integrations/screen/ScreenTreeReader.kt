@@ -116,8 +116,6 @@ class ScreenTreeReader(
             .flatten()
             .sortedWith(nodeOrder)
 
-        if (!node.isVisibleToUser || bounds.isEmpty) return children
-
         val role = node.role()
         val text = node.cleanText()
         val hint = node.hintText?.clean()
@@ -159,6 +157,7 @@ class ScreenTreeReader(
                 text = text,
                 hint = hint,
                 bounds = bounds,
+                visible = node.isVisibleToUser,
                 clickable = node.isClickable,
                 longClickable = node.isLongClickable,
                 enabled = node.isEnabled,
@@ -227,6 +226,7 @@ data class ScreenNode(
     val text: String?,
     val hint: String?,
     val bounds: Rect,
+    val visible: Boolean,
     val clickable: Boolean,
     val longClickable: Boolean,
     val enabled: Boolean,

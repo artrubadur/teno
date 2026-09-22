@@ -23,7 +23,7 @@ class ScreenGetScreenTreeTool(
     override val title = "Get screen tree"
 
     override val description =
-        "Returns nodes for visible text, buttons, input fields, and other screen elements."
+        "Returns visible and off-screen text, buttons, input fields, and other available screen elements."
 
     override val group = ToolGroup.SCREEN
 
@@ -60,6 +60,7 @@ class ScreenGetScreenTreeTool(
             put("role", role)
             text?.let { put("text", it) }
             hint?.let { put("hint", it) }
+            put("visible", visible)
             // put(
             //     "bounds",
             //     JsonArray(
