@@ -22,7 +22,7 @@ class AppsOpenTool(private val context: Context) : Tool<AppsOpenTool.Args> {
 
     override suspend fun executeTyped(args: Args): JsonObject {
         val result = context.openApplication(args.packageName)
-        delay(3.seconds)
+        delay(5.seconds)
         return result
     }
 

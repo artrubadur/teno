@@ -1,6 +1,5 @@
 package com.artrubadur.teno.agent.tools.impl.screen
 
-import com.artrubadur.teno.agent.tools.NoArgs
 import com.artrubadur.teno.agent.tools.Tool
 import com.artrubadur.teno.agent.tools.ToolGroup
 import com.artrubadur.teno.agent.tools.ToolPermission
@@ -8,6 +7,8 @@ import com.artrubadur.teno.agent.tools.ToolRisk
 import com.artrubadur.teno.agent.tools.integrations.screen.ScreenNode
 import com.artrubadur.teno.agent.tools.integrations.screen.ScreenNodeStore
 import com.artrubadur.teno.agent.tools.integrations.screen.ScreenTreeReader
+import com.artrubadur.teno.agent.tools.integrations.screen.ScreenTreeScope
+import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.JsonArray
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.buildJsonObject
@@ -16,14 +17,14 @@ import kotlinx.serialization.json.put
 class ScreenGetScreenTreeTool(
     private val reader: ScreenTreeReader,
     private val store: ScreenNodeStore
-) : Tool<NoArgs> {
+) : Tool<ScreenGetScreenTreeTool.Args> {
 
     override val name = "screen_get_screen_tree"
 
     override val title = "Get screen tree"
 
     override val description =
-        "Returns screen nodes with numeric ids in top-to-bottom order"
+        "Returns screen nodes with numeric ids; optional scopes filter by focusable, clickable, long_clickable, or visible"
 
     override val group = ToolGroup.SCREEN
 
@@ -33,14 +34,13 @@ class ScreenGetScreenTreeTool(
 
     override val requiredPermissions = setOf(ToolPermission.ACCESSIBILITY_SERVICE)
 
-    override val argsSerializer = NoArgs.serializer()
+    override val argsSerializer = Args.serializer()
 
-    override suspend fun executeTyped(args: NoArgs): JsonObject {
-        val capture = reader.read()
+    override suspend fun executeTyped(args: Args): JsonObject {
+        val capture = reader.read(args.scopes)
         if (capture.nodes.isEmpty()) {
             error("Screen tree is empty. Wait for the screen to finish loading, then call get_screen_tree again.")
         }
-
         store.replace(capture)
 
         return buildJsonObject {
@@ -57,13 +57,18 @@ class ScreenGetScreenTreeTool(
         }
     }
 
+    @Serializable
+    data class Args(
+        val scopes: List<ScreenTreeScope> = emptyList(),
+    )
+
     private fun ScreenNode.toJson(): JsonObject =
         buildJsonObject {
             put("id", id)
             put("role", role)
+            if (visible) put("visible", true)
             text?.let { put("text", it) }
             hint?.let { put("hint", it) }
-            put("visible", visible)
             // put(
             //     "bounds",
             //     JsonArray(
@@ -75,9 +80,10 @@ class ScreenGetScreenTreeTool(
             //         )
             //     )
             // )
-            put("clickable", clickable)
-            put("long_clickable", longClickable)
-            put("enabled", enabled)
+            if (focusable) put("focusable", true)
+            if (clickable) put("clickable", true)
+            if (longClickable) put("long_clickable", true)
+            if (enabled) put("enabled", true)
             if (focused) put("focused", true)
             checked?.let { put("checked", it) }
             if (selected) put("selected", true)

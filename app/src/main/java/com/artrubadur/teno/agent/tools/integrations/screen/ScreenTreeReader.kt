@@ -5,7 +5,24 @@ import android.graphics.Rect
 import android.os.Build
 import android.view.accessibility.AccessibilityNodeInfo
 import android.view.accessibility.AccessibilityWindowInfo
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Serializable
 import java.security.MessageDigest
+
+@Serializable
+enum class ScreenTreeScope {
+    @SerialName("focusable")
+    FOCUSABLE,
+
+    @SerialName("clickable")
+    CLICKABLE,
+
+    @SerialName("long_clickable")
+    LONG_CLICKABLE,
+
+    @SerialName("visible")
+    VISIBLE,
+}
 
 class ScreenNodeStore {
     private var referencesById: Map<String, ScreenNodeReference> = emptyMap()
@@ -30,7 +47,7 @@ class ScreenNodeStore {
 class ScreenTreeReader(
     private val context: Context
 ) {
-    fun read(): ScreenCapture {
+    fun read(scopes: List<ScreenTreeScope> = emptyList()): ScreenCapture {
         val service = ScreenAccessibilityBridge.service
             ?: error("Accessibility unavailable. Enable Teno accessibility.")
         val windows = service.windows
@@ -61,6 +78,7 @@ class ScreenTreeReader(
             path = "0"
         )
             .sortedWith(nodeOrder)
+            .mapNotNull { node -> node.filter(scopes) }
 
         val ids = Ids()
         val occurrences = mutableMapOf<String, Int>()
@@ -76,6 +94,24 @@ class ScreenTreeReader(
             packageName = root.packageName?.toString(),
             windowType = window.type
         )
+    }
+
+    private fun ScreenNode.filter(scopes: List<ScreenTreeScope>): ScreenNode? {
+        if (scopes.isEmpty()) return this
+        val filteredChildren = children.mapNotNull { child -> child.filter(scopes) }
+        val matches = scopes.any { scope ->
+            when (scope) {
+                ScreenTreeScope.FOCUSABLE -> focusable
+                ScreenTreeScope.CLICKABLE -> clickable
+                ScreenTreeScope.LONG_CLICKABLE -> longClickable
+                ScreenTreeScope.VISIBLE -> visible
+            }
+        }
+        return if (matches || filteredChildren.isNotEmpty()) {
+            copy(children = filteredChildren)
+        } else {
+            null
+        }
     }
 
     fun find(reference: ScreenNodeReference): ScreenNode {
@@ -157,6 +193,7 @@ class ScreenTreeReader(
                 text = text,
                 hint = hint,
                 bounds = bounds,
+                focusable = node.isFocusable,
                 visible = node.isVisibleToUser,
                 clickable = node.isClickable,
                 longClickable = node.isLongClickable,
@@ -226,6 +263,7 @@ data class ScreenNode(
     val text: String?,
     val hint: String?,
     val bounds: Rect,
+    val focusable: Boolean,
     val visible: Boolean,
     val clickable: Boolean,
     val longClickable: Boolean,
