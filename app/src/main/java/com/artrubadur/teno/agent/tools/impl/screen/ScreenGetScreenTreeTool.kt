@@ -37,6 +37,9 @@ class ScreenGetScreenTreeTool(
 
     override suspend fun executeTyped(args: NoArgs): JsonObject {
         val capture = reader.read()
+        if (capture.nodes.isEmpty()) {
+            error("Screen tree is empty. Wait for the screen to finish loading, then call get_screen_tree again.")
+        }
 
         store.replace(capture)
 

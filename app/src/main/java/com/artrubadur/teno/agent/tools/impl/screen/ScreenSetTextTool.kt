@@ -18,7 +18,8 @@ class ScreenSetTextTool(
 ) : Tool<ScreenSetTextTool.Args> {
     override val name = "screen_set_text"
     override val title = "Set screen text"
-    override val description = "Replaces the text in an editable screen field using its node_id"
+    override val description =
+        "Replaces text in an editable field using the exact node_id from get_screen_tree"
     override val group = ToolGroup.SCREEN
     override val risk = ToolRisk.SAFE
     override val enabled = true
@@ -27,7 +28,7 @@ class ScreenSetTextTool(
 
     override suspend fun executeTyped(args: Args): JsonObject {
         val nodeId = args.nodeId.extractNodeId()
-            ?: error("Invalid node id")
+            ?: error("Invalid node_id. Use the exact id returned by get_screen_tree")
         val reference = store.reference(nodeId)
             ?: error("Call get_screen_tree first")
 
