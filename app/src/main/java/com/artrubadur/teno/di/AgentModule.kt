@@ -36,6 +36,7 @@ import com.artrubadur.teno.agent.tools.impl.screen.ScreenLongClickScreenNodeTool
 import com.artrubadur.teno.agent.tools.impl.screen.ScreenPressNavigationButtonTool
 import com.artrubadur.teno.agent.tools.impl.screen.ScreenScrollToEdgeTool
 import com.artrubadur.teno.agent.tools.impl.screen.ScreenScrollToNodeTool
+import com.artrubadur.teno.agent.tools.impl.screen.ScreenSetTextTool
 import com.artrubadur.teno.agent.tools.impl.screen.ScreenSwipeTool
 import com.artrubadur.teno.agent.tools.impl.sms.SmsSearchTool
 import com.artrubadur.teno.agent.tools.impl.sms.SmsSendTool
@@ -47,6 +48,7 @@ import com.artrubadur.teno.agent.tools.integrations.screen.ScreenNodeClicker
 import com.artrubadur.teno.agent.tools.integrations.screen.ScreenNodeScroller
 import com.artrubadur.teno.agent.tools.integrations.screen.ScreenNodeStore
 import com.artrubadur.teno.agent.tools.integrations.screen.ScreenNodeSwiper
+import com.artrubadur.teno.agent.tools.integrations.screen.ScreenNodeTextInputter
 import com.artrubadur.teno.agent.tools.integrations.screen.ScreenTreeReader
 import org.koin.android.ext.koin.androidContext
 import org.koin.dsl.bind
@@ -59,6 +61,7 @@ val agentModule = module {
     single { ScreenNodeSwiper(androidContext(), get()) }
     single { ScreenNodeScroller(get()) }
     single { ScreenEdgeScroller(get()) }
+    single { ScreenNodeTextInputter(get()) }
 
     factory { ScreenGetScreenTreeTool(get(), get()) } bind Tool::class
     factory { ScreenGetScreenNodeTool(get(), get()) } bind Tool::class
@@ -69,6 +72,7 @@ val agentModule = module {
     factory { ScreenCollapseNotificationShadeTool() } bind Tool::class
     factory { ScreenSwipeTool(get(), get()) } bind Tool::class
     factory { ScreenPressNavigationButtonTool() } bind Tool::class
+    factory { ScreenSetTextTool(get(), get()) } bind Tool::class
 
     factory { DeviceGetBrightnessTool(androidContext()) } bind Tool::class
     factory { DeviceSetBrightnessTool(androidContext()) } bind Tool::class
