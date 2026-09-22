@@ -33,6 +33,7 @@ import com.artrubadur.teno.agent.tools.impl.screen.ScreenCollapseNotificationSha
 import com.artrubadur.teno.agent.tools.impl.screen.ScreenGetScreenNodeTool
 import com.artrubadur.teno.agent.tools.impl.screen.ScreenGetScreenTreeTool
 import com.artrubadur.teno.agent.tools.impl.screen.ScreenLongClickScreenNodeTool
+import com.artrubadur.teno.agent.tools.impl.screen.ScreenPressNavigationButtonTool
 import com.artrubadur.teno.agent.tools.impl.screen.ScreenScrollToEdgeTool
 import com.artrubadur.teno.agent.tools.impl.screen.ScreenScrollToNodeTool
 import com.artrubadur.teno.agent.tools.impl.screen.ScreenSwipeTool
@@ -67,6 +68,7 @@ val agentModule = module {
     factory { ScreenScrollToEdgeTool(get()) } bind Tool::class
     factory { ScreenCollapseNotificationShadeTool() } bind Tool::class
     factory { ScreenSwipeTool(get(), get()) } bind Tool::class
+    factory { ScreenPressNavigationButtonTool() } bind Tool::class
 
     factory { DeviceGetBrightnessTool(androidContext()) } bind Tool::class
     factory { DeviceSetBrightnessTool(androidContext()) } bind Tool::class
