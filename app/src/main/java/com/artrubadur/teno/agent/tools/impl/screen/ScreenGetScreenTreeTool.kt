@@ -23,7 +23,7 @@ class ScreenGetScreenTreeTool(
     override val title = "Get screen tree"
 
     override val description =
-        "Returns visible and off-screen text, buttons, input fields, and other available screen elements."
+        "Returns screen nodes with numeric ids in top-to-bottom order"
 
     override val group = ToolGroup.SCREEN
 
@@ -75,9 +75,9 @@ class ScreenGetScreenTreeTool(
             //         )
             //     )
             // )
-            if (clickable) put("clickable", true)
-            if (longClickable) put("long_clickable", true)
-            if (!enabled) put("enabled", false)
+            put("clickable", clickable)
+            put("long_clickable", longClickable)
+            put("enabled", enabled)
             if (focused) put("focused", true)
             checked?.let { put("checked", it) }
             if (selected) put("selected", true)

@@ -6,11 +6,13 @@ import com.artrubadur.teno.agent.tools.ToolPermission
 import com.artrubadur.teno.agent.tools.ToolRisk
 import com.artrubadur.teno.agent.tools.integrations.screen.ScreenNodeClicker
 import com.artrubadur.teno.agent.tools.integrations.screen.ScreenNodeStore
+import kotlinx.coroutines.delay
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.put
+import kotlin.time.Duration.Companion.milliseconds
 
 class ScreenClickScreenNodeTool(
     private val store: ScreenNodeStore,
@@ -22,7 +24,7 @@ class ScreenClickScreenNodeTool(
     override val title = "Click screen node"
 
     override val description =
-        "Clicks a visible clickable node using its node_id."
+        "Clicks only a node marked clickable in get_screen_tree; use its numeric node_id"
 
     override val group = ToolGroup.SCREEN
 
@@ -36,12 +38,14 @@ class ScreenClickScreenNodeTool(
 
     override suspend fun executeTyped(args: Args): JsonObject {
         val nodeId = args.nodeId.extractNodeId()
-            ?: error("Invalid node id")
+            ?: error("Invalid node id. Call get_screen_tree again and use its numeric id")
 
         val reference = store.reference(nodeId)
-            ?: error("Call get_screen_tree first")
+            ?: error("Node id is unavailable. Call get_screen_tree again")
 
         clicker.click(reference)
+        delay(500.milliseconds)
+
         return buildJsonObject {
             put("ok", true)
         }

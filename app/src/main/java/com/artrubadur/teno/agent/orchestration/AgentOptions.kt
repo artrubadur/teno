@@ -34,6 +34,7 @@ object AgentDefaults {
             "If a tool returns ok: false, immediately perform any recovery action stated in its " +
                     "message, then retry or continue the original task. Report the failure only " +
                     "if recovery fails or is impossible.",
+            "If the same error repeats three or more times, stop retrying and report the failure.",
 
             "Answer only the user's current request.",
             "Present the final answer in natural, concise, user-friendly language.",

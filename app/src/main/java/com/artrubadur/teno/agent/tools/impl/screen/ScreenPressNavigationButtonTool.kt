@@ -6,11 +6,13 @@ import com.artrubadur.teno.agent.tools.ToolGroup
 import com.artrubadur.teno.agent.tools.ToolPermission
 import com.artrubadur.teno.agent.tools.ToolRisk
 import com.artrubadur.teno.agent.tools.integrations.screen.ScreenAccessibilityBridge
+import kotlinx.coroutines.delay
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.put
+import kotlin.time.Duration.Companion.milliseconds
 
 class ScreenPressNavigationButtonTool : Tool<ScreenPressNavigationButtonTool.Args> {
     override val name = "screen_press_navigation_button"
@@ -30,7 +32,8 @@ class ScreenPressNavigationButtonTool : Tool<ScreenPressNavigationButtonTool.Arg
             Button.HOME -> AccessibilityService.GLOBAL_ACTION_HOME
             Button.RECENTS -> AccessibilityService.GLOBAL_ACTION_RECENTS
         }
-
+        delay(500.milliseconds)
+        
         return buildJsonObject {
             put("ok", service.performGlobalAction(action))
         }

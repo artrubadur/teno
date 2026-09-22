@@ -6,11 +6,13 @@ import com.artrubadur.teno.agent.tools.ToolPermission
 import com.artrubadur.teno.agent.tools.ToolRisk
 import com.artrubadur.teno.agent.tools.integrations.screen.ScreenNodeStore
 import com.artrubadur.teno.agent.tools.integrations.screen.ScreenNodeTextInputter
+import kotlinx.coroutines.delay
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.put
+import kotlin.time.Duration.Companion.milliseconds
 
 class ScreenSetTextTool(
     private val store: ScreenNodeStore,
@@ -19,7 +21,7 @@ class ScreenSetTextTool(
     override val name = "screen_set_text"
     override val title = "Set screen text"
     override val description =
-        "Replaces text in an editable field using the exact node_id from get_screen_tree"
+        "Replaces text in an editable field using its numeric node_id from get_screen_tree"
     override val group = ToolGroup.SCREEN
     override val risk = ToolRisk.SAFE
     override val enabled = true
@@ -28,11 +30,13 @@ class ScreenSetTextTool(
 
     override suspend fun executeTyped(args: Args): JsonObject {
         val nodeId = args.nodeId.extractNodeId()
-            ?: error("Invalid node_id. Use the exact id returned by get_screen_tree")
+            ?: error("Invalid node_id. Call get_screen_tree again and use its numeric id")
         val reference = store.reference(nodeId)
-            ?: error("Call get_screen_tree first")
+            ?: error("Node id is unavailable. Call get_screen_tree again")
 
         inputter.setText(reference, args.text)
+        delay(500.milliseconds)
+
         return buildJsonObject {
             put("ok", true)
         }

@@ -5,9 +5,11 @@ import com.artrubadur.teno.agent.tools.Tool
 import com.artrubadur.teno.agent.tools.ToolGroup
 import com.artrubadur.teno.agent.tools.ToolRisk
 import com.artrubadur.teno.agent.tools.integrations.apps.openApplication
+import kotlinx.coroutines.delay
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.JsonObject
+import kotlin.time.Duration.Companion.seconds
 
 class AppsOpenTool(private val context: Context) : Tool<AppsOpenTool.Args> {
     override val name = "apps_open"
@@ -18,8 +20,11 @@ class AppsOpenTool(private val context: Context) : Tool<AppsOpenTool.Args> {
     override val enabled = true
     override val argsSerializer = Args.serializer()
 
-    override suspend fun executeTyped(args: Args): JsonObject =
-        context.openApplication(args.packageName)
+    override suspend fun executeTyped(args: Args): JsonObject {
+        val result = context.openApplication(args.packageName)
+        delay(3.seconds)
+        return result
+    }
 
     @Serializable
     data class Args(

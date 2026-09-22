@@ -22,7 +22,7 @@ class ScreenGetScreenNodeTool(
     override val title = "Get screen node"
 
     override val description =
-        "Returns complete details for a node by its node_id."
+        "Returns complete details for a node using its numeric node_id from get_screen_tree"
 
     override val group = ToolGroup.SCREEN
 
@@ -36,9 +36,9 @@ class ScreenGetScreenNodeTool(
 
     override suspend fun executeTyped(args: Args): JsonObject {
         val nodeId = args.nodeId.extractNodeId()
-            ?: error("Invalid node id")
+            ?: error("Invalid node id. Call get_screen_tree again and use its numeric id")
         val reference = store.reference(nodeId)
-            ?: error("Call get_screen_tree first")
+            ?: error("Node id is unavailable. Call get_screen_tree again")
         val node = reader.find(reference)
         val source = node.node
 

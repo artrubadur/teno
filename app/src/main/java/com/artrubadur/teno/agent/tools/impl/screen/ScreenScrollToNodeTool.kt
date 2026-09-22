@@ -6,11 +6,13 @@ import com.artrubadur.teno.agent.tools.ToolPermission
 import com.artrubadur.teno.agent.tools.ToolRisk
 import com.artrubadur.teno.agent.tools.integrations.screen.ScreenNodeScroller
 import com.artrubadur.teno.agent.tools.integrations.screen.ScreenNodeStore
+import kotlinx.coroutines.delay
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.put
+import kotlin.time.Duration.Companion.milliseconds
 
 class ScreenScrollToNodeTool(
     private val store: ScreenNodeStore,
@@ -18,7 +20,8 @@ class ScreenScrollToNodeTool(
 ) : Tool<ScreenScrollToNodeTool.Args> {
     override val name = "screen_scroll_to_node"
     override val title = "Scroll to screen node"
-    override val description = "Scrolls the screen to a visible or available node using its node_id"
+    override val description =
+        "Scrolls to a node using its numeric node_id from get_screen_tree"
     override val group = ToolGroup.SCREEN
     override val risk = ToolRisk.SAFE
     override val enabled = true
@@ -27,11 +30,13 @@ class ScreenScrollToNodeTool(
 
     override suspend fun executeTyped(args: Args): JsonObject {
         val nodeId = args.nodeId.extractNodeId()
-            ?: error("Invalid node id")
+            ?: error("Invalid node id. Call get_screen_tree again and use its numeric id")
         val reference = store.reference(nodeId)
-            ?: error("Call get_screen_tree first")
+            ?: error("Node id is unavailable. Call get_screen_tree again")
 
         scroller.scrollTo(reference)
+        delay(500.milliseconds)
+
         return buildJsonObject {
             put("ok", true)
         }

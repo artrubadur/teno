@@ -81,18 +81,18 @@ class ScreenTreeReader(
     fun find(reference: ScreenNodeReference): ScreenNode {
         val capture = read()
         if (capture.packageName != reference.packageName) {
-            error("Screen changed: package changed. Call get_screen_tree.")
+            error("Screen changed: package changed. Call get_screen_tree again.")
         }
         if (capture.windowType != reference.windowType) {
-            error("Screen changed: window type changed. Call get_screen_tree.")
+            error("Screen changed: window type changed. Call get_screen_tree again.")
         }
 
         val matches = capture.nodes.flatten().filter { node ->
             node.fingerprint == reference.fingerprint
         }
 
-        if (matches.isEmpty()) error("Node not found")
-        if (matches.size > 1) error("Ambiguous node")
+        if (matches.isEmpty()) error("Node not found. Call get_screen_tree again.")
+        if (matches.size > 1) error("Ambiguous node. Call get_screen_tree again.")
         return matches.single()
     }
 
